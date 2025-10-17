@@ -1,9 +1,19 @@
 mod client;
 mod config;
 
-use clap::Parser;
+use clap::{Parser, ValueEnum};
 use client::{ApiClient, CreateShortenRequest, ListParams, UpdateShortenRequest};
 use config::CliConfig;
+
+#[derive(Debug, Clone, ValueEnum)]
+enum OutputFormat {
+    /// Full table with all columns
+    Table,
+    /// Compact table for narrow terminals
+    Compact,
+    /// List format for very narrow terminals
+    List,
+}
 
 #[derive(Parser)]
 #[command(name = "shortener-cli")]
@@ -56,6 +66,16 @@ enum Commands {
         /// Short code to retrieve
         code: String,
     },
+    /// Find short URLs by original URL
+    Find {
+        /// Original URL to search for
+        #[arg(short = 'r', long)]
+        original_url: String,
+
+        /// Show all matches (auto-paginate)
+        #[arg(short = 'a', long)]
+        all: bool,
+    },
     /// List short URLs
     List {
         /// Fetch all short URLs (auto-paginate)
@@ -81,6 +101,14 @@ enum Commands {
         /// Filter by status (0=enabled, 1=disabled)
         #[arg(short = 't', long)]
         status: Option<i32>,
+
+        /// Filter by original URL
+        #[arg(short = 'r', long)]
+        original_url: Option<String>,
+
+        /// Output format (table, compact, list)
+        #[arg(short = 'f', long, value_enum)]
+        format: Option<OutputFormat>,
     },
     /// Update a short URL
     Update {
@@ -126,6 +154,9 @@ async fn main() {
             desc,
         }) => handle_create(cli.url, cli.key, original_url, code, desc).await,
         Some(Commands::Get { code }) => handle_get(cli.url, cli.key, code).await,
+        Some(Commands::Find { original_url, all }) => {
+            handle_find(cli.url, cli.key, original_url, all).await
+        }
         Some(Commands::List {
             all,
             page,
@@ -133,6 +164,8 @@ async fn main() {
             sort,
             order,
             status,
+            original_url,
+            format,
         }) => {
             let options = ListOptions {
                 all,
@@ -141,6 +174,8 @@ async fn main() {
                 sort,
                 order,
                 status,
+                original_url,
+                format,
             };
             handle_list(cli.url, cli.key, options).await
         }
@@ -231,6 +266,87 @@ async fn handle_get(
     Ok(())
 }
 
+async fn handle_find(
+    url_arg: Option<String>,
+    key_arg: Option<String>,
+    original_url: String,
+    all: bool,
+) -> anyhow::Result<()> {
+    let config = CliConfig::load(url_arg, key_arg)?;
+    let client = ApiClient::new(config.url, config.key);
+
+    if all {
+        // Fetch all pages
+        let mut all_items = Vec::new();
+        let mut current_page = 1u64;
+        let page_size = 50u64; // Use larger page size for --all
+
+        loop {
+            let params = ListParams {
+                page: Some(current_page),
+                page_size: Some(page_size),
+                status: None,
+                sort: Some("created_at".to_string()),
+                order: Some("desc".to_string()),
+                original_url: Some(original_url.clone()),
+            };
+
+            let response = client.list_shortens(params).await?;
+            all_items.extend(response.data);
+
+            if current_page >= response.meta.total_pages {
+                break;
+            }
+            current_page += 1;
+        }
+
+        if all_items.is_empty() {
+            println!("No short URLs found for original URL: {}", original_url);
+        } else {
+            println!(
+                "Found {} short URL(s) for: {}",
+                all_items.len(),
+                original_url
+            );
+            println!();
+            print_shorten_table_with_format(&all_items, None);
+        }
+    } else {
+        // Fetch first page only
+        let params = ListParams {
+            page: Some(1),
+            page_size: Some(10),
+            status: None,
+            sort: Some("created_at".to_string()),
+            order: Some("desc".to_string()),
+            original_url: Some(original_url.clone()),
+        };
+
+        let response = client.list_shortens(params).await?;
+
+        if response.data.is_empty() {
+            println!("No short URLs found for original URL: {}", original_url);
+        } else {
+            println!(
+                "Found {} short URL(s) for: {} (showing page 1 of {})",
+                response.meta.total_items, original_url, response.meta.total_pages
+            );
+            println!();
+            print_shorten_table_with_format(&response.data, None);
+
+            if response.meta.total_pages > 1 {
+                println!();
+                println!(
+                    "Use --all flag to see all results, or use 'list -r \"{}\"' for pagination.",
+                    original_url
+                );
+            }
+        }
+    }
+
+    Ok(())
+}
+
 struct ListOptions {
     all: bool,
     page: Option<u64>,
@@ -238,6 +354,8 @@ struct ListOptions {
     sort: Option<String>,
     order: Option<String>,
     status: Option<i32>,
+    original_url: Option<String>,
+    format: Option<OutputFormat>,
 }
 
 async fn handle_list(
@@ -261,6 +379,7 @@ async fn handle_list(
                 status: options.status,
                 sort: options.sort.clone(),
                 order: options.order.clone(),
+                original_url: options.original_url.clone(),
             };
 
             let response = client.list_shortens(params).await?;
@@ -274,7 +393,7 @@ async fn handle_list(
 
         println!("Total: {} short URLs", all_items.len());
         println!();
-        print_shorten_table(&all_items);
+        print_shorten_table_with_format(&all_items, options.format.as_ref());
     } else {
         // Fetch single page
         let params = ListParams {
@@ -283,6 +402,7 @@ async fn handle_list(
             status: options.status,
             sort: options.sort,
             order: options.order,
+            original_url: options.original_url,
         };
 
         let response = client.list_shortens(params).await?;
@@ -295,7 +415,7 @@ async fn handle_list(
             response.meta.total_items
         );
         println!();
-        print_shorten_table(&response.data);
+        print_shorten_table_with_format(&response.data, options.format.as_ref());
     }
 
     Ok(())
@@ -368,22 +488,38 @@ fn print_shorten_details(shorten: &ShortenResponse) {
     println!("Updated:      {}", shorten.updated_at);
 }
 
-/// Print a table of short URLs
-fn print_shorten_table(shortens: &[ShortenResponse]) {
+/// Print a table of short URLs with optional format override
+fn print_shorten_table_with_format(shortens: &[ShortenResponse], format: Option<&OutputFormat>) {
     if shortens.is_empty() {
         println!("No short URLs found.");
         return;
     }
 
-    // Create a simplified view for table display
+    match format {
+        Some(OutputFormat::Table) => print_shorten_table_full(shortens),
+        Some(OutputFormat::Compact) => print_shorten_table_compact(shortens),
+        Some(OutputFormat::List) => print_shorten_list(shortens),
+        None => {
+            // Default to list format
+            print_shorten_list(shortens);
+        }
+    }
+}
+
+/// Print a full table of short URLs (for wide terminals)
+fn print_shorten_table_full(shortens: &[ShortenResponse]) {
     #[derive(Tabled)]
     struct ShortenRow {
         #[tabled(rename = "ID")]
         id: i64,
         #[tabled(rename = "Code")]
         code: String,
+        #[tabled(rename = "Short URL")]
+        short_url: String,
         #[tabled(rename = "Original URL")]
         original_url: String,
+        #[tabled(rename = "Description")]
+        description: String,
         #[tabled(rename = "Status")]
         status: String,
         #[tabled(rename = "Created")]
@@ -395,7 +531,9 @@ fn print_shorten_table(shortens: &[ShortenResponse]) {
         .map(|s| ShortenRow {
             id: s.id,
             code: s.code.clone(),
-            original_url: s.original_url.clone(),
+            short_url: s.short_url.clone(),
+            original_url: truncate_url_smart(&s.original_url, 40),
+            description: truncate_string(s.describe.as_deref().unwrap_or("-"), 15),
             status: status_name(s.status).to_string(),
             created_at: format_datetime(&s.created_at),
         })
@@ -404,6 +542,56 @@ fn print_shorten_table(shortens: &[ShortenResponse]) {
     let mut table = Table::new(rows);
     table.with(Style::rounded());
     println!("{}", table);
+}
+
+/// Print a compact table of short URLs (for narrow terminals)
+fn print_shorten_table_compact(shortens: &[ShortenResponse]) {
+    #[derive(Tabled)]
+    struct ShortenRowCompact {
+        #[tabled(rename = "Code")]
+        code: String,
+        #[tabled(rename = "Short URL")]
+        short_url: String,
+        #[tabled(rename = "Original URL")]
+        original_url: String,
+        #[tabled(rename = "Status")]
+        status: String,
+    }
+
+    let rows: Vec<ShortenRowCompact> = shortens
+        .iter()
+        .map(|s| ShortenRowCompact {
+            code: s.code.clone(),
+            short_url: s.short_url.clone(),
+            original_url: s.original_url.clone(), // 显示完整 URL
+            status: status_name(s.status).to_string(),
+        })
+        .collect();
+
+    let mut table = Table::new(rows);
+    table.with(Style::rounded());
+    println!("{}", table);
+}
+
+/// Print short URLs as a list (for very narrow terminals)
+fn print_shorten_list(shortens: &[ShortenResponse]) {
+    for (i, s) in shortens.iter().enumerate() {
+        if i > 0 {
+            println!();
+        }
+
+        println!("{}. {} ({})", i + 1, s.code, status_name(s.status));
+        println!("   Short URL: {}", s.short_url);
+        println!("   Original:  {}", s.original_url);
+
+        if let Some(desc) = &s.describe {
+            if !desc.is_empty() {
+                println!("   Desc:      {}", desc);
+            }
+        }
+
+        println!("   Created:   {}", format_datetime(&s.created_at));
+    }
 }
 
 /// Get human-readable status name
@@ -415,14 +603,62 @@ fn status_name(status: i32) -> &'static str {
     }
 }
 
-/// Truncate a string to a maximum length with ellipsis
-#[allow(dead_code)]
+/// Truncate a string to a maximum length with ellipsis (Unicode-safe)
 fn truncate_string(s: &str, max_len: usize) -> String {
-    if s.len() <= max_len {
+    if s.chars().count() <= max_len {
         s.to_string()
+    } else if max_len <= 3 {
+        "...".to_string()
     } else {
-        format!("{}...", &s[..max_len - 3])
+        let truncated: String = s.chars().take(max_len - 3).collect();
+        format!("{}...", truncated)
     }
+}
+
+/// Smart truncate URL with format: prefix + ... + filename
+/// Prioritizes preserving the complete filename
+fn truncate_url_smart(url: &str, max_len: usize) -> String {
+    if url.chars().count() <= max_len {
+        return url.to_string();
+    }
+
+    if max_len <= 7 {
+        return "...".to_string();
+    }
+
+    // Try to find the filename (after the last slash)
+    if let Some(last_slash_pos) = url.rfind('/') {
+        let filename = &url[last_slash_pos..]; // Include the slash
+        let prefix_part = &url[..last_slash_pos];
+
+        // Calculate space needed
+        let ellipsis_len = 3; // "..."
+        let filename_len = filename.chars().count();
+        let available_for_prefix = max_len.saturating_sub(ellipsis_len + filename_len);
+
+        // If we can fit the complete filename
+        if available_for_prefix > 0 && ellipsis_len + filename_len <= max_len {
+            let prefix: String = prefix_part.chars().take(available_for_prefix).collect();
+            return format!("{}...{}", prefix, filename);
+        }
+    }
+
+    // Fallback: use the original logic with 15 character suffix
+    let suffix_len = 15.min(max_len - 4); // 4 for "..." minimum
+    let ellipsis_len = 3; // "..."
+    let prefix_len = max_len - suffix_len - ellipsis_len;
+
+    if prefix_len < 1 {
+        return truncate_string(url, max_len);
+    }
+
+    let chars: Vec<char> = url.chars().collect();
+    let total_chars = chars.len();
+
+    let prefix: String = chars.iter().take(prefix_len).collect();
+    let suffix: String = chars.iter().skip(total_chars - suffix_len).collect();
+
+    format!("{}...{}", prefix, suffix)
 }
 
 /// Format datetime string for display (extract date and time)
@@ -491,7 +727,7 @@ mod tests {
     #[test]
     fn test_print_shorten_table_empty() {
         // This test just verifies the function doesn't panic with empty list
-        print_shorten_table(&[]);
+        print_shorten_table_with_format(&[], None);
     }
 
     #[test]
@@ -520,6 +756,65 @@ mod tests {
         ];
 
         // This test just verifies the function doesn't panic
-        print_shorten_table(&shortens);
+        print_shorten_table_with_format(&shortens, None);
+    }
+
+    #[test]
+    fn test_truncate_url_smart() {
+        // Test normal truncation
+        assert_eq!(truncate_url_smart("short", 10), "short");
+
+        // Test smart truncation with domain + /filename
+        let long_url = "https://example.com/very/long/path/to/file.html";
+        let result = truncate_url_smart(long_url, 35);
+        assert!(result.contains("..."));
+        assert!(result.starts_with("https://example.com/"));
+        assert!(result.ends_with("/file.html"));
+        assert!(result.len() <= 35);
+
+        // Test edge cases
+        assert_eq!(truncate_url_smart("test", 4), "test");
+        assert_eq!(truncate_url_smart("test", 3), "...");
+
+        // Test URL without path
+        assert_eq!(
+            truncate_url_smart("https://example.com", 20),
+            "https://example.com"
+        );
+
+        // Test specific example from user
+        let git_url = "https://gist.asfd.cn/jetsung/git-mirror/raw/HEAD/git-mirror.sh";
+        let result = truncate_url_smart(git_url, 40);
+        assert!(result.starts_with("https://gist.asfd.cn/"));
+        assert!(result.ends_with("/git-mirror.sh"));
+        assert!(result.contains("..."));
+    }
+
+    #[test]
+    fn test_truncate_url_smart_github_raw() {
+        // Test the new universal truncation rule: prefix + ... + last 15 chars
+
+        // Test the specific example from user
+        let framagit_url =
+            "https://framagit.org/jetsung/sh/-/raw/main/install/static-web-server.sh";
+        let result = truncate_url_smart(framagit_url, 50);
+        // Expected: https://framagit.org/.../static-web-server.sh
+        assert_eq!(result.len(), 50);
+        assert!(result.ends_with("/static-web-server.sh"));
+        assert!(result.starts_with("https://framagit.org/"));
+        assert!(result.contains("..."));
+
+        // Test other examples with the new rule
+        let github_url =
+            "https://raw.githubusercontent.com/jetsung/sh/refs/heads/main/shell/gitlab-backup.sh";
+        let result2 = truncate_url_smart(github_url, 50);
+        assert_eq!(result2.len(), 50);
+        assert!(result2.ends_with("/gitlab-backup.sh"));
+
+        // Test regular URL
+        let regular_url = "https://example.com/very/long/path/to/some/file.txt";
+        let result3 = truncate_url_smart(regular_url, 40);
+        assert_eq!(result3.len(), 40);
+        assert!(result3.ends_with("/file.txt"));
     }
 }

@@ -272,4 +272,4 @@ path = "/var/lib/shortener/ip2region.xdb"
 
 - [API 文档](API.md)
 - [部署指南](DEPLOYMENT.md)
-- [Docker 指南](DOCKER.md)
+- [Docker 部署](DOCKER.md)

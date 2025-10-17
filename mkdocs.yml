@@ -58,10 +58,13 @@ markdown_extensions:
 
 nav:
   - 首页: index.md
-  - 配置指南: CONFIGURATION.md
-  - API 文档: API.md
-  - 部署:
-      - 部署指南: DEPLOYMENT.md
+  - 快速开始:
+      - 安装指南: INSTALLATION.md
+      - 配置指南: CONFIGURATION.md
+  - 使用指南:
+      - API 文档: API.md
+  - 部署指南:
+      - 部署概述: DEPLOYMENT.md
       - Docker 部署: DOCKER.md
       - DEB 包安装: DEB_PACKAGING_SIMPLIFIED.md
 

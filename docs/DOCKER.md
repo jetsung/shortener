@@ -8,26 +8,26 @@
 
 ```bash
 # 构建并运行
-docker compose -f docker/docker compose.dev.yml up -d
+docker compose -f docker/docker-compose.dev.yml up -d
 
 # 查看日志
-docker compose -f docker/docker compose.dev.yml logs -f
+docker compose -f docker/docker-compose.dev.yml logs -f
 
 # 停止
-docker compose -f docker/docker compose.dev.yml down
+docker compose -f docker/docker-compose.dev.yml down
 ```
 
 ### 生产环境（PostgreSQL + Redis）
 
 ```bash
 # 构建并运行
-docker compose -f docker/docker compose.yml up -d
+docker compose -f docker/docker-compose.yml up -d
 
 # 查看日志
-docker compose -f docker/docker compose.yml logs -f
+docker compose -f docker/docker-compose.yml logs -f
 
 # 停止
-docker compose -f docker/docker compose.yml down
+docker compose -f docker/docker-compose.yml down
 ```
 
 ## Docker 镜像
@@ -98,13 +98,15 @@ docker buildx bake --set "*.platform=linux/amd64,linux/arm64,linux/arm/v7"
 
 ### 环境变量
 
-可以在 `docker compose.yml` 中设置以下环境变量：
+可以在 `docker-compose.yml` 中设置以下环境变量：
 
 #### 服务器配置
+
 - `RUST_LOG`：日志级别（debug、info、warn、error）
 - `CONFIG_PATH`：配置文件路径（默认：`/etc/shortener/config.toml`）
 
 #### 数据库配置
+
 - `DATABASE_TYPE`：数据库类型（sqlite、postgres、mysql）
 - `DATABASE_HOST`：数据库主机
 - `DATABASE_PORT`：数据库端口
@@ -114,6 +116,7 @@ docker buildx bake --set "*.platform=linux/amd64,linux/arm64,linux/arm/v7"
 - `DATABASE_PATH`：SQLite 数据库路径
 
 #### 缓存配置
+
 - `CACHE_ENABLED`：启用缓存（true/false）
 - `CACHE_TYPE`：缓存类型（redis、valkey）
 - `CACHE_HOST`：缓存主机
@@ -121,6 +124,7 @@ docker buildx bake --set "*.platform=linux/amd64,linux/arm64,linux/arm/v7"
 - `CACHE_PASSWORD`：缓存密码
 
 #### GeoIP 配置
+
 - `GEOIP_ENABLED`：启用 GeoIP（true/false）
 - `GEOIP_DB_PATH`：ip2region 数据库路径
 
@@ -128,9 +132,9 @@ docker buildx bake --set "*.platform=linux/amd64,linux/arm64,linux/arm/v7"
 
 ```yaml
 volumes:
-  - ../config/config.toml:/etc/shortener/config.toml:ro  # 配置文件
-  - ../data:/var/lib/shortener:ro                         # 数据文件
-  - shortener-logs:/var/log/shortener                     # 日志
+  - ../config/config.toml:/etc/shortener/config.toml:ro # 配置文件
+  - ../data:/var/lib/shortener:ro # 数据文件
+  - shortener-logs:/var/log/shortener # 日志
 ```
 
 ## Makefile 命令
@@ -202,6 +206,7 @@ networks:
 ```
 
 服务可以使用服务名称相互通信：
+
 - `shortener-server`：主应用
 - `postgres`：PostgreSQL 数据库
 - `mysql`：MySQL 数据库
@@ -248,7 +253,7 @@ docker compose --env-file .env up -d
 
 ```yaml
 ports:
-  - "8080:8080"  # 仅暴露服务器端口
+  - "8080:8080" # 仅暴露服务器端口
 ```
 
 生产环境不应暴露数据库和缓存端口。
@@ -259,51 +264,51 @@ ports:
 
 ```bash
 # 所有服务
-docker compose -f docker/docker compose.yml logs -f
+docker compose -f docker/docker-compose.yml logs -f
 
 # 特定服务
-docker compose -f docker/docker compose.yml logs -f shortener-server
-docker compose -f docker/docker compose.yml logs -f postgres
-docker compose -f docker/docker compose.yml logs -f redis
+docker compose -f docker/docker-compose.yml logs -f shortener-server
+docker compose -f docker/docker-compose.yml logs -f postgres
+docker compose -f docker/docker-compose.yml logs -f redis
 ```
 
 ### 检查容器状态
 
 ```bash
-docker compose -f docker/docker compose.yml ps
+docker compose -f docker/docker-compose.yml ps
 ```
 
 ### 在容器中执行命令
 
 ```bash
 # Shell 访问
-docker compose -f docker/docker compose.yml exec shortener-server sh
+docker compose -f docker/docker-compose.yml exec shortener-server sh
 
 # 检查配置
-docker compose -f docker/docker compose.yml exec shortener-server cat /etc/shortener/config.toml
+docker compose -f docker/docker-compose.yml exec shortener-server cat /etc/shortener/config.toml
 
 # 检查数据库连接
-docker compose -f docker/docker compose.yml exec postgres psql -U shortener -d shortener
+docker compose -f docker/docker-compose.yml exec postgres psql -U shortener -d shortener
 ```
 
 ### 更改后重新构建
 
 ```bash
 # 重新构建并重启
-docker compose -f docker/docker compose.yml up -d --build
+docker compose -f docker/docker-compose.yml up -d --build
 
 # 强制重新创建
-docker compose -f docker/docker compose.yml up -d --force-recreate
+docker compose -f docker/docker-compose.yml up -d --force-recreate
 ```
 
 ### 清理
 
 ```bash
 # 停止并删除容器
-docker compose -f docker/docker compose.yml down
+docker compose -f docker/docker-compose.yml down
 
 # 同时删除卷
-docker compose -f docker/docker compose.yml down -v
+docker compose -f docker/docker-compose.yml down -v
 
 # 删除所有未使用的 Docker 资源
 docker system prune -a
@@ -344,18 +349,18 @@ EOF
 
 ```bash
 # 构建并启动
-docker compose -f docker/docker compose.yml --env-file .env.production up -d
+docker compose -f docker/docker-compose.yml --env-file .env.production up -d
 
 # 验证
-docker compose -f docker/docker compose.yml ps
-docker compose -f docker/docker compose.yml logs -f shortener-server
+docker compose -f docker/docker-compose.yml ps
+docker compose -f docker/docker-compose.yml logs -f shortener-server
 ```
 
 ### 4. 备份
 
 ```bash
 # 备份 PostgreSQL
-docker compose -f docker/docker compose.yml exec postgres pg_dump -U shortener shortener > backup.sql
+docker compose -f docker/docker-compose.yml exec postgres pg_dump -U shortener shortener > backup.sql
 
 # 备份卷
 docker run --rm -v shortener_postgres-data:/data -v $(pwd):/backup \

@@ -73,6 +73,9 @@ directories = "6.0"
 # 表格输出
 tabled = "0.20"
 
+# 终端工具
+crossterm = "0.28"
+
 # 异步 trait
 async-trait = "0.1"
 

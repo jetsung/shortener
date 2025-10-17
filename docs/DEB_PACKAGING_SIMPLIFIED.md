@@ -317,11 +317,11 @@ cargo deb -p shortener-server
 # target/debian/shortener-server_<version>_<arch>.deb
 ```
 
-详细信息请参考 [DEB 打包完整指南](DEB_PACKAGING.md)。
+详细信息请参考项目的 [安装指南](INSTALLATION.md)。
 
 ## 相关文档
 
+- [安装指南](INSTALLATION.md)
 - [配置指南](CONFIGURATION.md)
 - [部署指南](DEPLOYMENT.md)
 - [API 文档](API.md)
-- [DEB 打包完整指南](DEB_PACKAGING.md)

@@ -93,6 +93,7 @@ pub struct ListParams {
     pub status: Option<i32>,
     pub sort: Option<String>,
     pub order: Option<String>,
+    pub original_url: Option<String>,
 }
 
 /// API Client for interacting with the shortener server
@@ -175,6 +176,9 @@ impl ApiClient {
         }
         if let Some(order) = params.order {
             query_params.push(("order", order));
+        }
+        if let Some(original_url) = params.original_url {
+            query_params.push(("original_url", original_url));
         }
 
         if !query_params.is_empty() {

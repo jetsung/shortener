@@ -19,7 +19,6 @@
 - [开发](#开发)
 - [测试](#测试)
 - [性能](#性能)
-
 - [贡献](#贡献)
 - [许可证](#许可证)
 
@@ -68,7 +67,36 @@ shortener/
 - Rust 1.90 或更高版本（从 [rustup.rs](https://rustup.rs/) 安装）
 - Cargo（随 Rust 一起安装）
 
-### 构建和运行
+### 一键安装（推荐）
+
+```bash
+# 使用安装脚本
+curl -sSL https://raw.githubusercontent.com/jetsung/shortener/main/scripts/install.sh | bash
+
+# 或下载后运行
+wget https://raw.githubusercontent.com/jetsung/shortener/main/scripts/install.sh
+chmod +x install.sh
+./install.sh
+```
+
+### 手动安装
+
+```bash
+# 直接从 Git 安装
+cargo install --git https://github.com/jetsung/shortener.git shortener-server
+cargo install --git https://github.com/jetsung/shortener.git shortener-cli
+
+# 运行服务器
+shortener-server
+
+# 在另一个终端中，初始化 CLI
+shortener-cli init
+
+# 创建短链接
+shortener-cli create https://example.com
+```
+
+### 从源码构建和运行
 
 ```bash
 # 克隆仓库
@@ -105,13 +133,48 @@ cargo install --path shortener-cli
 
 ### 使用 Cargo 安装
 
+#### 从 Git 仓库安装（推荐）
+
 ```bash
+# 安装服务器
+cargo install --git https://github.com/jetsung/shortener.git shortener-server
+
+# 安装 CLI 工具
+cargo install --git https://github.com/jetsung/shortener.git shortener-cli
+
+# 安装指定版本
+cargo install --git https://github.com/jetsung/shortener.git --tag v1.0.0 shortener-server
+cargo install --git https://github.com/jetsung/shortener.git --tag v1.0.0 shortener-cli
+
+# 安装指定分支
+cargo install --git https://github.com/jetsung/shortener.git --branch main shortener-server
+```
+
+#### 从本地源码安装
+
+```bash
+# 克隆仓库后安装
+git clone https://github.com/jetsung/shortener.git
+cd shortener
+
+# 安装服务器
+cargo install --path shortener-server
+
 # 安装 CLI 工具
 cargo install --path shortener-cli
+```
 
-# 或从 crates.io 安装（发布后）
+#### 从 crates.io 安装（发布后）
+
+```bash
+# 安装服务器
+cargo install shortener-server
+
+# 安装 CLI 工具
 cargo install shortener-cli
 ```
+
+> 💡 **提示**: 更多安装选项和详细说明请参见 [安装指南](docs/INSTALLATION.md)。
 
 ### 使用 Docker
 
@@ -286,11 +349,25 @@ shortener-cli create https://example.com --code mylink --desc "我的链接"
 # 获取 URL 详情
 shortener-cli get mylink
 
+# 通过原始 URL 查找短链接
+shortener-cli find --original_url https://example.com
+
+# 查找所有匹配的短链接
+shortener-cli find --original_url https://example.com --all
+
 # 列出所有 URL
 shortener-cli list --all
 
 # 分页列出
 shortener-cli list --page 1 --psize 20 --sort created_at --order desc
+
+# 按原始 URL 过滤列表
+shortener-cli list --original_url https://example.com
+
+# 指定显示格式
+shortener-cli list -f table    # 完整表格
+shortener-cli list -f compact  # 紧凑表格
+shortener-cli list -f list     # 列表格式
 
 # 更新 URL
 shortener-cli update mylink --ourl https://newurl.com --desc "已更新"
@@ -300,6 +377,19 @@ shortener-cli delete mylink
 ```
 
 详见 [CLI 文档](shortener-cli/README.md)。
+
+### 通过原始 URL 查找
+
+```bash
+# 查找指定原始 URL 的短链接
+shortener-cli find --original_url https://example.com
+
+# 查找所有匹配的短链接
+shortener-cli find --original_url https://example.com --all
+
+# 在列表中按原始 URL 过滤
+shortener-cli list --original_url https://example.com
+```
 
 ## API 文档
 
@@ -539,27 +629,42 @@ cargo bench -- --test
 
 ## 文档
 
-本项目使用 MkDocs 构建文档。
+### 主要文档
+
+- 📖 [安装指南](docs/INSTALLATION.md) - 详细的安装说明和多种安装方式
+- ⚙️ [配置指南](docs/CONFIGURATION.md) - 服务器和 CLI 配置选项
+- 🔌 [API 文档](docs/API.md) - RESTful API 参考和示例
+- 🚀 [部署指南](docs/DEPLOYMENT.md) - 生产环境部署最佳实践
+- 🐳 [Docker 部署](docs/DOCKER.md) - 使用 Docker 和 Docker Compose
+- 📦 [DEB 包安装](docs/DEB_PACKAGING_SIMPLIFIED.md) - Debian/Ubuntu 系统安装
+- 💻 [CLI 工具](shortener-cli/README.md) - 命令行工具使用指南
 
 ### 本地查看文档
 
-```bash
-# 安装 MkDocs 和依赖
-pip install -r docs/requirements.txt
+本项目使用 MkDocs 构建文档。
 
-# 启动本地文档服务器
+```bash
+# 使用构建脚本（推荐）
+./scripts/build-docs.sh serve
+
+# 或手动安装依赖并启动
+pip install -r docs/requirements.txt
 mkdocs serve
 
 # 在浏览器中访问 http://127.0.0.1:8000
 ```
 
-### 构建文档
+### 构建和部署文档
 
 ```bash
 # 构建静态文档
-mkdocs build
+./scripts/build-docs.sh build
 
-# 输出在 site/ 目录
+# 部署到 GitHub Pages
+./scripts/build-docs.sh deploy
+
+# 清理构建文件
+./scripts/build-docs.sh clean
 ```
 
 ## 支持

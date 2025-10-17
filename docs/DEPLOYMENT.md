@@ -54,6 +54,17 @@ Shortener 服务器可以通过多种方式部署：
 
 ## Docker 部署
 
+Docker 是推荐的部署方式，提供了简单的设置和良好的隔离性。
+
+详细的 Docker 部署说明请参阅 **[Docker 部署指南](DOCKER.md)**，包括：
+
+- 开发和生产环境配置
+- Docker Compose 设置
+- 多数据库支持
+- 环境变量配置
+- 数据持久化
+- 健康检查和监控
+
 ### 快速开始
 
 ```bash
@@ -63,41 +74,9 @@ cd shortener
 
 # 使用 Docker Compose 启动
 docker compose up -d
-
-# 查看日志
-docker compose logs -f shortener-server
-
-# 停止
-docker compose down
 ```
 
-### 生产设置
-
-1. 创建生产配置：
-
-```bash
-cp config/config.toml config/production.toml
-vim config/production.toml
-```
-
-2. 创建环境文件：
-
-```bash
-cat > .env << EOF
-RUST_LOG=info
-DATABASE_TYPE=postgres
-DATABASE_HOST=postgres
-DATABASE_PORT=5432
-DATABASE_NAME=shortener
-DATABASE_USER=shortener
-DATABASE_PASSWORD=$(openssl rand -base64 32)
-CACHE_ENABLED=true
-CACHE_TYPE=redis
-CACHE_HOST=redis
-CACHE_PORT=6379
-CACHE_PASSWORD=$(openssl rand -base64 32)
-API_KEY=$(openssl rand -base64 32)
-ADMIN_USERNAME=admin
+更多详细信息请查看 [Docker 部署指南](DOCKER.md)。
 ADMIN_PASSWORD=$(openssl rand -base64 32)
 EOF
 ```
@@ -121,7 +100,7 @@ docker compose logs -f shortener-server
 curl http://localhost:8080/health
 ```
 
-详细说明请参阅 [Docker 指南](DOCKER.md)。
+详细说明请参阅 [Docker 部署指南](DOCKER.md)。
 
 ## Systemd 部署
 
@@ -526,7 +505,7 @@ sudo journalctl -u redis -f
 
 ## 另见
 
-- [Docker 指南](DOCKER.md)
+- [Docker 部署](DOCKER.md)
 - [DEB 包安装](DEB_PACKAGING_SIMPLIFIED.md)
 - [配置指南](CONFIGURATION.md)
 - [API 文档](API.md)

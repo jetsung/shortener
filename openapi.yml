@@ -170,6 +170,13 @@ paths:
             enum:
               - 0
               - 1
+        - name: original_url
+          in: query
+          description: "原始 URL 过滤"
+          required: false
+          schema:
+            type: string
+            format: uri
       responses:
         "200":
           description: "操作成功"
