@@ -1,0 +1,81 @@
+[package]
+name = "shortener-server"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+# Workspace dependencies
+axum = { workspace = true }
+tokio = { workspace = true }
+tower = { workspace = true }
+tower-http = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+sea-orm = { workspace = true }
+sea-orm-migration = { workspace = true }
+redis = { workspace = true }
+config = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+thiserror = { workspace = true }
+anyhow = { workspace = true }
+rand = { workspace = true }
+chrono = { workspace = true }
+uuid = { workspace = true }
+argon2 = { workspace = true }
+jsonwebtoken = { workspace = true }
+async-trait = { workspace = true }
+futures-util = { workspace = true }
+ip2region = { workspace = true }
+
+# Local dependencies
+shortener-common = { path = "../shortener-common" }
+
+[dev-dependencies]
+tokio-test = "0.4"
+mockall = "0.13"
+criterion = "0.7"
+tempfile = "3.8"
+
+[[bench]]
+name = "code_generation_bench"
+harness = false
+
+[[bench]]
+name = "url_validation_bench"
+harness = false
+
+[[bench]]
+name = "database_bench"
+harness = false
+
+[[bench]]
+name = "cache_bench"
+harness = false
+
+[[bench]]
+name = "service_bench"
+harness = false
+
+[package.metadata.deb]
+maintainer = "Jetsung Chan <i@jetsung.com>"
+copyright = "2025, Jetsung Chan <i@jetsung.com>"
+license-file = ["../LICENSE", "0"]
+extended-description = """\
+A high-performance URL shortener service written in Rust, \
+featuring a RESTful API server and command-line management tool. \
+Supports multiple databases (SQLite, PostgreSQL, MySQL), \
+Redis/Valkey caching, and GeoIP tracking."""
+depends = "$auto, systemd"
+section = "web"
+priority = "optional"
+assets = [
+    ["target/release/shortener-server", "usr/local/bin/", "755"],
+    ["../config/config.toml", "opt/shortener/config.toml.example", "644"],
+    ["../deploy/systemd/shortener-server.service", "lib/systemd/system/", "644"],
+    ["../README.md", "usr/share/doc/shortener-server/", "644"],
+]
+maintainer-scripts = "../scripts/"
+conf-files = ["/opt/shortener/config/config.toml"]

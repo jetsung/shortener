@@ -1,0 +1,182 @@
+# Shortener Server Configuration Example
+# Copy this file to config.toml and customize for your environment
+
+# ============================================================================
+# Server Configuration
+# ============================================================================
+[server]
+# Server listen address
+# Examples: ":8080", "127.0.0.1:8080", "0.0.0.0:8080"
+address = ":8080"
+
+# Trusted platform header for getting real client IP (optional)
+# Examples: "X-Real-IP", "X-Forwarded-For", "CF-Connecting-IP"
+trusted-platform = ""
+
+# Public site URL (used for generating short URLs)
+# Examples: "https://short.example.com", "http://localhost:8080"
+site_url = "http://localhost:8080"
+
+# API key for authentication (REQUIRED)
+# Generate with: openssl rand -base64 32
+# IMPORTANT: Change this in production!
+api_key = "your-secret-api-key-change-me"
+
+# ============================================================================
+# Shortener Configuration
+# ============================================================================
+[shortener]
+# Length of auto-generated short codes (4-16)
+code_length = 6
+
+# Character set for generating short codes
+# Default: alphanumeric (62 characters)
+# Alternatives:
+#   - Lowercase only: "0123456789abcdefghijklmnopqrstuvwxyz"
+#   - Numbers only: "0123456789"
+code_charset = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+# ============================================================================
+# Admin Account Configuration
+# ============================================================================
+[admin]
+# Admin username (REQUIRED)
+username = "admin"
+
+# Admin password (REQUIRED)
+# IMPORTANT: Change this in production!
+# Use a strong password with at least 12 characters
+password = "your-secure-password-change-me"
+
+# ============================================================================
+# Database Configuration
+# ============================================================================
+[database]
+# Database type: "sqlite", "postgres", or "mysql"
+type = "sqlite"
+
+# Database log level: 1=Silent, 2=Error, 3=Warn, 4=Info
+log_level = 1
+
+# ----------------------------------------------------------------------------
+# SQLite Configuration (when type = "sqlite")
+# ----------------------------------------------------------------------------
+[database.sqlite]
+# Database file path
+# Use ":memory:" for in-memory database (testing only)
+path = "data/shortener.db"
+
+# ----------------------------------------------------------------------------
+# PostgreSQL Configuration (when type = "postgres")
+# ----------------------------------------------------------------------------
+# [database.postgres]
+# host = "localhost"
+# port = 5432
+# user = "shortener"
+# password = "your-postgres-password"
+# database = "shortener"
+# sslmode = "disable"  # Options: disable, require, verify-ca, verify-full
+# timezone = "UTC"
+
+# ----------------------------------------------------------------------------
+# MySQL Configuration (when type = "mysql")
+# ----------------------------------------------------------------------------
+# [database.mysql]
+# host = "localhost"
+# port = 3306
+# user = "shortener"
+# password = "your-mysql-password"
+# database = "shortener"
+# charset = "utf8mb4"
+# parse_time = true
+# loc = "Local"
+
+# ============================================================================
+# Cache Configuration
+# ============================================================================
+[cache]
+# Enable caching (recommended for production)
+enabled = false
+
+# Cache type: "redis" or "valkey"
+type = "redis"
+
+# Cache expiration time in seconds (default: 1 hour)
+expire = 3600
+
+# Cache key prefix
+prefix = "shorten:"
+
+# ----------------------------------------------------------------------------
+# Redis Configuration (when type = "redis")
+# ----------------------------------------------------------------------------
+[cache.redis]
+host = "localhost"
+port = 6379
+password = ""  # Leave empty if no password
+db = 0
+
+# ----------------------------------------------------------------------------
+# Valkey Configuration (when type = "valkey")
+# ----------------------------------------------------------------------------
+# [cache.valkey]
+# host = "localhost"
+# port = 6379
+# username = ""  # Optional
+# password = ""  # Optional
+# db = 0
+
+# ============================================================================
+# GeoIP Configuration
+# ============================================================================
+[geoip]
+# Enable GeoIP lookup for visitor location tracking
+enabled = false
+
+# GeoIP provider type (currently only "ip2region" is supported)
+type = "ip2region"
+
+# ----------------------------------------------------------------------------
+# ip2region Configuration
+# ----------------------------------------------------------------------------
+[geoip.ip2region]
+# Path to ip2region.xdb database file
+# Download from: https://github.com/lionsoul2014/ip2region
+path = "data/ip2region.xdb"
+
+# Search mode: "vector" (fastest), "btree" (balanced), or "binary" (smallest memory)
+mode = "vector"
+
+# IP version: "4" for IPv4, "6" for IPv6
+version = "4"
+
+# ============================================================================
+# Logging Configuration
+# ============================================================================
+[logging]
+# Log level: "error", "warn", "info", "debug", "trace"
+level = "info"
+
+# Log format: "json", "pretty", or "compact"
+format = "json"
+
+# Include timestamp in logs
+with_timestamp = true
+
+# Include module/target name in logs
+with_target = true
+
+# Include thread ID in logs
+with_thread_ids = false
+
+# Include thread name in logs
+with_thread_names = false
+
+# Include source file name in logs
+with_file = false
+
+# Include line number in logs
+with_line_number = false
+
+# Use ANSI colors in logs (disable for log files)
+with_ansi = true

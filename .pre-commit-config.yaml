@@ -1,0 +1,28 @@
+repos:
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v5.0.0
+  hooks:
+    - id: check-merge-conflict
+    - id: trailing-whitespace
+    - id: check-yaml
+    - id: check-added-large-files
+    - id: check-case-conflict
+    - id: check-docstring-first
+
+- repo: local
+  hooks:
+    - id: just-tidy
+      name: Run just go-mod-tidy
+      entry: bash -c "just go-mod-tidy"
+      language: system
+      args: []
+    - id: just-fmt
+      name: Run just fmt
+      entry: bash -c "just fmt"
+      language: system
+      args: []
+    - id: just-lint
+      name: Run just lint
+      entry: bash -c "just lint"
+      language: system
+      args: []

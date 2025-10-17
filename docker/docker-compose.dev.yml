@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  # Shortener Server (Development with SQLite)
+  shortener-server:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: shortener-server-dev
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - RUST_LOG=debug
+      - DATABASE_TYPE=sqlite
+      - DATABASE_PATH=/var/lib/shortener/shortener.db
+      - CACHE_ENABLED=true
+      - CACHE_TYPE=redis
+      - CACHE_HOST=redis
+      - CACHE_PORT=6379
+      - GEOIP_ENABLED=true
+      - GEOIP_DB_PATH=/var/lib/shortener/ip2region.xdb
+    volumes:
+      - ../config/config.toml:/etc/shortener/config.toml:ro
+      - ../data:/var/lib/shortener
+      - shortener-logs:/var/log/shortener
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - shortener-network
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: shortener-redis-dev
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+    networks:
+      - shortener-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    ports:
+      - "6379:6379"
+
+volumes:
+  redis-data:
+    driver: local
+  shortener-logs:
+    driver: local
+
+networks:
+  shortener-network:
+    driver: bridge

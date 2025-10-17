@@ -1,0 +1,53 @@
+[Unit]
+Description=Shortener Server - URL Shortening Service
+Documentation=https://github.com/jetsung/shortener
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=shortener
+Group=shortener
+
+# Working directory
+WorkingDirectory=/opt/shortener
+
+# Binary location
+ExecStart=/usr/local/bin/shortener-server
+
+# Configuration
+Environment="CONFIG_PATH=/opt/shortener/config/config.toml"
+Environment="RUST_LOG=info"
+
+# Restart policy
+Restart=on-failure
+RestartSec=5s
+StartLimitInterval=60s
+StartLimitBurst=3
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/shortener/data /opt/shortener/logs
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictRealtime=true
+RestrictNamespaces=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+
+# Resource limits
+LimitNOFILE=65536
+LimitNPROC=512
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=shortener-server
+
+[Install]
+WantedBy=multi-user.target

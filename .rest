@@ -1,0 +1,125 @@
+# https://marketplace.visualstudio.com/items?itemName=humao.rest-client
+
+@hostname = localhost
+@port = 8080
+@host = {{hostname}}:{{port}}
+@api_host = {{host}}/api/v1
+@schema = http
+@contentType = application/json
+
+@code = shortener
+@apiKey = 1234567890
+@apiToken = 6FPsqtWqYafgOFCQGuWg3K0268u1k77t
+
+### PING
+
+GET {{schema}}://{{host}}/ping
+
+### 跳转网址
+
+GET {{schema}}://{{host}}/{{code}}{{$randomInt 5 100}}
+
+
+### 登录账号
+
+POST {{schema}}://{{api_host}}/account/login
+Content-Type: {{contentType}}
+
+{
+  "username": "admin",
+  "password": "admin",
+  "auto": true
+}
+
+### 添加短网址（随机）
+
+POST {{schema}}://{{api_host}}/shortens
+Content-Type: {{contentType}}
+X-API-KEY: {{apiKey}}
+
+{
+  "original_url": "https://go.bdev.cn/shortener",
+  "code": "{{code}}{{$randomInt 5 200}}",
+  "describe": "短网址"
+}
+
+### 添加短网址（随机 + KEY）
+
+POST {{schema}}://{{api_host}}/shortens
+Content-Type: {{contentType}}
+X-API-KEY: {{apiKey}}
+
+{
+  "original_url": "https://go.bdev.cn/shortener",
+  "code": "{{code}}{{$randomInt 5 100}}",
+  "describe": "短网址"
+}
+
+### 添加短网址
+POST {{schema}}://{{api_host}}/shortens
+Content-Type: {{contentType}}
+X-API-KEY: {{apiKey}}
+
+{
+  "original_url": "https://go.bdev.cn/shortener",
+  "code": "{{code}}",
+  "describe": "短网址"
+}
+
+### 删除短网址（随机）
+
+DELETE {{schema}}://{{api_host}}/shortens/{{code}}{{$randomInt 5 100}}
+Content-Type: {{contentType}}
+X-API-KEY: {{apiKey}}
+
+### 删除短网址
+
+DELETE {{schema}}://{{api_host}}/shortens/{{code}}
+Content-Type: {{contentType}}
+X-API-KEY: {{apiKey}}
+
+### 更新短网址（随机）
+
+PUT {{schema}}://{{api_host}}/shortens/{{code}}{{$randomInt 5 100}}
+Content-Type: {{contentType}}
+X-API-KEY: {{apiKey}}
+
+{
+  "original_url": "https://go.bdev.cn/{{code}}{{$randomInt 5 100}}",
+  "describe": "短网址{{$randomInt 5 100}}"
+}
+
+### 更新短网址
+
+PUT {{schema}}://{{api_host}}/shortens/{{code}}
+Content-Type: {{contentType}}
+X-API-KEY: {{apiKey}}
+
+{
+  "original_url": "https://go.bdev.cn/{{code}}{{$randomInt 5 100}}",
+  "describe": "短网址{{$randomInt 5 100}}"
+}
+
+### 获取短网址详情（随机）
+
+GET {{schema}}://{{api_host}}/shortens/{{code}}{{$randomInt 5 100}}
+Content-Type: {{contentType}}
+X-API-KEY: {{apiKey}}
+
+### 获取短网址详情
+
+GET {{schema}}://{{api_host}}/shortens/{{code}}963
+Content-Type: {{contentType}}
+X-API-KEY: {{apiKey}}
+
+### 获取短网址列表（随机）
+
+GET {{schema}}://{{api_host}}/shortens?page={{$randomInt 1 3}}&page_size={{$randomInt 1 5}}
+Content-Type: {{contentType}}
+X-API-KEY: {{apiKey}}
+
+### 获取短网址列表
+
+GET {{schema}}://{{api_host}}/shortens?page=1&page_size=10
+Content-Type: {{contentType}}
+Authorization: Bearer {{apiToken}}

@@ -1,0 +1,27 @@
+[package]
+name = "shortener-cli"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "shortener-cli"
+path = "src/main.rs"
+
+[dependencies]
+# Workspace dependencies
+clap = { workspace = true }
+reqwest = { workspace = true }
+tokio = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+config = { workspace = true }
+toml = { workspace = true }
+directories = { workspace = true }
+tabled = { workspace = true }
+thiserror = { workspace = true }
+anyhow = { workspace = true }
+
+# Local dependencies
+shortener-common = { path = "../shortener-common" }

@@ -1,0 +1,40 @@
+# Development Configuration
+# Optimized for local development with debug logging
+
+[server]
+address = ":8080"
+trusted-platform = ""
+site_url = "http://localhost:8080"
+api_key = "dev-api-key-not-for-production"
+
+[shortener]
+code_length = 6
+code_charset = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+[admin]
+username = "admin"
+password = "admin123"  # Simple password for development
+
+[database]
+type = "sqlite"
+log_level = 4  # Info - show all queries
+
+[database.sqlite]
+path = "data/shortener.db"
+
+[cache]
+enabled = false  # Disable cache for easier debugging
+
+[geoip]
+enabled = false  # Disable GeoIP for faster development
+
+[logging]
+level = "debug"  # Verbose logging
+format = "pretty"  # Human-readable format
+with_timestamp = true
+with_target = true
+with_thread_ids = false
+with_thread_names = false
+with_file = true  # Show file names
+with_line_number = true  # Show line numbers
+with_ansi = true  # Colored output

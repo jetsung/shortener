@@ -1,0 +1,75 @@
+site_name: Shortener
+site_description: Shortener - 高性能 URL 短链接服务
+site_author: Jetsung Chan
+site_url: https://jetsung.github.io/shortener
+repo_url: https://github.com/jetsung/shortener
+repo_name: jetsung/shortener
+edit_uri: edit/main/docs/
+copyright: Copyright &copy; 2025 Jetsung Chan
+
+theme:
+  name: material
+  language: zh
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: 切换到深色模式
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: 切换到浅色模式
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.code.annotate
+    - toc.integrate
+
+plugins:
+  - search:
+      lang:
+        - zh
+        - en
+
+markdown_extensions:
+  - admonition
+  - codehilite
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.details
+  - tables
+  - toc:
+      permalink: true
+
+nav:
+  - 首页: index.md
+  - 配置指南: CONFIGURATION.md
+  - API 文档: API.md
+  - 部署:
+      - 部署指南: DEPLOYMENT.md
+      - Docker 部署: DOCKER.md
+      - DEB 包安装: DEB_PACKAGING_SIMPLIFIED.md
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/jetsung
+    - icon: fontawesome/solid/envelope
+      link: mailto:i@jetsung.com
+  version:
+    provider: mike

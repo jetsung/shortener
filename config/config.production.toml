@@ -1,0 +1,66 @@
+# Production Configuration Example
+# This is a template for production deployment
+# Use environment variables for sensitive data
+
+[server]
+address = ":8080"
+trusted-platform = "X-Forwarded-For"
+site_url = "https://short.example.com"
+# Use environment variable: SHORTENER__SERVER__API_KEY
+api_key = "${SHORTENER_API_KEY}"
+
+[shortener]
+code_length = 6
+code_charset = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+[admin]
+# Use environment variables: SHORTENER__ADMIN__USERNAME and SHORTENER__ADMIN__PASSWORD
+username = "${SHORTENER_ADMIN_USER}"
+password = "${SHORTENER_ADMIN_PASS}"
+
+[database]
+type = "postgres"
+log_level = 2  # Error only
+
+[database.postgres]
+host = "postgres"
+port = 5432
+user = "shortener"
+# Use environment variable: SHORTENER__DATABASE__POSTGRES__PASSWORD
+password = "${POSTGRES_PASSWORD}"
+database = "shortener"
+sslmode = "require"
+timezone = "UTC"
+
+[cache]
+enabled = true
+type = "redis"
+expire = 3600
+prefix = "shorten:"
+
+[cache.redis]
+host = "redis"
+port = 6379
+# Use environment variable: SHORTENER__CACHE__REDIS__PASSWORD
+password = "${REDIS_PASSWORD}"
+db = 0
+
+[geoip]
+enabled = true
+type = "ip2region"
+
+[geoip.ip2region]
+path = "/var/lib/shortener/ip2region.xdb"
+mode = "vector"
+version = "4"
+
+[logging]
+level = "info"
+format = "json"
+with_timestamp = true
+with_target = true
+with_thread_ids = false
+with_thread_names = false
+with_file = false
+with_line_number = false
+with_ansi = false  # Disable colors for log aggregation

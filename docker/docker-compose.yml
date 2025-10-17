@@ -1,0 +1,121 @@
+version: '3.8'
+
+services:
+  # Shortener Server
+  shortener-server:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: shortener-server
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - RUST_LOG=info
+      - DATABASE_TYPE=postgres
+      - DATABASE_HOST=postgres
+      - DATABASE_PORT=5432
+      - DATABASE_NAME=shortener
+      - DATABASE_USER=shortener
+      - DATABASE_PASSWORD=shortener_password
+      - CACHE_ENABLED=true
+      - CACHE_TYPE=redis
+      - CACHE_HOST=redis
+      - CACHE_PORT=6379
+      - GEOIP_ENABLED=true
+      - GEOIP_DB_PATH=/var/lib/shortener/ip2region.xdb
+    volumes:
+      - ../config/config.toml:/etc/shortener/config.toml:ro
+      - ../data:/var/lib/shortener:ro
+      - shortener-logs:/var/log/shortener
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - shortener-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: shortener-postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=shortener
+      - POSTGRES_USER=shortener
+      - POSTGRES_PASSWORD=shortener_password
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --lc-collate=C --lc-ctype=C
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - shortener-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U shortener"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "5432:5432"
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: shortener-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass redis_password
+    volumes:
+      - redis-data:/data
+    networks:
+      - shortener-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    ports:
+      - "6379:6379"
+
+  # MySQL Database (alternative to PostgreSQL)
+  mysql:
+    image: mysql:8.0
+    container_name: shortener-mysql
+    restart: unless-stopped
+    environment:
+      - MYSQL_ROOT_PASSWORD=root_password
+      - MYSQL_DATABASE=shortener
+      - MYSQL_USER=shortener
+      - MYSQL_PASSWORD=shortener_password
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - shortener-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot_password"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "3306:3306"
+    profiles:
+      - mysql
+
+volumes:
+  postgres-data:
+    driver: local
+  mysql-data:
+    driver: local
+  redis-data:
+    driver: local
+  shortener-logs:
+    driver: local
+
+networks:
+  shortener-network:
+    driver: bridge

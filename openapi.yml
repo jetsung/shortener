@@ -1,0 +1,716 @@
+openapi: 3.1.1
+info:
+  title: "短网址"
+  description: "短网址接口"
+  contact:
+    name: "Jetsung Chan"
+    url: "https://github.com/jetsung"
+    email: "i@jetsung.com"
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+  version: 0.1.0
+servers:
+  - url: http://127.0.0.1:8080
+    description: Version 1
+tags:
+  - name: shorten
+    description: 短址
+  - name: history
+    description: 历史记录
+  - name: account
+    description: 账号
+paths:
+  /api/account/login:
+    post:
+      tags:
+        - account
+      description: 登录接口
+      operationId: login
+      requestBody:
+        description: 登录系统
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginParams"
+        required: true
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResult"
+        "401":
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+      x-codegen-request-body-name: body
+    x-swagger-router-controller: api
+  /api/account/logout:
+    post:
+      description: 退出登录接口
+      operationId: logout
+      tags:
+        - account
+      responses:
+        "204":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+        "401":
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    x-swagger-router-controller: api
+  /api/users/current:
+    get:
+      tags:
+        - account
+      description: 获取当前的用户
+      operationId: currentUser
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CurrentUser"
+        "401":
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    x-swagger-router-controller: api
+
+  /api/shortens:
+    post:
+      tags:
+        - shorten
+      summary: "添加短网址"
+      description: "添加一个新的短网址"
+      operationId: "addShorten"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Shorten"
+      responses:
+        "201":
+          description: "短网址创建成功"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ShortenResponse"
+        "400":
+          description: "请求错误"
+        "409":
+          description: "短网址已存在"
+        "500":
+          description: "操作失败"
+        default:
+          description: "未知错误"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    get:
+      tags:
+        - shorten
+      summary: "获取所有短址信息"
+      description: "获取所有短址信息"
+      operationId: "getShortens"
+      parameters:
+        - name: page
+          in: query
+          description: "页码"
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: page_size
+          in: query
+          description: "每页条数"
+          required: false
+          schema:
+            type: integer
+            default: 10
+        - name: sort_by
+          in: query
+          description: "排序字段"
+          required: false
+          schema:
+            type: string
+            default: "created_at"
+        - name: order
+          in: query
+          description: "排序方向"
+          required: false
+          schema:
+            type: string
+            default: "desc"
+            enum:
+              - asc
+              - desc
+        - name: status
+          in: query
+          description: "状态 (0=启用, 1=禁用)"
+          required: false
+          schema:
+            type: integer
+            enum:
+              - 0
+              - 1
+      responses:
+        "200":
+          description: "操作成功"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ShortenResponse"
+                  meta:
+                    type: object
+                    $ref: "#/components/schemas/PageMeta"
+
+        "400":
+          description: "未知错误"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    delete:
+      tags:
+        - shorten
+      summary: "删除短网址列表"
+      description: "删除短网址列表"
+      operationId: "deleteShorten"
+      parameters:
+        - name: ids
+          in: query
+          description: "id 列表，多个id用逗号分隔"
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: "操作成功"
+        "400":
+          description: "请求错误"
+        "404":
+          description: "短网址不存在"
+        "500":
+          description: "操作失败"
+        default:
+          description: "未知错误"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/shortens/{code}:
+    get:
+      tags:
+        - shorten
+      summary: "获取短网址信息"
+      description: "通过短码获取短网址信息"
+      operationId: "getShorten"
+      parameters:
+        - name: code
+          in: path
+          description: "短码"
+          required: true
+          schema:
+            type: string
+            maxLength: 16
+            pattern: "^[a-zA-Z0-9]+$"
+            example: "aBc123"
+      responses:
+        "200":
+          description: "操作成功"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ShortenResponse"
+        "400":
+          description: "请求错误"
+        "404":
+          description: "短网址不存在"
+        "500":
+          description: "操作失败"
+        "401":
+          description: "未授权"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    put:
+      tags:
+        - shorten
+      summary: "更新短网址"
+      description: "更新一个短网址"
+      operationId: "updateShorten"
+      parameters:
+        - name: code
+          in: path
+          description: "短码"
+          required: true
+          schema:
+            type: string
+            maxLength: 16
+            pattern: "^[a-zA-Z0-9]+$"
+            example: "aBc123"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ShortenUpdate"
+      responses:
+        "200":
+          description: "操作成功"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ShortenResponse"
+        "400":
+          description: "请求错误"
+        "404":
+          description: "短码不存在"
+        "500":
+          description: "操作失败"
+        default:
+          description: "未知错误"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      tags:
+        - shorten
+      summary: "删除短网址"
+      description: "删除一个短网址"
+      operationId: "deleteShorten"
+      parameters:
+        - name: code
+          in: path
+          description: "短码"
+          required: true
+          schema:
+            type: string
+            maxLength: 8
+            pattern: "^[a-zA-Z0-9]+$"
+            example: "aBc123"
+      responses:
+        "204":
+          description: "操作成功"
+        "400":
+          description: "请求错误"
+        "404":
+          description: "短网址不存在"
+        "500":
+          description: "操作失败"
+        "401":
+          description: "未授权"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/histories:
+    get:
+      tags:
+        - history
+      summary: "获取所有日志信息"
+      description: "获取所有日志信息"
+      operationId: "getHistories"
+      parameters:
+        - name: page
+          in: query
+          description: "页码"
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: page_size
+          in: query
+          description: "每页条数"
+          required: false
+          schema:
+            type: integer
+            default: 10
+        - name: sort_by
+          in: query
+          description: "排序字段"
+          required: false
+          schema:
+            type: string
+            default: "created_at"
+        - name: order
+          in: query
+          description: "排序方向"
+          required: false
+          schema:
+            type: string
+            default: "desc"
+            enum:
+              - asc
+              - desc
+        - name: status
+          in: query
+          description: "状态 (0=启用, 1=禁用)"
+          required: false
+          schema:
+            type: integer
+            enum:
+              - 0
+              - 1
+      responses:
+        "200":
+          description: "操作成功"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/HistoryResponse"
+                  meta:
+                    type: object
+                    $ref: "#/components/schemas/PageMeta"
+        "400":
+          description: "未知错误"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    delete:
+      tags:
+        - history
+      summary: "删除日志列表"
+      description: "删除日志列表"
+      operationId: "deleteHistories"
+      parameters:
+        - name: ids
+          in: query
+          description: "id 列表，多个id用逗号分隔"
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: "操作成功"
+        "400":
+          description: "请求错误"
+        "404":
+          description: "日志不存在"
+        "500":
+          description: "操作失败"
+        default:
+          description: "未知错误"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+components:
+  schemas:
+    PageMeta:
+      type: object
+      properties:
+        page:
+          type: integer
+          description: 当前页码
+          example: 1
+        page_size:
+          type: integer
+          description: 每页数量
+          example: 10
+        current_count:
+          type: integer
+          description: 当前页条目数
+          example: 10
+        total_items:
+          type: integer
+          description: 总条目数
+          example: 100
+        total_pages:
+          type: integer
+          description: 总页数
+          example: 10
+
+    PageParams:
+      type: object
+      properties:
+        page:
+          type: integer
+          description: 页码
+          example: 1
+        page_size:
+          type: integer
+          description: 每页数量
+          example: 10
+        sort_by:
+          type: string
+          description: 排序字段
+          example: "create_at"
+        order:
+          type: string
+          enum: [asc, desc]
+          default: desc
+          description: 排序方式
+
+    PageQuery:
+      type: object
+      properties:
+        current:
+          type: integer
+          description: 当前页码
+          example: 1
+        pageSize:
+          type: integer
+          description: 每页数量
+          example: 10
+
+    RespList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            description: 实际数据类型需要替换
+          description: 数据列表
+        success:
+          type: boolean
+          description: 请求是否成功
+          example: true
+        total:
+          type: integer
+          description: 总条目数
+          example: 100
+
+    ItemList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            description: 实际数据类型需要替换
+          description: 数据列表
+        meta:
+          $ref: "#/components/schemas/PageMeta"
+    LoginParams:
+      type: object
+      properties:
+        username:
+          description: 用户名
+          type: string
+        password:
+          description: 密码
+          type: string
+        auto:
+          description: 是否自动登录
+          type: boolean
+    LoginResult:
+      type: object
+      properties:
+        token:
+          type: string
+          description: 登录成功后返回的 token
+        errcode:
+          type: string
+          description: 业务约定的错误码
+        errinfo:
+          type: string
+          description: 业务上的错误信息
+    CurrentUser:
+      type: object
+      properties:
+        name:
+          type: string
+          description: 用户名
+    ErrorResponse:
+      required:
+        - errcode
+      type: object
+      properties:
+        errcode:
+          type: string
+          description: 业务约定的错误码
+        errinfo:
+          type: string
+          description: 业务上的错误信息
+
+    Shorten:
+      type: object
+      properties:
+        original_url:
+          type: string
+          format: uri
+          description: "原始长网址"
+        code:
+          type: string
+          description: "短码"
+          maxLength: 16
+          pattern: "^[a-zA-Z0-9]+$"
+        describe:
+          type: string
+          description: "长网址描述"
+      required:
+        - original_url
+        - code
+
+    ShortenUpdate:
+      type: object
+      properties:
+        original_url:
+          type: string
+          format: uri
+          description: "原始长网址"
+        describe:
+          type: string
+          description: "长网址描述"
+      required:
+        - original_url
+
+    ShortenResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: "ID"
+        code:
+          type: string
+          description: "短码"
+          maxLength: 16
+          pattern: "^[a-zA-Z0-9]+$"
+        short_url:
+          type: string
+          format: uri
+          description: "短网址"
+        original_url:
+          type: string
+          format: uri
+          description: "原始长网址"
+        describe:
+          type: string
+          description: "长网址描述"
+        status:
+          type: integer
+          description: "状态 (0=启用, 1=禁用)"
+          enum:
+            - 0
+            - 1
+        created_at:
+          type: string
+          description: "创建时间"
+        updated_at:
+          type: string
+          description: "更新时间"
+
+    HistoryResponse:
+      type: array
+      items:
+        type: object
+        properties:
+          id:
+            type: integer
+            format: int64
+            minimum: 1
+            description: 自增ID（连续递增）
+          url_id:
+            type: integer
+            format: int32
+            minimum: 1
+            maximum: 100
+            description: 短链接ID（1-100随机）
+          short_code:
+            type: string
+            pattern: ^\w{5,8}$
+            example: "xY7z9"
+            description: 5-8位短码
+          ip_address:
+            type: string
+            format: ipv4
+            example: 192.168.0.1
+          user_agent:
+            type: string
+            minLength: 16
+            maxLength: 32
+            example: "Mozilla/5.0 (Windows NT 10.0)"
+          referer:
+            type: string
+            format: uri
+            example:
+              - google: https://google.com?q=xY7z9
+              - baidu: https://baidu.com?q=xY7z9
+          country:
+            type: string
+            example: 中国
+          region:
+            type: string
+            example: 华东
+          province:
+            type: string
+            example: 广东省
+          city:
+            type: string
+            example: 深圳市
+          isp:
+            type: string
+            minLength: 4
+            maxLength: 8
+            example: 中国电信
+          device_type:
+            type: string
+            enum: [pc, mobile, tablet]
+          os:
+            type: string
+            enum: [Windows, MacOS, Linux, Android, iOS]
+          browser:
+            type: string
+            enum: [Chrome, Firefox, Safari, Edge]
+          accessed_at:
+            type: string
+            format: date-time
+            example: "2024-03-20T12:00:00Z"
+          created_at:
+            type: string
+            format: date-time
+            example: "2024-03-20T12:00:00Z"
+        required:
+          - id
+          - url_id
+          - short_code
+          - ip_address
+          - user_agent
+          - referer
+          - country
+          - region
+          - province
+          - city
+          - isp
+          - device_type
+          - os
+          - browser
+          - accessed_at
+          - created_at
