@@ -28,10 +28,8 @@ target/
 .DS_Store
 
 # Configuration files with secrets
-config/config.toml
-shortener-server/config/config.toml
-shortener-cli/config.toml
 *.local.toml
+config/config.toml
 
 # Database files
 *.db
@@ -49,3 +47,8 @@ shortener-cli/config.toml
 site/
 .cache/
 
+# frontend
+/**/node_modules/
+/**/package-lock.json
+/**/yarn.lock
+/**/dist/

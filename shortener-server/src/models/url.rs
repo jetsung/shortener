@@ -1,5 +1,6 @@
 use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
+use chrono::{DateTime, Utc};
 
 /// URL entity model
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Serialize, Deserialize)]
@@ -9,18 +10,17 @@ pub struct Model {
     pub id: i64,
 
     #[sea_orm(unique, indexed)]
-    pub code: String,
+    pub short_code: String,
 
     pub original_url: String,
 
-    #[sea_orm(column_name = "describe")]
-    pub describe: Option<String>,
+    pub description: Option<String>,
 
     #[sea_orm(indexed)]
     pub status: i32,
 
-    pub created_at: DateTime,
-    pub updated_at: DateTime,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
 }
 
 /// URL status enum
@@ -92,28 +92,28 @@ mod tests {
     fn test_url_model_clone() {
         let model = Model {
             id: 1,
-            code: "test123".to_string(),
+            short_code: "test123".to_string(),
             original_url: "https://example.com".to_string(),
-            describe: Some("Test".to_string()),
+            description: Some("Test".to_string()),
             status: UrlStatus::Enabled as i32,
-            created_at: chrono::Utc::now().naive_utc(),
-            updated_at: chrono::Utc::now().naive_utc(),
+            created_at: chrono::Utc::now(),
+            updated_at: chrono::Utc::now(),
         };
 
         let cloned = model.clone();
         assert_eq!(model.id, cloned.id);
-        assert_eq!(model.code, cloned.code);
+        assert_eq!(model.short_code, cloned.short_code);
         assert_eq!(model.original_url, cloned.original_url);
     }
 
     #[test]
     fn test_url_model_partial_eq() {
-        let now = chrono::Utc::now().naive_utc();
+        let now = chrono::Utc::now();
         let model1 = Model {
             id: 1,
-            code: "test123".to_string(),
+            short_code: "test123".to_string(),
             original_url: "https://example.com".to_string(),
-            describe: Some("Test".to_string()),
+            description: Some("Test".to_string()),
             status: UrlStatus::Enabled as i32,
             created_at: now,
             updated_at: now,
@@ -121,9 +121,9 @@ mod tests {
 
         let model2 = Model {
             id: 1,
-            code: "test123".to_string(),
+            short_code: "test123".to_string(),
             original_url: "https://example.com".to_string(),
-            describe: Some("Test".to_string()),
+            description: Some("Test".to_string()),
             status: UrlStatus::Enabled as i32,
             created_at: now,
             updated_at: now,
@@ -133,18 +133,18 @@ mod tests {
     }
 
     #[test]
-    fn test_url_model_with_none_describe() {
+    fn test_url_model_with_none_description() {
         let model = Model {
             id: 1,
-            code: "test123".to_string(),
+            short_code: "test123".to_string(),
             original_url: "https://example.com".to_string(),
-            describe: None,
+            description: None,
             status: UrlStatus::Enabled as i32,
-            created_at: chrono::Utc::now().naive_utc(),
-            updated_at: chrono::Utc::now().naive_utc(),
+            created_at: chrono::Utc::now(),
+            updated_at: chrono::Utc::now(),
         };
 
-        assert!(model.describe.is_none());
+        assert!(model.description.is_none());
     }
 
     #[test]

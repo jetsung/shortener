@@ -63,8 +63,8 @@ async fn test_database_migration_and_crud() {
         original_url: Set("https://example.com".to_string()),
         describe: Set(Some("Test URL".to_string())),
         status: Set(1),
-        created_at: Set(chrono::Utc::now().naive_utc()),
-        updated_at: Set(chrono::Utc::now().naive_utc()),
+        created_at: Set(chrono::Utc::now()),
+        updated_at: Set(chrono::Utc::now()),
         ..Default::default()
     };
 
@@ -99,8 +99,8 @@ async fn test_database_migration_and_crud() {
         device_type: Set(None),
         os: Set(None),
         browser: Set(None),
-        accessed_at: Set(chrono::Utc::now().naive_utc()),
-        created_at: Set(chrono::Utc::now().naive_utc()),
+        accessed_at: Set(chrono::Utc::now()),
+        created_at: Set(chrono::Utc::now()),
         ..Default::default()
     };
 

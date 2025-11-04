@@ -27,6 +27,7 @@ enabled = false  # Disable cache for easier debugging
 
 [geoip]
 enabled = false  # Disable GeoIP for faster development
+type = "ip2region"
 
 [logging]
 level = "debug"  # Verbose logging

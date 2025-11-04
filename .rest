@@ -3,44 +3,60 @@
 @hostname = localhost
 @port = 8080
 @host = {{hostname}}:{{port}}
-@api_host = {{host}}/api/v1
+@api_host = {{host}}/api
 @schema = http
 @contentType = application/json
 
-@code = shortener
-@apiKey = 1234567890
-@apiToken = 6FPsqtWqYafgOFCQGuWg3K0268u1k77t
+@short_code = shortener
+@apiKey = {{$processEnv SHORTENER_KEY}}
+@apiToken = {{$processEnv API_TOKEN}}
 
 ### PING
+# 响应: { "message": "pong" }
 
 GET {{schema}}://{{host}}/ping
 
 ### 跳转网址
 
-GET {{schema}}://{{host}}/{{code}}{{$randomInt 5 100}}
+GET {{schema}}://{{host}}/{{short_code}}{{$randomInt 5 100}}
 
 
 ### 登录账号
+# 响应: { "token": "...", "error_code": "...", "error_message": "..." }
 
 POST {{schema}}://{{api_host}}/account/login
 Content-Type: {{contentType}}
 
 {
-  "username": "admin",
-  "password": "admin",
-  "auto": true
+  "username": "{{$processEnv USERNAME}}",
+  "password": "{{$processEnv PASSWORD}}",
+  "auto_login": true
 }
 
+### 退出登录
+# 响应: 204 No Content
+
+POST {{schema}}://{{api_host}}/account/logout
+Content-Type: {{contentType}}
+Authorization: Bearer {{apiToken}}
+
+### 获取当前用户
+# 响应: { "name": "username" }
+
+GET {{schema}}://{{api_host}}/users/current
+Content-Type: {{contentType}}
+Authorization: Bearer {{apiToken}}
+
 ### 添加短网址（随机）
+# 响应: { "id": 1, "short_code": "abc123", "short_url": "http://...", "original_url": "...", "description": "...", "status": 0, "created_at": "2024-01-15T08:30:00Z", "updated_at": "2024-01-15T08:30:00Z" }
 
 POST {{schema}}://{{api_host}}/shortens
 Content-Type: {{contentType}}
-X-API-KEY: {{apiKey}}
 
 {
-  "original_url": "https://go.bdev.cn/shortener",
-  "code": "{{code}}{{$randomInt 5 200}}",
-  "describe": "短网址"
+  "original_url": "https://go.xoder.cn/shortener",
+  "short_code": "{{short_code}}{{$randomInt 5 200}}",
+  "description": "短网址"
 }
 
 ### 添加短网址（随机 + KEY）
@@ -50,76 +66,121 @@ Content-Type: {{contentType}}
 X-API-KEY: {{apiKey}}
 
 {
-  "original_url": "https://go.bdev.cn/shortener",
-  "code": "{{code}}{{$randomInt 5 100}}",
-  "describe": "短网址"
+  "original_url": "https://go.xoder.cn/shortener",
+  "short_code": "{{short_code}}{{$randomInt 5 100}}",
+  "description": "短网址"
 }
 
 ### 添加短网址
+
 POST {{schema}}://{{api_host}}/shortens
 Content-Type: {{contentType}}
 X-API-KEY: {{apiKey}}
 
 {
-  "original_url": "https://go.bdev.cn/shortener",
-  "code": "{{code}}",
-  "describe": "短网址"
+  "original_url": "https://go.xoder.cn/shortener",
+  "short_code": "{{short_code}}",
+  "description": "短网址"
 }
 
 ### 删除短网址（随机）
+# 响应: 204 No Content
 
-DELETE {{schema}}://{{api_host}}/shortens/{{code}}{{$randomInt 5 100}}
+DELETE {{schema}}://{{api_host}}/shortens/{{short_code}}{{$randomInt 5 100}}
 Content-Type: {{contentType}}
 X-API-KEY: {{apiKey}}
 
 ### 删除短网址
+# 响应: 204 No Content
 
-DELETE {{schema}}://{{api_host}}/shortens/{{code}}
+DELETE {{schema}}://{{api_host}}/shortens/{{short_code}}
+Content-Type: {{contentType}}
+X-API-KEY: {{apiKey}}
+
+### 批量删除短网址
+# 响应: 204 No Content
+
+DELETE {{schema}}://{{api_host}}/shortens?ids=1,2,3
 Content-Type: {{contentType}}
 X-API-KEY: {{apiKey}}
 
 ### 更新短网址（随机）
+# 响应: { "id": 1, "short_code": "abc123", "short_url": "http://...", "original_url": "...", "description": "...", "status": 0, "created_at": "2024-01-15T08:30:00Z", "updated_at": "2024-01-15T08:30:00Z" }
 
-PUT {{schema}}://{{api_host}}/shortens/{{code}}{{$randomInt 5 100}}
+PUT {{schema}}://{{api_host}}/shortens/{{short_code}}{{$randomInt 5 100}}
 Content-Type: {{contentType}}
 X-API-KEY: {{apiKey}}
 
 {
-  "original_url": "https://go.bdev.cn/{{code}}{{$randomInt 5 100}}",
-  "describe": "短网址{{$randomInt 5 100}}"
+  "original_url": "https://go.xoder.cn/{{short_code}}{{$randomInt 5 100}}",
+  "description": "短网址{{$randomInt 5 100}}"
 }
 
 ### 更新短网址
 
-PUT {{schema}}://{{api_host}}/shortens/{{code}}
+PUT {{schema}}://{{api_host}}/shortens/{{short_code}}
 Content-Type: {{contentType}}
 X-API-KEY: {{apiKey}}
 
 {
-  "original_url": "https://go.bdev.cn/{{code}}{{$randomInt 5 100}}",
-  "describe": "短网址{{$randomInt 5 100}}"
+  "original_url": "https://go.xoder.cn/{{short_code}}{{$randomInt 5 100}}",
+  "description": "短网址{{$randomInt 5 100}}"
 }
 
 ### 获取短网址详情（随机）
+# 响应: { "id": 1, "short_code": "abc123", "short_url": "http://...", "original_url": "...", "description": "...", "status": 0, "created_at": "2024-01-15T08:30:00Z", "updated_at": "2024-01-15T08:30:00Z" }
 
-GET {{schema}}://{{api_host}}/shortens/{{code}}{{$randomInt 5 100}}
+GET {{schema}}://{{api_host}}/shortens/{{short_code}}{{$randomInt 5 100}}
 Content-Type: {{contentType}}
 X-API-KEY: {{apiKey}}
 
 ### 获取短网址详情
 
-GET {{schema}}://{{api_host}}/shortens/{{code}}963
+GET {{schema}}://{{api_host}}/shortens/{{short_code}}63
 Content-Type: {{contentType}}
 X-API-KEY: {{apiKey}}
 
 ### 获取短网址列表（随机）
+# 响应: { "data": [...], "meta": { "page": 1, "per_page": 10, "count": 10, "total": 100, "total_pages": 10 } }
 
-GET {{schema}}://{{api_host}}/shortens?page={{$randomInt 1 3}}&page_size={{$randomInt 1 5}}
+GET {{schema}}://{{api_host}}/shortens?page={{$randomInt 1 3}}&per_page={{$randomInt 1 5}}
 Content-Type: {{contentType}}
 X-API-KEY: {{apiKey}}
 
-### 获取短网址列表
+### 获取短网址列表（带过滤和排序）
 
-GET {{schema}}://{{api_host}}/shortens?page=1&page_size=10
+GET {{schema}}://{{api_host}}/shortens?page=1&per_page=10&sort_by=created_at&order=desc&status=0
+Content-Type: {{contentType}}
+Authorization: Bearer {{apiToken}}
+
+### 获取短网址列表（搜索）
+
+GET {{schema}}://{{api_host}}/shortens?page=1&per_page=10&short_code={{short_code}}&original_url=xoder
+Content-Type: {{contentType}}
+Authorization: Bearer {{apiToken}}
+
+### 获取访问历史记录列表
+# 响应: { "data": [...], "meta": { "page": 1, "per_page": 10, "count": 10, "total": 100, "total_pages": 10 } }
+
+GET {{schema}}://{{api_host}}/histories?page=1&per_page=10
+Content-Type: {{contentType}}
+Authorization: Bearer {{apiToken}}
+
+### 获取访问历史记录列表（带过滤和排序）
+
+GET {{schema}}://{{api_host}}/histories?page=1&per_page=10&sort_by=accessed_at&order=desc&short_code={{short_code}}
+Content-Type: {{contentType}}
+Authorization: Bearer {{apiToken}}
+
+### 获取访问历史记录列表（按 IP 搜索）
+
+GET {{schema}}://{{api_host}}/histories?page=1&per_page=10&ip_address=192.168.0.1
+Content-Type: {{contentType}}
+Authorization: Bearer {{apiToken}}
+
+### 批量删除访问历史记录
+# 响应: 204 No Content
+
+DELETE {{schema}}://{{api_host}}/histories?ids=1,2,3
 Content-Type: {{contentType}}
 Authorization: Bearer {{apiToken}}

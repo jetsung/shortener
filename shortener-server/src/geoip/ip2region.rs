@@ -90,27 +90,25 @@ impl Ip2RegionGeoIp {
     }
 
     /// 解析 ip2region 返回的信息
-    /// ip2region 返回格式: 国家|区域|省份|城市|ISP
-    /// 例如: 中国|0|浙江省|杭州市|电信
+    /// ip2region 返回格式: 国家|省份|城市|ISP (4个字段)
+    /// 例如:
+    /// - 中国|浙江省|杭州市|电信
+    /// - 日本|东京都|千代田区|专线用户
     fn parse_region_string(region: &str) -> GeoIpInfo {
         let parts: Vec<&str> = region.split('|').collect();
 
         let country = parts.first().unwrap_or(&"").trim().to_string();
-        let region = parts.get(1).unwrap_or(&"").trim().to_string();
-        let province = parts.get(2).unwrap_or(&"").trim().to_string();
-        let city = parts.get(3).unwrap_or(&"").trim().to_string();
-        let isp = parts.get(4).unwrap_or(&"").trim().to_string();
+        let province = parts.get(1).unwrap_or(&"").trim().to_string();
+        let city = parts.get(2).unwrap_or(&"").trim().to_string();
+        let isp = parts.get(3).unwrap_or(&"").trim().to_string();
 
-        // 将 "0" 替换为空字符串
-        let region = if region == "0" { String::new() } else { region };
-
-        GeoIpInfo::new(country, region, province, city, isp)
+        GeoIpInfo::new(country, province, city, isp)
     }
 }
 
 #[async_trait]
 impl GeoIp for Ip2RegionGeoIp {
-    async fn lookup(&self, ip: &str) -> Result<GeoIpInfo, GeoIpError> {
+    async fn lookup(&self, mut ip: &str) -> Result<GeoIpInfo, GeoIpError> {
         // 验证 IP 地址格式
         if ip.is_empty() {
             return Err(GeoIpError::InvalidIpAddress(
@@ -120,6 +118,8 @@ impl GeoIp for Ip2RegionGeoIp {
 
         // 获取 searcher 锁
         let searcher = self.searcher.lock().await;
+        println!("searcher: {:?}", ip);
+        ip = "223.223.3.3";
 
         // 查询 IP 地址
         let region = searcher.search(ip).map_err(|e| {
@@ -156,30 +156,27 @@ mod tests {
 
     #[test]
     fn test_parse_region_string() {
-        // 测试完整信息
-        let region = "中国|华东|浙江省|杭州市|电信";
+        // 测试标准4个字段格式（中国）
+        let region = "中国|浙江省|杭州市|电信";
         let geoip_info = Ip2RegionGeoIp::parse_region_string(region);
         assert_eq!(geoip_info.country, "中国");
-        assert_eq!(geoip_info.region, "华东");
         assert_eq!(geoip_info.province, "浙江省");
         assert_eq!(geoip_info.city, "杭州市");
         assert_eq!(geoip_info.isp, "电信");
 
-        // 测试带 "0" 的信息
-        let region = "中国|0|浙江省|杭州市|电信";
+        // 测试4个字段格式（日本）
+        let region = "日本|东京都|千代田区|专线用户";
         let geoip_info = Ip2RegionGeoIp::parse_region_string(region);
-        assert_eq!(geoip_info.country, "中国");
-        assert_eq!(geoip_info.region, "");
-        assert_eq!(geoip_info.province, "浙江省");
-        assert_eq!(geoip_info.city, "杭州市");
-        assert_eq!(geoip_info.isp, "电信");
+        assert_eq!(geoip_info.country, "日本");
+        assert_eq!(geoip_info.province, "东京都");
+        assert_eq!(geoip_info.city, "千代田区");
+        assert_eq!(geoip_info.isp, "专线用户");
 
         // 测试不完整信息
-        let region = "中国|华东";
+        let region = "中国|浙江省";
         let geoip_info = Ip2RegionGeoIp::parse_region_string(region);
         assert_eq!(geoip_info.country, "中国");
-        assert_eq!(geoip_info.region, "华东");
-        assert_eq!(geoip_info.province, "");
+        assert_eq!(geoip_info.province, "浙江省");
         assert_eq!(geoip_info.city, "");
         assert_eq!(geoip_info.isp, "");
     }

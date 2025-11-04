@@ -1,3 +1,4 @@
+use clap::Parser;
 use shortener_server::{
     cache::create_cache,
     config::Config,
@@ -11,13 +12,27 @@ use std::sync::Arc;
 use tokio::signal;
 use tracing::{error, info};
 
+/// Shortener Server
+#[derive(Parser)]
+#[command(name = "shortener-server")]
+#[command(about = "A URL shortener service")]
+#[command(version)]
+struct Args {
+    /// Configuration file path
+    #[arg(short, long, default_value = "config/config.toml")]
+    config: String,
+}
+
 #[tokio::main]
 async fn main() {
+    // Parse command line arguments
+    let args = Args::parse();
+
     // Load configuration first (before logging initialization)
-    let config = match Config::load() {
+    let config = match Config::from_file(&args.config) {
         Ok(cfg) => cfg,
         Err(e) => {
-            eprintln!("✗ Failed to load configuration: {}", e);
+            eprintln!("✗ Failed to load configuration from '{}': {}", args.config, e);
             std::process::exit(1);
         }
     };

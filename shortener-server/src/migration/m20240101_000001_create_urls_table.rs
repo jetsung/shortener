@@ -19,14 +19,14 @@ impl MigrationTrait for Migration {
                             .primary_key(),
                     )
                     .col(
-                        ColumnDef::new(Urls::Code)
+                        ColumnDef::new(Urls::ShortCode)
                             .string_len(16)
                             .not_null()
                             .unique_key(),
                     )
                     .col(ColumnDef::new(Urls::OriginalUrl).text().not_null())
-                    .col(ColumnDef::new(Urls::Describe).text().null())
-                    .col(ColumnDef::new(Urls::Status).integer().not_null().default(1))
+                    .col(ColumnDef::new(Urls::Description).text().null())
+                    .col(ColumnDef::new(Urls::Status).integer().not_null().default(0))
                     .col(
                         ColumnDef::new(Urls::CreatedAt)
                             .timestamp()
@@ -43,14 +43,14 @@ impl MigrationTrait for Migration {
             )
             .await?;
 
-        // Create index on code
+        // Create index on short_code
         manager
             .create_index(
                 Index::create()
                     .if_not_exists()
-                    .name("idx_urls_code")
+                    .name("idx_urls_short_code")
                     .table(Urls::Table)
-                    .col(Urls::Code)
+                    .col(Urls::ShortCode)
                     .to_owned(),
             )
             .await?;
@@ -81,9 +81,9 @@ impl MigrationTrait for Migration {
 enum Urls {
     Table,
     Id,
-    Code,
+    ShortCode,
     OriginalUrl,
-    Describe,
+    Description,
     Status,
     CreatedAt,
     UpdatedAt,

@@ -38,9 +38,9 @@ struct ErrorResponse {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateShortenRequest {
     pub original_url: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none", rename = "short_code")]
     pub code: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none", rename = "description")]
     pub describe: Option<String>,
 }
 
@@ -49,7 +49,7 @@ pub struct CreateShortenRequest {
 pub struct UpdateShortenRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub original_url: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none", rename = "description")]
     pub describe: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub status: Option<i32>,
@@ -59,9 +59,11 @@ pub struct UpdateShortenRequest {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ShortenResponse {
     pub id: i64,
+    #[serde(rename = "short_code")]
     pub code: String,
     pub short_url: String,
     pub original_url: String,
+    #[serde(rename = "description")]
     pub describe: Option<String>,
     pub status: i32,
     pub created_at: String,
@@ -72,9 +74,9 @@ pub struct ShortenResponse {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PageMeta {
     pub page: u64,
-    pub page_size: u64,
-    pub current_count: u64,
-    pub total_items: u64,
+    pub per_page: u64,
+    pub count: u64,
+    pub total: u64,
     pub total_pages: u64,
 }
 
@@ -133,9 +135,9 @@ impl ApiClient {
         self.handle_response(response).await
     }
 
-    /// Get a short URL by code
+    /// Get a short URL by short_code
     ///
-    /// GET /api/shortens/{code}
+    /// GET /api/shortens/{short_code}
     pub async fn get_shorten(&self, code: &str) -> Result<ShortenResponse, ClientError> {
         let url = format!("{}/api/shortens/{}", self.base_url, code);
 
@@ -166,7 +168,7 @@ impl ApiClient {
             query_params.push(("page", page.to_string()));
         }
         if let Some(page_size) = params.page_size {
-            query_params.push(("page_size", page_size.to_string()));
+            query_params.push(("per_page", page_size.to_string()));
         }
         if let Some(status) = params.status {
             query_params.push(("status", status.to_string()));
@@ -192,7 +194,7 @@ impl ApiClient {
 
     /// Update a short URL
     ///
-    /// PUT /api/shortens/{code}
+    /// PUT /api/shortens/{short_code}
     pub async fn update_shorten(
         &self,
         code: &str,
@@ -213,7 +215,7 @@ impl ApiClient {
 
     /// Delete a short URL
     ///
-    /// DELETE /api/shortens/{code}
+    /// DELETE /api/shortens/{short_code}
     pub async fn delete_shorten(&self, code: &str) -> Result<(), ClientError> {
         let url = format!("{}/api/shortens/{}", self.base_url, code);
 

@@ -23,6 +23,7 @@ tabled = { workspace = true }
 thiserror = { workspace = true }
 anyhow = { workspace = true }
 crossterm = { workspace = true }
+chrono = { workspace = true }
 
 # Local dependencies
 shortener-common = { path = "../shortener-common" }

@@ -18,7 +18,7 @@ pub async fn list_histories(
     Query(params): Query<HistoryListParams>,
 ) -> Result<Json<PagedResponse<HistoryResponse>>, AppError> {
     info!(
-        "Listing histories: page={}, page_size={}",
+        "Listing histories: page={}, per_page={}",
         params.page, params.page_size
     );
 

@@ -1,5 +1,6 @@
 use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
+use chrono::{DateTime, Utc};
 
 /// History entity model
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Serialize, Deserialize)]
@@ -15,7 +16,7 @@ pub struct Model {
     pub short_code: String,
 
     pub ip_address: String,
-    pub user_agent: Option<String>,
+    pub user_agent: String,
     pub referer: Option<String>,
 
     // GeoIP information
@@ -31,8 +32,8 @@ pub struct Model {
     pub browser: Option<String>,
 
     #[sea_orm(indexed)]
-    pub accessed_at: DateTime,
-    pub created_at: DateTime,
+    pub accessed_at: DateTime<Utc>,
+    pub created_at: DateTime<Utc>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
@@ -66,7 +67,7 @@ mod tests {
             url_id: 1,
             short_code: "test123".to_string(),
             ip_address: "192.168.1.1".to_string(),
-            user_agent: Some("Mozilla/5.0".to_string()),
+            user_agent: "Mozilla/5.0".to_string(),
             referer: Some("https://google.com".to_string()),
             country: Some("US".to_string()),
             region: Some("California".to_string()),
@@ -76,8 +77,8 @@ mod tests {
             device_type: Some("Desktop".to_string()),
             os: Some("Windows".to_string()),
             browser: Some("Chrome".to_string()),
-            accessed_at: chrono::Utc::now().naive_utc(),
-            created_at: chrono::Utc::now().naive_utc(),
+            accessed_at: chrono::Utc::now(),
+            created_at: chrono::Utc::now(),
         };
 
         let cloned = model.clone();
@@ -94,7 +95,7 @@ mod tests {
             url_id: 1,
             short_code: "test123".to_string(),
             ip_address: "192.168.1.1".to_string(),
-            user_agent: None,
+            user_agent: "Mozilla/5.0".to_string(),
             referer: None,
             country: None,
             region: None,
@@ -104,24 +105,24 @@ mod tests {
             device_type: None,
             os: None,
             browser: None,
-            accessed_at: chrono::Utc::now().naive_utc(),
-            created_at: chrono::Utc::now().naive_utc(),
+            accessed_at: chrono::Utc::now(),
+            created_at: chrono::Utc::now(),
         };
 
-        assert!(model.user_agent.is_none());
+        assert!(!model.user_agent.is_empty());
         assert!(model.country.is_none());
         assert!(model.device_type.is_none());
     }
 
     #[test]
     fn test_history_model_partial_eq() {
-        let now = chrono::Utc::now().naive_utc();
+        let now = chrono::Utc::now();
         let model1 = Model {
             id: 1,
             url_id: 1,
             short_code: "test123".to_string(),
             ip_address: "192.168.1.1".to_string(),
-            user_agent: Some("Mozilla/5.0".to_string()),
+            user_agent: "Mozilla/5.0".to_string(),
             referer: None,
             country: Some("US".to_string()),
             region: None,
@@ -146,7 +147,7 @@ mod tests {
             url_id: 1,
             short_code: "test123".to_string(),
             ip_address: "192.168.1.1".to_string(),
-            user_agent: Some("Mozilla/5.0".to_string()),
+            user_agent: "Mozilla/5.0".to_string(),
             referer: None,
             country: Some("US".to_string()),
             region: None,
@@ -156,8 +157,8 @@ mod tests {
             device_type: Some("Desktop".to_string()),
             os: Some("Windows".to_string()),
             browser: Some("Chrome".to_string()),
-            accessed_at: chrono::Utc::now().naive_utc(),
-            created_at: chrono::Utc::now().naive_utc(),
+            accessed_at: chrono::Utc::now(),
+            created_at: chrono::Utc::now(),
         };
 
         let json = serde_json::to_string(&model).unwrap();
@@ -176,7 +177,7 @@ mod tests {
             url_id: 1,
             short_code: "test123".to_string(),
             ip_address: "2001:0db8:85a3:0000:0000:8a2e:0370:7334".to_string(),
-            user_agent: None,
+            user_agent: "Mozilla/5.0".to_string(),
             referer: None,
             country: None,
             region: None,
@@ -186,8 +187,8 @@ mod tests {
             device_type: None,
             os: None,
             browser: None,
-            accessed_at: chrono::Utc::now().naive_utc(),
-            created_at: chrono::Utc::now().naive_utc(),
+            accessed_at: chrono::Utc::now(),
+            created_at: chrono::Utc::now(),
         };
 
         assert!(model.ip_address.contains("2001"));

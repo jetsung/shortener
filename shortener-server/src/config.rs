@@ -95,12 +95,26 @@ pub struct MysqlConfig {
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct CacheConfig {
     pub enabled: bool,
-    #[serde(rename = "type")]
+    #[serde(rename = "type", default = "default_cache_type")]
     pub cache_type: CacheType,
+    #[serde(default = "default_cache_expire")]
     pub expire: u64,
+    #[serde(default = "default_cache_prefix")]
     pub prefix: String,
     pub redis: Option<RedisConfig>,
     pub valkey: Option<ValkeyConfig>,
+}
+
+fn default_cache_type() -> CacheType {
+    CacheType::Redis
+}
+
+fn default_cache_expire() -> u64 {
+    3600
+}
+
+fn default_cache_prefix() -> String {
+    "shorten:".to_string()
 }
 
 /// Cache type enum
@@ -134,9 +148,13 @@ pub struct ValkeyConfig {
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct GeoIpConfig {
     pub enabled: bool,
-    #[serde(rename = "type")]
+    #[serde(rename = "type", default = "default_geoip_type")]
     pub geoip_type: GeoIpType,
     pub ip2region: Option<Ip2RegionConfig>,
+}
+
+fn default_geoip_type() -> GeoIpType {
+    GeoIpType::Ip2region
 }
 
 /// GeoIP type enum

@@ -29,10 +29,12 @@ theme:
     - navigation.sections
     - navigation.expand
     - navigation.top
+    - navigation.tabs
     - search.suggest
     - search.highlight
     - content.code.copy
     - content.code.annotate
+    - content.action.edit
     - toc.integrate
 
 plugins:
@@ -46,27 +48,62 @@ markdown_extensions:
   - codehilite
   - pymdownx.highlight:
       anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
   - pymdownx.inlinehilite
   - pymdownx.snippets
   - pymdownx.superfences
   - pymdownx.tabbed:
       alternate_style: true
   - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
   - tables
   - toc:
       permalink: true
+      toc_depth: 3
 
 nav:
   - 首页: index.md
+  - 项目概述: PROJECT_README.md
+  
   - 快速开始:
-      - 安装指南: INSTALLATION.md
-      - 配置指南: CONFIGURATION.md
-  - 使用指南:
-      - API 文档: API.md
-  - 部署指南:
-      - 部署概述: DEPLOYMENT.md
-      - Docker 部署: DOCKER.md
-      - DEB 包安装: DEB_PACKAGING_SIMPLIFIED.md
+      - 安装指南: general/INSTALLATION.md
+      - 配置指南: general/CONFIGURATION.md
+      - 配置文件说明: general/CONFIG_FILES.md
+  
+  - 服务器:
+      - 概述: server/README.md
+      - API 文档: server/API.md
+      - 配置详解: server/CONFIG.md
+      - 性能基准: server/BENCHMARKS.md
+  
+  - 前端:
+      - 概述: frontend/README.md
+      - 组件文档: frontend/COMPONENTS.md
+      - 部署指南: frontend/DEPLOYMENT.md
+  
+  - CLI 工具:
+      - 概述: cli/README.md
+      - 使用指南: cli/CLI.md
+      - 命令参考: cli/USAGE.md
+  
+  - 部署:
+      - 部署概述: deployment/README.md
+      - 生产部署: deployment/DEPLOYMENT.md
+      - Docker 部署: deployment/DOCKER.md
+      - Docker 完整指南: deployment/DOCKER_FULL.md
+      - Docker 高级: deployment/DOCKER_ADVANCED.md
+      - Systemd 服务: deployment/SYSTEMD.md
+      - DEB 打包: deployment/DEB_PACKAGING_SIMPLIFIED.md
+      - DEB 构建: deployment/BUILD_DEB.md
+      - 交叉编译: deployment/CROSS_COMPILE.md
+  
+  - 开发:
+      - 共享库: common/README.md
+      - 贡献指南: CONTRIBUTING.md
+      - 快速参考: QUICK_REFERENCE.md
 
 extra:
   social:
@@ -76,3 +113,6 @@ extra:
       link: mailto:i@jetsung.com
   version:
     provider: mike
+
+extra_css:
+  - stylesheets/extra.css

@@ -1,9 +1,9 @@
 use crate::config::Config;
 use crate::handlers::{
     create_shorten, current_user, delete_batch, delete_histories, delete_shorten, get_shorten,
-    list_histories, list_shortens, login, logout, update_shorten,
+    list_histories, list_shortens, login, logout, redirect_to_url, update_shorten,
 };
-use crate::middleware::{ApiKeyAuth, error_handler_middleware, logging_middleware};
+use crate::middleware::{HybridAuth, error_handler_middleware, logging_middleware};
 use crate::services::{HistoryService, ShortenService};
 use axum::{
     Router, middleware,
@@ -24,44 +24,73 @@ pub struct AppState {
 pub fn create_router(state: AppState) -> Router {
     let api_key = Arc::new(state.config.server.api_key.clone());
 
-    // Create protected routes (require API key)
-    let protected_routes = Router::new()
-        // Short URL management routes
+    // Create shortener API routes (protected)
+    let shortener_api = Router::new()
         .route("/api/shortens", post(create_shorten))
         .route("/api/shortens", get(list_shortens))
         .route("/api/shortens", delete(delete_batch))
-        .route("/api/shortens/{code}", get(get_shorten))
-        .route("/api/shortens/{code}", put(update_shorten))
-        .route("/api/shortens/{code}", delete(delete_shorten))
-        .with_state(state.shorten_service.clone())
-        // History routes
+        .route("/api/shortens/{short_code}", get(get_shorten))
+        .route("/api/shortens/{short_code}", put(update_shorten))
+        .route("/api/shortens/{short_code}", delete(delete_shorten))
+        .with_state(state.shorten_service.clone());
+
+    // Create history API routes (protected)
+    let history_api = Router::new()
         .route("/api/histories", get(list_histories))
         .route("/api/histories", delete(delete_histories))
-        .with_state(state.history_service.clone())
-        // Account routes that require authentication
+        .with_state(state.history_service.clone());
+
+    // Create account API routes (protected)
+    let account_api = Router::new()
         .route("/api/account/logout", post(logout))
-        .route("/api/users/current", get(current_user))
-        // Apply API key authentication middleware
+        .route("/api/users/current", get(current_user));
+
+    // Combine protected API routes
+    let protected_api = Router::new()
+        .merge(shortener_api)
+        .merge(history_api)
+        .merge(account_api)
+        // Apply hybrid authentication middleware (supports both API key and JWT token)
         .layer(middleware::from_fn(move |headers, req, next| {
             let api_key = api_key.clone();
-            async move { ApiKeyAuth::check_api_key(api_key, headers, req, next).await }
+            async move { HybridAuth::check_auth(api_key, headers, req, next).await }
         }));
 
-    // Create public routes (no API key required)
-    let public_routes = Router::new()
+    // Create public API routes (no authentication required)
+    let public_api = Router::new()
         .route("/api/account/login", post(login))
         .with_state(Arc::new(state.config.admin.clone()));
 
+    // Create redirect routes (public, for short URL redirection)
+    let redirect_routes = Router::new()
+        .route("/{short_code}", get(redirect_to_url))
+        .with_state(state.clone());
+
+    // Create health check route
+    let health_routes = Router::new()
+        .route("/ping", get(ping));
+
     // Combine all routes
     Router::new()
-        .merge(protected_routes)
-        .merge(public_routes)
+        .merge(health_routes)
+        .merge(protected_api)
+        .merge(public_api)
+        .merge(redirect_routes)
         // Add CORS layer
         .layer(CorsLayer::permissive())
         // Add logging middleware
         .layer(middleware::from_fn(logging_middleware))
         // Add error handler middleware
         .layer(middleware::from_fn(error_handler_middleware))
+}
+
+/// Health check handler
+///
+/// GET /ping
+async fn ping() -> axum::Json<serde_json::Value> {
+    axum::Json(serde_json::json!({
+        "message": "pong"
+    }))
 }
 
 #[cfg(test)]
@@ -207,5 +236,55 @@ mod tests {
 
         let response = app.oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::NOT_FOUND);
+    }
+
+    #[tokio::test]
+    async fn test_redirect_route() {
+        let state = setup_test_state().await;
+        let app = create_router(state);
+
+        // This will return 404 since no short URL exists with code "test123"
+        let request = Request::builder()
+            .method("GET")
+            .uri("/test123")
+            .body(Body::empty())
+            .unwrap();
+
+        let response = app.oneshot(request).await.unwrap();
+        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+    }
+
+    #[tokio::test]
+    async fn test_redirect_route_with_existing_code() {
+        let state = setup_test_state().await;
+        let app = create_router(state);
+
+        // First create a short URL
+        let create_request = Request::builder()
+            .method("POST")
+            .uri("/api/shortens")
+            .header("X-API-KEY", "test-api-key")
+            .header("content-type", "application/json")
+            .body(Body::from(
+                r#"{"original_url":"https://example.com","short_code":"redirect123"}"#,
+            ))
+            .unwrap();
+
+        let create_response = app.clone().oneshot(create_request).await.unwrap();
+        assert_eq!(create_response.status(), StatusCode::CREATED);
+
+        // Now test the redirect
+        let redirect_request = Request::builder()
+            .method("GET")
+            .uri("/redirect123")
+            .body(Body::empty())
+            .unwrap();
+
+        let redirect_response = app.oneshot(redirect_request).await.unwrap();
+        assert_eq!(redirect_response.status(), StatusCode::PERMANENT_REDIRECT);
+
+        // Check the Location header
+        let location = redirect_response.headers().get("location").unwrap();
+        assert_eq!(location.to_str().unwrap(), "https://example.com");
     }
 }

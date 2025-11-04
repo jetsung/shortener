@@ -7,29 +7,50 @@
 ```
 docs/
 ├── index.md                        # 文档首页和导航
-├── INSTALLATION.md                 # 安装指南
-├── CONFIGURATION.md                # 配置指南
-├── API.md                         # API 文档
-├── DEPLOYMENT.md                  # 部署指南
-├── DOCKER.md                      # Docker 部署
-├── DEB_PACKAGING_SIMPLIFIED.md    # DEB 包安装
-├── requirements.txt               # MkDocs 依赖
-└── README.md                      # 本文件
+├── general/                        # 通用文档
+│   ├── README.md                   # 通用文档索引
+│   ├── INSTALLATION.md             # 安装指南
+│   └── CONFIGURATION.md            # 配置说明
+├── server/                         # 服务器文档
+│   ├── README.md                   # 服务器文档索引
+│   ├── API.md                      # API 文档
+│   └── REFACTORING.md              # 重构说明
+├── cli/                            # CLI 文档
+│   ├── README.md                   # CLI 文档索引
+│   └── USAGE.md                    # CLI 使用指南
+├── deployment/                     # 部署文档
+│   ├── README.md                   # 部署文档索引
+│   ├── DEPLOYMENT.md               # 部署指南
+│   ├── DOCKER.md                   # Docker 部署
+│   └── DEB_PACKAGING_SIMPLIFIED.md # DEB 包安装
+├── migration/                      # 迁移文档
+│   ├── README.md                   # 迁移指南索引
+│   ├── API_CHANGES.md              # API 变更说明
+│   └── DATABASE_MIGRATION.md       # 数据库迁移
+├── CHANGELOG_DOCS.md               # 文档变更记录
+├── requirements.txt                # MkDocs 依赖
+└── README.md                       # 本文件
 ```
 
 ## 文档内容
 
 ### 快速开始
-- **[安装指南](INSTALLATION.md)** - 详细的安装说明，包括多种安装方式
-- **[配置指南](CONFIGURATION.md)** - 服务器和 CLI 配置选项
+- **[安装指南](general/INSTALLATION.md)** - 详细的安装说明，包括多种安装方式
+- **[配置指南](general/CONFIGURATION.md)** - 服务器和 CLI 配置选项
+
+### 项目文档
+- **[服务器文档](server/README.md)** - shortener-server 相关文档
+- **[CLI 文档](cli/README.md)** - shortener-cli 相关文档
+- **[迁移指南](migration/README.md)** - 版本迁移和升级指南
 
 ### 使用指南
-- **[API 文档](API.md)** - RESTful API 参考和示例
+- **[API 文档](server/API.md)** - RESTful API 参考和示例
+- **[CLI 使用指南](cli/USAGE.md)** - 命令行工具详细使用说明
 
 ### 部署指南
-- **[部署概述](DEPLOYMENT.md)** - 生产环境部署最佳实践
-- **[Docker 部署](DOCKER.md)** - 使用 Docker 和 Docker Compose
-- **[DEB 包安装](DEB_PACKAGING_SIMPLIFIED.md)** - Debian/Ubuntu 系统安装
+- **[部署概述](deployment/DEPLOYMENT.md)** - 生产环境部署最佳实践
+- **[Docker 部署](deployment/DOCKER.md)** - 使用 Docker 和 Docker Compose
+- **[DEB 包安装](deployment/DEB_PACKAGING_SIMPLIFIED.md)** - Debian/Ubuntu 系统安装
 
 ## 构建文档
 

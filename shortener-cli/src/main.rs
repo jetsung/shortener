@@ -329,7 +329,7 @@ async fn handle_find(
         } else {
             println!(
                 "Found {} short URL(s) for: {} (showing page 1 of {})",
-                response.meta.total_items, original_url, response.meta.total_pages
+                response.meta.total, original_url, response.meta.total_pages
             );
             println!();
             print_shorten_table_with_format(&response.data, None);
@@ -411,8 +411,8 @@ async fn handle_list(
             "Page {}/{} (showing {} of {} total)",
             response.meta.page,
             response.meta.total_pages,
-            response.meta.current_count,
-            response.meta.total_items
+            response.meta.count,
+            response.meta.total
         );
         println!();
         print_shorten_table_with_format(&response.data, options.format.as_ref());
@@ -484,8 +484,8 @@ fn print_shorten_details(shorten: &ShortenResponse) {
         shorten.status,
         status_name(shorten.status)
     );
-    println!("Created:      {}", shorten.created_at);
-    println!("Updated:      {}", shorten.updated_at);
+    println!("Created:      {}", format_datetime(&shorten.created_at));
+    println!("Updated:      {}", format_datetime(&shorten.updated_at));
 }
 
 /// Print a table of short URLs with optional format override
@@ -661,10 +661,20 @@ fn truncate_url_smart(url: &str, max_len: usize) -> String {
     format!("{}...{}", prefix, suffix)
 }
 
-/// Format datetime string for display (extract date and time)
+/// Format datetime string for display (convert to local timezone)
 fn format_datetime(dt: &str) -> String {
-    // Input format: "2024-01-15T10:30:45Z" or similar
-    // Output format: "2024-01-15 10:30"
+    // Input format: "2024-01-15T10:30:45Z" (RFC 3339 / ISO 8601)
+    // Output format: "2024-01-15 10:30 +08:00" (local time with timezone)
+    
+    use chrono::{DateTime, Local};
+    
+    // Try to parse as RFC 3339
+    if let Ok(utc_time) = DateTime::parse_from_rfc3339(dt) {
+        let local_time: DateTime<Local> = utc_time.with_timezone(&Local);
+        return local_time.format("%Y-%m-%d %H:%M %:z").to_string();
+    }
+    
+    // Fallback: simple string manipulation if parsing fails
     if let Some(t_pos) = dt.find('T') {
         let date = &dt[..t_pos];
         let time_part = &dt[t_pos + 1..];
@@ -673,6 +683,7 @@ fn format_datetime(dt: &str) -> String {
             return format!("{} {}", date, time);
         }
     }
+    
     dt.to_string()
 }
 
@@ -699,11 +710,16 @@ mod tests {
 
     #[test]
     fn test_format_datetime() {
-        assert_eq!(format_datetime("2024-01-15T10:30:45Z"), "2024-01-15 10:30");
-        assert_eq!(
-            format_datetime("2024-01-15T10:30:45.123Z"),
-            "2024-01-15 10:30"
-        );
+        // Test valid RFC 3339 format (will convert to local timezone)
+        let result = format_datetime("2024-01-15T10:30:45Z");
+        assert!(result.contains("2024-01-15"));
+        assert!(result.contains(":"));
+        
+        // Test with milliseconds
+        let result2 = format_datetime("2024-01-15T10:30:45.123Z");
+        assert!(result2.contains("2024-01-15"));
+        
+        // Test invalid format (fallback)
         assert_eq!(format_datetime("invalid"), "invalid");
     }
 

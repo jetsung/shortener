@@ -162,8 +162,8 @@ async fn test_create_shorten_with_custom_code() {
 
     let request_body = json!({
         "original_url": "https://example.com",
-        "code": "custom123",
-        "describe": "Test URL"
+        "short_code": "custom123",
+        "description": "Test URL"
     });
 
     let response = app
@@ -182,9 +182,9 @@ async fn test_create_shorten_with_custom_code() {
     assert_eq!(response.status(), StatusCode::CREATED);
 
     let body = parse_json_body(response.into_body()).await;
-    assert_eq!(body["code"], "custom123");
+    assert_eq!(body["short_code"], "custom123");
     assert_eq!(body["original_url"], "https://example.com");
-    assert_eq!(body["describe"], "Test URL");
+    assert_eq!(body["description"], "Test URL");
     assert_eq!(body["status"], 0);
     assert!(body["short_url"].as_str().unwrap().contains("custom123"));
 }
@@ -214,7 +214,7 @@ async fn test_create_shorten_with_auto_generated_code() {
 
     let body = parse_json_body(response.into_body()).await;
     assert_eq!(body["original_url"], "https://example.com/auto");
-    assert_eq!(body["code"].as_str().unwrap().len(), 6);
+    assert_eq!(body["short_code"].as_str().unwrap().len(), 6);
 }
 
 #[tokio::test]
@@ -223,7 +223,7 @@ async fn test_create_shorten_duplicate_code() {
 
     let request_body = json!({
         "original_url": "https://example.com",
-        "code": "duplicate"
+        "short_code": "duplicate"
     });
 
     // Create first URL
@@ -294,7 +294,7 @@ async fn test_get_shorten_success() {
     // Create a URL first
     let create_body = json!({
         "original_url": "https://example.com/get",
-        "code": "gettest"
+        "short_code": "gettest"
     });
 
     app.clone()
@@ -326,7 +326,7 @@ async fn test_get_shorten_success() {
     assert_eq!(response.status(), StatusCode::OK);
 
     let body = parse_json_body(response.into_body()).await;
-    assert_eq!(body["code"], "gettest");
+    assert_eq!(body["short_code"], "gettest");
     assert_eq!(body["original_url"], "https://example.com/get");
 }
 
@@ -360,7 +360,7 @@ async fn test_list_shortens_with_pagination() {
     for i in 1..=5 {
         let create_body = json!({
             "original_url": format!("https://example{}.com", i),
-            "code": format!("list{}", i)
+            "short_code": format!("list{}", i)
         });
 
         app.clone()
@@ -382,7 +382,7 @@ async fn test_list_shortens_with_pagination() {
         .oneshot(
             Request::builder()
                 .method("GET")
-                .uri("/api/shortens?page=1&page_size=3")
+                .uri("/api/shortens?page=1&per_page=3")
                 .header("X-API-KEY", "test-api-key-12345")
                 .body(Body::empty())
                 .unwrap(),
@@ -395,8 +395,8 @@ async fn test_list_shortens_with_pagination() {
     let body = parse_json_body(response.into_body()).await;
     assert_eq!(body["data"].as_array().unwrap().len(), 3);
     assert_eq!(body["meta"]["page"], 1);
-    assert_eq!(body["meta"]["page_size"], 3);
-    assert_eq!(body["meta"]["total_items"], 5);
+    assert_eq!(body["meta"]["per_page"], 3);
+    assert_eq!(body["meta"]["total"], 5);
     assert_eq!(body["meta"]["total_pages"], 2);
 }
 
@@ -407,7 +407,7 @@ async fn test_update_shorten_success() {
     // Create a URL first
     let create_body = json!({
         "original_url": "https://example.com/original",
-        "code": "update1"
+        "short_code": "update1"
     });
 
     app.clone()
@@ -426,7 +426,7 @@ async fn test_update_shorten_success() {
     // Update the URL
     let update_body = json!({
         "original_url": "https://example.com/updated",
-        "describe": "Updated description"
+        "description": "Updated description"
     });
 
     let response = app
@@ -445,9 +445,9 @@ async fn test_update_shorten_success() {
     assert_eq!(response.status(), StatusCode::OK);
 
     let body = parse_json_body(response.into_body()).await;
-    assert_eq!(body["code"], "update1");
+    assert_eq!(body["short_code"], "update1");
     assert_eq!(body["original_url"], "https://example.com/updated");
-    assert_eq!(body["describe"], "Updated description");
+    assert_eq!(body["description"], "Updated description");
 }
 
 #[tokio::test]
@@ -486,7 +486,7 @@ async fn test_delete_shorten_success() {
     // Create a URL first
     let create_body = json!({
         "original_url": "https://example.com/delete",
-        "code": "delete1"
+        "short_code": "delete1"
     });
 
     app.clone()
@@ -527,7 +527,7 @@ async fn test_delete_batch_shortens() {
     for i in 1..=3 {
         let create_body = json!({
             "original_url": format!("https://example{}.com", i),
-            "code": format!("batch{}", i)
+            "short_code": format!("batch{}", i)
         });
 
         let response = app
@@ -625,7 +625,7 @@ async fn test_api_key_authentication_valid() {
         .oneshot(
             Request::builder()
                 .method("GET")
-                .uri("/api/shortens?page=1&page_size=10")
+                .uri("/api/shortens?page=1&per_page=10")
                 .header("X-API-KEY", "test-api-key-12345")
                 .body(Body::empty())
                 .unwrap(),
@@ -723,7 +723,7 @@ async fn test_logout_with_api_key() {
         .await
         .unwrap();
 
-    assert_eq!(response.status(), StatusCode::OK);
+    assert_eq!(response.status(), StatusCode::NO_CONTENT);
 }
 
 // ============================================================================
@@ -779,7 +779,7 @@ async fn test_missing_required_field() {
     let app = setup_test_app().await;
 
     let request_body = json!({
-        "code": "test"
+        "short_code": "test"
         // Missing original_url
     });
 
@@ -876,7 +876,7 @@ async fn test_list_histories_empty() {
         .oneshot(
             Request::builder()
                 .method("GET")
-                .uri("/api/histories?page=1&page_size=10")
+                .uri("/api/histories?page=1&per_page=10")
                 .header("X-API-KEY", "test-api-key-12345")
                 .body(Body::empty())
                 .unwrap(),
@@ -889,7 +889,7 @@ async fn test_list_histories_empty() {
     let body = parse_json_body(response.into_body()).await;
     assert!(body["data"].is_array());
     assert_eq!(body["data"].as_array().unwrap().len(), 0);
-    assert_eq!(body["meta"]["total_items"], 0);
+    assert_eq!(body["meta"]["total"], 0);
 }
 
 #[tokio::test]
@@ -942,7 +942,7 @@ async fn test_cache_integration_with_null_cache() {
     // Create a URL
     let create_body = json!({
         "original_url": "https://example.com/cache",
-        "code": "cache1"
+        "short_code": "cache1"
     });
 
     app.clone()
@@ -974,7 +974,7 @@ async fn test_cache_integration_with_null_cache() {
     assert_eq!(response.status(), StatusCode::OK);
 
     let body = parse_json_body(response.into_body()).await;
-    assert_eq!(body["code"], "cache1");
+    assert_eq!(body["short_code"], "cache1");
 }
 
 #[tokio::test]
@@ -985,7 +985,7 @@ async fn test_cache_integration_with_redis() {
     // Create a URL
     let create_body = json!({
         "original_url": "https://example.com/redis",
-        "code": "redis1"
+        "short_code": "redis1"
     });
 
     app.clone()
@@ -1015,7 +1015,7 @@ async fn test_cache_integration_with_redis() {
         .await
         .unwrap();
 
-    assert_eq!(response.status(), StatusCode::OK);
+    assert_eq!(response.status(), StatusCode::NO_CONTENT);
 
     // Update the URL (should invalidate cache)
     let update_body = json!({
@@ -1048,7 +1048,7 @@ async fn test_cache_integration_with_redis() {
         .await
         .unwrap();
 
-    assert_eq!(response.status(), StatusCode::OK);
+    assert_eq!(response.status(), StatusCode::NO_CONTENT);
 
     let body = parse_json_body(response.into_body()).await;
     assert_eq!(body["original_url"], "https://example.com/redis-updated");
@@ -1065,8 +1065,8 @@ async fn test_complete_crud_workflow() {
     // 1. Create a short URL
     let create_body = json!({
         "original_url": "https://example.com/workflow",
-        "code": "workflow",
-        "describe": "Workflow test"
+        "short_code": "workflow",
+        "description": "Workflow test"
     });
 
     let response = app
@@ -1103,12 +1103,12 @@ async fn test_complete_crud_workflow() {
 
     assert_eq!(response.status(), StatusCode::OK);
     let get_result = parse_json_body(response.into_body()).await;
-    assert_eq!(get_result["code"], "workflow");
+    assert_eq!(get_result["short_code"], "workflow");
 
     // 3. Update the short URL
     let update_body = json!({
         "original_url": "https://example.com/workflow-updated",
-        "describe": "Updated workflow test"
+        "description": "Updated workflow test"
     });
 
     let response = app
@@ -1138,7 +1138,7 @@ async fn test_complete_crud_workflow() {
         .oneshot(
             Request::builder()
                 .method("GET")
-                .uri("/api/shortens?page=1&page_size=10")
+                .uri("/api/shortens?page=1&per_page=10")
                 .header("X-API-KEY", "test-api-key-12345")
                 .body(Body::empty())
                 .unwrap(),
@@ -1148,7 +1148,7 @@ async fn test_complete_crud_workflow() {
 
     assert_eq!(response.status(), StatusCode::OK);
     let list_result = parse_json_body(response.into_body()).await;
-    assert!(list_result["meta"]["total_items"].as_i64().unwrap() >= 1);
+    assert!(list_result["meta"]["total"].as_i64().unwrap() >= 1);
 
     // 5. Delete the short URL
     let response = app
@@ -1178,7 +1178,7 @@ async fn test_concurrent_requests() {
         let handle = tokio::spawn(async move {
             let create_body = json!({
                 "original_url": format!("https://example{}.com", i),
-                "code": format!("concurrent{}", i)
+                "short_code": format!("concurrent{}", i)
             });
 
             let response = app_clone
@@ -1215,7 +1215,7 @@ async fn test_pagination_consistency() {
     for i in 1..=15 {
         let create_body = json!({
             "original_url": format!("https://page{}.com", i),
-            "code": format!("page{}", i)
+            "short_code": format!("page{}", i)
         });
 
         app.clone()
@@ -1248,7 +1248,7 @@ async fn test_pagination_consistency() {
 
     let page1 = parse_json_body(response.into_body()).await;
     assert_eq!(page1["data"].as_array().unwrap().len(), 10);
-    assert_eq!(page1["meta"]["total_items"], 15);
+    assert_eq!(page1["meta"]["total"], 15);
     assert_eq!(page1["meta"]["total_pages"], 2);
 
     // Get page 2
@@ -1266,5 +1266,5 @@ async fn test_pagination_consistency() {
 
     let page2 = parse_json_body(response.into_body()).await;
     assert_eq!(page2["data"].as_array().unwrap().len(), 5);
-    assert_eq!(page2["meta"]["total_items"], 15);
+    assert_eq!(page2["meta"]["total"], 15);
 }

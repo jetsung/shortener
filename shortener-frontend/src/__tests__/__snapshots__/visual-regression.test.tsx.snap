@@ -1,0 +1,44 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Visual Regression Tests > Dashboard Component > renders with consistent structure and styling > dashboard-structure 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "children": [
+            {
+              "className": "semi-typography-title semi-typography-h3",
+              "tagName": "h1",
+              "textContent": "欢迎使用 Shortener 短网址生成器",
+            },
+            {
+              "children": [
+                {
+                  "tagName": "a",
+                  "textContent": "后端使用 Gin 框架",
+                },
+                {
+                  "tagName": "a",
+                  "textContent": "前端使用 React 框架",
+                },
+              ],
+              "className": "semi-typography-text ",
+              "tagName": "span",
+              "textContent": "Shortener 是一个使用 Go 语言开发的短网址生成器。后端使用 Gin 框架，前端使用 React 框架，UI 框架使用 Semi Design。",
+            },
+          ],
+          "tagName": "div",
+          "textContent": "欢迎使用 Shortener 短网址生成器Shortener 是一个使用 Go 语言开发的短网址生成器。后端使用 Gin 框架，前端使用 React 框架，UI 框架使用 Semi Design。",
+        },
+      ],
+      "className": "semi-card-content",
+      "tagName": "div",
+      "textContent": "欢迎使用 Shortener 短网址生成器Shortener 是一个使用 Go 语言开发的短网址生成器。后端使用 Gin 框架，前端使用 React 框架，UI 框架使用 Semi Design。",
+    },
+  ],
+  "className": "semi-card",
+  "tagName": "div",
+  "textContent": "欢迎使用 Shortener 短网址生成器Shortener 是一个使用 Go 语言开发的短网址生成器。后端使用 Gin 框架，前端使用 React 框架，UI 框架使用 Semi Design。",
+}
+`;

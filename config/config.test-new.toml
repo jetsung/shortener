@@ -1,0 +1,44 @@
+[server]
+address = ":8080"
+trusted-platform = ""
+site_url = "http://localhost:8080"
+api_key = "test-key-123"
+
+[shortener]
+code_length = 6
+code_charset = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+[admin]
+username = "admin"
+password = "admin123"
+
+[database]
+type = "sqlite"
+log_level = 1
+
+[database.sqlite]
+path = ":memory:"
+
+[cache]
+enabled = false
+type = "redis"
+
+[geoip]
+enabled = true
+type = "ip2region"
+
+[geoip.ip2region]
+path = "data/ip2region.xdb"
+mode = "vector"
+version = "4"
+
+[logging]
+level = "info"
+format = "json"
+with_timestamp = true
+with_target = true
+with_thread_ids = false
+with_thread_names = false
+with_file = false
+with_line_number = false
+with_ansi = true

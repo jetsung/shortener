@@ -1,0 +1,425 @@
+/* Semi Design 全局样式配置 */
+
+/* 全局样式重置 */
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+    'Noto Color Emoji';
+}
+
+body {
+  font-size: var(--semi-font-size-regular, 14px);
+  line-height: 1.5715;
+  color: var(--semi-color-text-0);
+  background-color: var(--semi-color-bg-0);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 列表样式重置 */
+ul,
+ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* 自定义 CSS 变量 */
+:root {
+  --custom-primary-color: var(--semi-color-primary);
+  --custom-border-radius: var(--semi-border-radius-medium);
+  --custom-box-shadow: var(--semi-shadow-elevated);
+  --custom-header-height: var(--semi-layout-header-height, 64px);
+  --custom-sidebar-width: var(--semi-layout-sidebar-width, 256px);
+  --custom-sidebar-collapsed-width: var(--semi-layout-sidebar-collapsed-width, 64px);
+}
+
+/* 布局样式 */
+.semi-layout {
+  min-height: 100vh;
+}
+
+/* 无障碍支持 - 色弱模式 */
+.colorWeak {
+  filter: invert(80%);
+}
+
+/* Canvas 元素样式 */
+canvas {
+  display: block;
+}
+
+/* Semi Design 组件样式优化 */
+
+/* 表格样式优化 */
+.semi-table {
+  background: var(--semi-color-bg-1);
+  border-radius: var(--semi-border-radius-medium);
+  box-shadow: var(--semi-shadow-medium);
+}
+
+.semi-table-wrapper {
+  border-radius: var(--semi-border-radius-medium);
+  overflow: hidden;
+}
+
+/* 表单样式优化 */
+.semi-form {
+  background: var(--semi-color-bg-1);
+  padding: var(--semi-spacing-extra-loose);
+  border-radius: var(--semi-border-radius-medium);
+  box-shadow: var(--semi-shadow-medium);
+}
+
+/* 卡片样式优化 */
+.semi-card {
+  border-radius: var(--semi-border-radius-medium);
+  box-shadow: var(--semi-shadow-medium);
+}
+
+/* 按钮样式优化 */
+.semi-button {
+  border-radius: var(--semi-border-radius-medium);
+}
+
+/* 模态框样式优化 */
+.semi-modal {
+  border-radius: var(--semi-border-radius-large);
+}
+
+.semi-modal-header {
+  border-bottom: 1px solid var(--semi-color-border);
+}
+
+/* 导航样式优化 */
+.semi-navigation {
+  background: var(--semi-color-bg-1);
+  border-right: 1px solid var(--semi-color-border);
+}
+
+/* 响应式设计 */
+
+/* 大屏幕 (≥1200px) */
+@media (min-width: 1200px) {
+  .semi-layout-content {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+}
+
+/* 中等屏幕 (768px - 1199px) */
+@media (min-width: 768px) and (max-width: 1199px) {
+  .semi-layout-content {
+    padding: var(--semi-spacing-loose);
+  }
+}
+
+/* 小屏幕 (≤768px) */
+@media (max-width: 768px) {
+  .semi-layout-content {
+    padding: var(--semi-spacing-base);
+  }
+
+  :root {
+    --custom-sidebar-width: 0;
+  }
+
+  /* 移动端表格优化 */
+  .semi-table {
+    width: 100%;
+    overflow-x: auto;
+    font-size: var(--semi-font-size-small);
+  }
+
+  .semi-table-thead > tr,
+  .semi-table-tbody > tr {
+    > th,
+    > td {
+      white-space: nowrap;
+      min-width: 100px;
+      > span {
+        display: block;
+      }
+    }
+  }
+
+  /* 移动端表单优化 */
+  .semi-form {
+    padding: var(--semi-spacing-base);
+  }
+
+  .semi-form-field {
+    margin-bottom: var(--semi-spacing-base);
+  }
+
+  /* 移动端按钮组优化 */
+  .semi-button-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--semi-spacing-tight);
+  }
+
+  .semi-button-group .semi-button {
+    width: 100%;
+    margin-bottom: 0;
+  }
+
+  /* 移动端卡片优化 */
+  .semi-card {
+    margin-bottom: var(--semi-spacing-base);
+  }
+
+  .semi-card-body {
+    padding: var(--semi-spacing-base);
+  }
+
+  /* 移动端模态框优化 */
+  .semi-modal {
+    margin: var(--semi-spacing-base);
+    width: calc(100% - 32px) !important;
+    max-width: none !important;
+  }
+
+  .semi-modal-body {
+    padding: var(--semi-spacing-base);
+  }
+}
+
+/* 超小屏幕 (≤576px) */
+@media (max-width: 576px) {
+  .semi-layout-content {
+    padding: var(--semi-spacing-tight);
+  }
+
+  .semi-form {
+    padding: var(--semi-spacing-tight);
+  }
+
+  .semi-card-body {
+    padding: var(--semi-spacing-tight);
+  }
+
+  /* 超小屏幕表格优化 */
+  .semi-table-thead > tr > th,
+  .semi-table-tbody > tr > td {
+    padding: var(--semi-spacing-tight);
+    font-size: 12px;
+  }
+
+  /* 超小屏幕按钮优化 */
+  .semi-button {
+    height: 40px;
+    font-size: var(--semi-font-size-small);
+  }
+
+  /* 超小屏幕输入框优化 */
+  .semi-input,
+  .semi-select {
+    height: 40px;
+  }
+}
+
+/* 横屏优化 */
+@media (max-height: 600px) and (orientation: landscape) {
+  .semi-layout-header {
+    height: 48px;
+  }
+
+  .semi-layout-content {
+    padding: var(--semi-spacing-tight);
+  }
+}
+
+/* 高分辨率屏幕优化 */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .semi-table,
+  .semi-card,
+  .semi-form {
+    border: 0.5px solid var(--semi-color-border);
+  }
+}
+
+/* 加载动画 */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+}
+
+/* 错误页面样式 */
+.error-page {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  text-align: center;
+}
+
+/* 工具类 */
+.text-center {
+  text-align: center;
+}
+
+.text-left {
+  text-align: left;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.mb-16 {
+  margin-bottom: 16px;
+}
+
+.mb-24 {
+  margin-bottom: 24px;
+}
+
+.mt-16 {
+  margin-top: 16px;
+}
+
+.mt-24 {
+  margin-top: 24px;
+}
+
+.p-16 {
+  padding: 16px;
+}
+
+.p-24 {
+  padding: 24px;
+}
+/* 响应式工具类 */
+
+/* 显示/隐藏工具类 */
+.hidden-mobile {
+  display: block;
+}
+
+.visible-mobile {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .hidden-mobile {
+    display: none;
+  }
+
+  .visible-mobile {
+    display: block;
+  }
+}
+
+/* 文本对齐工具类 */
+.text-center-mobile {
+  text-align: left;
+}
+
+@media (max-width: 768px) {
+  .text-center-mobile {
+    text-align: center;
+  }
+}
+
+/* 间距工具类 */
+.responsive-padding {
+  padding: var(--semi-spacing-extra-loose);
+}
+
+@media (max-width: 768px) {
+  .responsive-padding {
+    padding: var(--semi-spacing-base);
+  }
+}
+
+@media (max-width: 576px) {
+  .responsive-padding {
+    padding: var(--semi-spacing-tight);
+  }
+}
+
+/* 响应式网格 */
+.responsive-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--semi-spacing-base);
+}
+
+@media (max-width: 768px) {
+  .responsive-grid {
+    grid-template-columns: 1fr;
+    gap: var(--semi-spacing-tight);
+  }
+}
+
+/* 响应式弹性布局 */
+.responsive-flex {
+  display: flex;
+  gap: var(--semi-spacing-base);
+  flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+  .responsive-flex {
+    flex-direction: column;
+    gap: var(--semi-spacing-tight);
+  }
+}
+
+/* 响应式按钮组 */
+.responsive-button-group {
+  display: flex;
+  gap: var(--semi-spacing-tight);
+  flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+  .responsive-button-group {
+    flex-direction: column;
+  }
+
+  .responsive-button-group .semi-button {
+    width: 100%;
+  }
+}
+
+/* 响应式表格容器 */
+.responsive-table-container {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 768px) {
+  .responsive-table-container {
+    margin: 0 calc(-1 * var(--semi-spacing-base));
+    padding: 0 var(--semi-spacing-base);
+  }
+}
+
+/* 响应式卡片网格 */
+.responsive-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--semi-spacing-base);
+}
+
+@media (max-width: 768px) {
+  .responsive-card-grid {
+    grid-template-columns: 1fr;
+    gap: var(--semi-spacing-tight);
+  }
+}

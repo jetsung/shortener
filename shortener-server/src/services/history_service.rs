@@ -1,5 +1,5 @@
 use crate::errors::ServiceError;
-use crate::geoip::{GeoIp, GeoIpInfo};
+use crate::geoip::GeoIp;
 use crate::models::history::Model as HistoryModel;
 use crate::repositories::history_repository::{
     CreateHistoryDto, HistoryListParams, HistoryRepository,
@@ -16,7 +16,7 @@ pub struct HistoryResponse {
     pub url_id: i32,
     pub short_code: String,
     pub ip_address: String,
-    pub user_agent: Option<String>,
+    pub user_agent: String,
     pub referer: Option<String>,
     pub country: Option<String>,
     pub region: Option<String>,
@@ -48,10 +48,19 @@ impl HistoryResponse {
             device_type: model.device_type,
             os: model.os,
             browser: model.browser,
-            accessed_at: model.accessed_at.format("%Y-%m-%d %H:%M:%S").to_string(),
-            created_at: model.created_at.format("%Y-%m-%d %H:%M:%S").to_string(),
+            accessed_at: model.accessed_at.to_rfc3339(),
+            created_at: model.created_at.to_rfc3339(),
         }
     }
+}
+
+/// GeoIP information structure
+#[derive(Debug, Clone)]
+struct GeoInfo {
+    country: Option<String>,
+    province: Option<String>,
+    city: Option<String>,
+    isp: Option<String>,
 }
 
 /// User-Agent parsed information
@@ -99,14 +108,32 @@ impl HistoryService {
         user_agent: Option<&str>,
         referer: Option<&str>,
     ) -> Result<(), ServiceError> {
-        // Get GeoIP information
-        let geoip_info = if let Some(ref geoip) = self.geoip {
-            debug!("Looking up GeoIP for IP: {}", ip);
-            geoip.lookup_or_empty(ip).await
-        } else {
-            debug!("GeoIP is disabled, using empty info");
-            GeoIpInfo::empty()
+        // 初始化地理位置信息
+        let mut geo_info = GeoInfo {
+            country: None,
+            province: None,
+            city: None,
+            isp: None,
         };
+
+        // 查询 GeoIP 信息
+        if let Some(ref geoip) = self.geoip {
+            debug!("Looking up GeoIP for IP: {}", ip);
+            if let Ok(geoip_info) = geoip.lookup(ip).await {
+                if !geoip_info.country.is_empty() && geoip_info.country != "0" {
+                    geo_info.country = Some(geoip_info.country);
+                }
+                if !geoip_info.province.is_empty() && geoip_info.province != "0" {
+                    geo_info.province = Some(geoip_info.province);
+                }
+                if !geoip_info.city.is_empty() && geoip_info.city != "0" {
+                    geo_info.city = Some(geoip_info.city);
+                }
+                if !geoip_info.isp.is_empty() && geoip_info.isp != "0" {
+                    geo_info.isp = Some(geoip_info.isp);
+                }
+            }
+        }
 
         // Parse User-Agent
         let ua_info = user_agent.map(|ua| self.parse_user_agent(ua));
@@ -116,37 +143,17 @@ impl HistoryService {
             url_id: url_id as i32,
             short_code: code.to_string(),
             ip_address: ip.to_string(),
-            user_agent: user_agent.map(|s| s.to_string()),
+            user_agent: user_agent.unwrap_or("Unknown").to_string(),
             referer: referer.map(|s| s.to_string()),
-            country: if geoip_info.country.is_empty() {
-                None
-            } else {
-                Some(geoip_info.country)
-            },
-            region: if geoip_info.region.is_empty() {
-                None
-            } else {
-                Some(geoip_info.region)
-            },
-            province: if geoip_info.province.is_empty() {
-                None
-            } else {
-                Some(geoip_info.province)
-            },
-            city: if geoip_info.city.is_empty() {
-                None
-            } else {
-                Some(geoip_info.city)
-            },
-            isp: if geoip_info.isp.is_empty() {
-                None
-            } else {
-                Some(geoip_info.isp)
-            },
+            country: geo_info.country,
+            region: None, // ip2region 不再返回 region 字段
+            province: geo_info.province,
+            city: geo_info.city,
+            isp: geo_info.isp,
             device_type: ua_info.as_ref().and_then(|ua| ua.device_type.clone()),
             os: ua_info.as_ref().and_then(|ua| ua.os.clone()),
             browser: ua_info.as_ref().and_then(|ua| ua.browser.clone()),
-            accessed_at: chrono::Utc::now().naive_utc(),
+            accessed_at: chrono::Utc::now(),
         };
 
         self.history_repo.create(create_dto).await?;
@@ -181,9 +188,9 @@ impl HistoryService {
 
         let meta = PageMeta {
             page: params.page,
-            page_size: params.page_size,
-            current_count: data.len() as u64,
-            total_items: total,
+            per_page: params.page_size,
+            count: data.len() as u64,
+            total,
             total_pages,
         };
 
@@ -341,9 +348,9 @@ mod tests {
 
     async fn create_test_url(url_repo: &Arc<dyn UrlRepository>) -> i64 {
         let create_dto = CreateUrlDto {
-            code: "test123".to_string(),
+            short_code: "test123".to_string(),
             original_url: "https://example.com".to_string(),
-            describe: Some("Test URL".to_string()),
+            description: Some("Test URL".to_string()),
             status: UrlStatus::Enabled as i32,
         };
         let url = url_repo.create(create_dto).await.unwrap();
@@ -411,7 +418,7 @@ mod tests {
 
         let response = result.unwrap();
         assert_eq!(response.data.len(), 5);
-        assert_eq!(response.meta.total_items, 5);
+        assert_eq!(response.meta.total, 5);
         assert_eq!(response.meta.total_pages, 1);
     }
 
@@ -440,7 +447,7 @@ mod tests {
 
         let response = result.unwrap();
         assert_eq!(response.data.len(), 2);
-        assert_eq!(response.meta.total_items, 5);
+        assert_eq!(response.meta.total, 5);
         assert_eq!(response.meta.total_pages, 3);
         assert_eq!(response.meta.page, 1);
     }

@@ -6,7 +6,8 @@ use crate::services::{
 use axum::{
     Json,
     extract::{Path, Query, State},
-    http::StatusCode,
+    http::{StatusCode, HeaderMap},
+    response::Redirect,
 };
 use serde::Deserialize;
 use std::sync::Arc;
@@ -26,16 +27,16 @@ pub async fn create_shorten(
     Ok((StatusCode::CREATED, Json(response)))
 }
 
-/// Get a short URL by code
+/// Get a short URL by short_code
 ///
-/// GET /api/shortens/{code}
+/// GET /api/shortens/{short_code}
 pub async fn get_shorten(
     State(service): State<Arc<ShortenService>>,
-    Path(code): Path<String>,
+    Path(short_code): Path<String>,
 ) -> Result<Json<ShortenResponse>, AppError> {
-    info!("Getting short URL: {}", code);
+    info!("Getting short URL: {}", short_code);
 
-    let response = service.get_shorten(&code).await?;
+    let response = service.get_shorten(&short_code).await?;
 
     Ok(Json(response))
 }
@@ -48,7 +49,7 @@ pub async fn list_shortens(
     Query(params): Query<ListParams>,
 ) -> Result<Json<PagedResponse<ShortenResponse>>, AppError> {
     info!(
-        "Listing short URLs: page={}, page_size={}",
+        "Listing short URLs: page={}, per_page={}",
         params.page, params.page_size
     );
 
@@ -59,29 +60,29 @@ pub async fn list_shortens(
 
 /// Update a short URL
 ///
-/// PUT /api/shortens/{code}
+/// PUT /api/shortens/{short_code}
 pub async fn update_shorten(
     State(service): State<Arc<ShortenService>>,
-    Path(code): Path<String>,
+    Path(short_code): Path<String>,
     Json(req): Json<UpdateShortenRequest>,
 ) -> Result<Json<ShortenResponse>, AppError> {
-    info!("Updating short URL: {}", code);
+    info!("Updating short URL: {}", short_code);
 
-    let response = service.update_shorten(&code, req).await?;
+    let response = service.update_shorten(&short_code, req).await?;
 
     Ok(Json(response))
 }
 
 /// Delete a short URL
 ///
-/// DELETE /api/shortens/{code}
+/// DELETE /api/shortens/{short_code}
 pub async fn delete_shorten(
     State(service): State<Arc<ShortenService>>,
-    Path(code): Path<String>,
+    Path(short_code): Path<String>,
 ) -> Result<StatusCode, AppError> {
-    info!("Deleting short URL: {}", code);
+    info!("Deleting short URL: {}", short_code);
 
-    service.delete_shorten(&code).await?;
+    service.delete_shorten(&short_code).await?;
 
     Ok(StatusCode::NO_CONTENT)
 }
@@ -113,6 +114,78 @@ pub async fn delete_batch(
     service.delete_batch(ids).await?;
 
     Ok(StatusCode::NO_CONTENT)
+}
+
+/// Redirect to original URL by short code
+///
+/// GET /{short_code}
+pub async fn redirect_to_url(
+    State(state): State<crate::router::AppState>,
+    Path(short_code): Path<String>,
+    headers: HeaderMap,
+) -> Result<Redirect, AppError> {
+    info!("Redirecting short code: {}", short_code);
+
+    // Get the short URL info
+    let shorten_response = state.shorten_service.get_shorten(&short_code).await?;
+    
+    // Check if the URL is disabled
+    if shorten_response.status != 0 {
+        return Err(AppError::NotFound("Short URL is disabled".to_string()));
+    }
+
+    // Extract client information for history logging
+    let user_agent = headers
+        .get("user-agent")
+        .and_then(|h| h.to_str().ok());
+    
+    let referer = headers
+        .get("referer")
+        .and_then(|h| h.to_str().ok());
+
+    // Extract IP address from headers
+    // Try to get real IP from common proxy headers
+    let ip_address = headers
+        .get("x-forwarded-for")
+        .and_then(|h| h.to_str().ok())
+        .and_then(|s| s.split(',').next())
+        .or_else(|| {
+            headers
+                .get("x-real-ip")
+                .and_then(|h| h.to_str().ok())
+        })
+        .unwrap_or("unknown");
+
+    // Record access history asynchronously (don't block the redirect)
+    let history_service = state.history_service.clone();
+    let url_id = shorten_response.id;
+    let code = short_code.clone();
+    let ip = ip_address.to_string();
+    let ua = user_agent.map(|s| s.to_string());
+    let ref_url = referer.map(|s| s.to_string());
+    
+    tokio::spawn(async move {
+        if let Err(e) = history_service
+            .record_access(
+                url_id,
+                &code,
+                &ip,
+                ua.as_deref(),
+                ref_url.as_deref(),
+            )
+            .await
+        {
+            tracing::error!("Failed to record access history: {:?}", e);
+        }
+    });
+
+    info!(
+        "Redirecting: short_code={}, ip={}, user_agent={:?}, referer={:?}",
+        short_code, ip_address, user_agent, referer
+    );
+
+    // Redirect to the original URL
+    Ok(Redirect::permanent(&shorten_response.original_url))
 }
 
 #[cfg(test)]
@@ -202,8 +275,8 @@ mod tests {
 
         let request_body = json!({
             "original_url": "https://example.com",
-            "code": "test123",
-            "describe": "Test URL"
+            "short_code": "test123",
+            "description": "Test URL"
         });
 
         let response = app
@@ -225,9 +298,9 @@ mod tests {
             .unwrap();
         let response_json: serde_json::Value = serde_json::from_slice(&body).unwrap();
 
-        assert_eq!(response_json["code"], "test123");
+        assert_eq!(response_json["short_code"], "test123");
         assert_eq!(response_json["original_url"], "https://example.com");
-        assert_eq!(response_json["describe"], "Test URL");
+        assert_eq!(response_json["description"], "Test URL");
     }
 
     #[tokio::test]
@@ -258,7 +331,7 @@ mod tests {
         let response_json: serde_json::Value = serde_json::from_slice(&body).unwrap();
 
         assert_eq!(response_json["original_url"], "https://example.com");
-        assert_eq!(response_json["code"].as_str().unwrap().len(), 6);
+        assert_eq!(response_json["short_code"].as_str().unwrap().len(), 6);
     }
 
     #[tokio::test]
@@ -291,7 +364,7 @@ mod tests {
         // Create a URL first
         let create_body = json!({
             "original_url": "https://example.com",
-            "code": "gettest"
+            "short_code": "gettest"
         });
 
         app.clone()
@@ -325,7 +398,7 @@ mod tests {
             .unwrap();
         let response_json: serde_json::Value = serde_json::from_slice(&body).unwrap();
 
-        assert_eq!(response_json["code"], "gettest");
+        assert_eq!(response_json["short_code"], "gettest");
         assert_eq!(response_json["original_url"], "https://example.com");
     }
 
@@ -355,7 +428,7 @@ mod tests {
         for i in 1..=3 {
             let create_body = json!({
                 "original_url": format!("https://example{}.com", i),
-                "code": format!("list{}", i)
+                "short_code": format!("list{}", i)
             });
 
             app.clone()
@@ -391,7 +464,7 @@ mod tests {
         let response_json: serde_json::Value = serde_json::from_slice(&body).unwrap();
 
         assert_eq!(response_json["data"].as_array().unwrap().len(), 3);
-        assert_eq!(response_json["meta"]["total_items"], 3);
+        assert_eq!(response_json["meta"]["total"], 3);
     }
 
     #[tokio::test]
@@ -401,7 +474,7 @@ mod tests {
         // Create a URL first
         let create_body = json!({
             "original_url": "https://example.com",
-            "code": "update"
+            "short_code": "update"
         });
 
         app.clone()
@@ -419,7 +492,7 @@ mod tests {
         // Update the URL
         let update_body = json!({
             "original_url": "https://updated.com",
-            "describe": "Updated description"
+            "description": "Updated description"
         });
 
         let response = app
@@ -442,7 +515,7 @@ mod tests {
         let response_json: serde_json::Value = serde_json::from_slice(&body).unwrap();
 
         assert_eq!(response_json["original_url"], "https://updated.com");
-        assert_eq!(response_json["describe"], "Updated description");
+        assert_eq!(response_json["description"], "Updated description");
     }
 
     #[tokio::test]
@@ -452,7 +525,7 @@ mod tests {
         // Create a URL first
         let create_body = json!({
             "original_url": "https://example.com",
-            "code": "delete"
+            "short_code": "delete"
         });
 
         app.clone()
@@ -491,7 +564,7 @@ mod tests {
         for i in 1..=3 {
             let create_body = json!({
                 "original_url": format!("https://example{}.com", i),
-                "code": format!("batch{}", i)
+                "short_code": format!("batch{}", i)
             });
 
             let response = app

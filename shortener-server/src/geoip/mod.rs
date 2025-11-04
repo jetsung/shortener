@@ -32,8 +32,6 @@ pub enum GeoIpError {
 pub struct GeoIpInfo {
     /// 国家
     pub country: String,
-    /// 地区
-    pub region: String,
     /// 省份
     pub province: String,
     /// 城市
@@ -46,14 +44,12 @@ impl GeoIpInfo {
     /// 创建新的 GeoIpInfo 实例
     pub fn new(
         country: String,
-        region: String,
         province: String,
         city: String,
         isp: String,
     ) -> Self {
         Self {
             country,
-            region,
             province,
             city,
             isp,
@@ -68,7 +64,6 @@ impl GeoIpInfo {
     /// 检查是否为空
     pub fn is_empty(&self) -> bool {
         self.country.is_empty()
-            && self.region.is_empty()
             && self.province.is_empty()
             && self.city.is_empty()
             && self.isp.is_empty()
@@ -216,14 +211,12 @@ mod tests {
     fn test_geoip_info_new() {
         let info = GeoIpInfo::new(
             "中国".to_string(),
-            "华东".to_string(),
             "浙江省".to_string(),
             "杭州市".to_string(),
             "电信".to_string(),
         );
 
         assert_eq!(info.country, "中国");
-        assert_eq!(info.region, "华东");
         assert_eq!(info.province, "浙江省");
         assert_eq!(info.city, "杭州市");
         assert_eq!(info.isp, "电信");
@@ -235,7 +228,6 @@ mod tests {
         let info = GeoIpInfo::empty();
         assert!(info.is_empty());
         assert_eq!(info.country, "");
-        assert_eq!(info.region, "");
         assert_eq!(info.province, "");
         assert_eq!(info.city, "");
         assert_eq!(info.isp, "");

@@ -10,9 +10,9 @@ use crate::models::url::{ActiveModel, Column, Entity, Model};
 /// DTO for creating a URL
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateUrlDto {
-    pub code: String,
+    pub short_code: String,
     pub original_url: String,
-    pub describe: Option<String>,
+    pub description: Option<String>,
     pub status: i32,
 }
 
@@ -20,18 +20,40 @@ pub struct CreateUrlDto {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UpdateUrlDto {
     pub original_url: Option<String>,
-    pub describe: Option<String>,
+    pub description: Option<String>,
     pub status: Option<i32>,
 }
 
 /// Parameters for listing URLs
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ListParams {
+    #[serde(default = "default_page")]
     pub page: u64,
+    #[serde(default = "default_per_page", rename = "per_page")]
     pub page_size: u64,
+    pub short_code: Option<String>,
+    pub original_url: Option<String>,
     pub status: Option<i32>,
+    #[serde(default = "default_sort_by")]
     pub sort_by: Option<String>,
+    #[serde(default = "default_order")]
     pub order: Option<String>,
+}
+
+fn default_page() -> u64 {
+    1
+}
+
+fn default_per_page() -> u64 {
+    10
+}
+
+fn default_sort_by() -> Option<String> {
+    Some("created_at".to_string())
+}
+
+fn default_order() -> Option<String> {
+    Some("desc".to_string())
 }
 
 impl Default for ListParams {
@@ -39,9 +61,11 @@ impl Default for ListParams {
         Self {
             page: 1,
             page_size: 10,
+            short_code: None,
+            original_url: None,
             status: None,
-            sort_by: None,
-            order: None,
+            sort_by: Some("created_at".to_string()),
+            order: Some("desc".to_string()),
         }
     }
 }
@@ -85,12 +109,12 @@ impl UrlRepositoryImpl {
 #[async_trait]
 impl UrlRepository for UrlRepositoryImpl {
     async fn create(&self, url: CreateUrlDto) -> Result<Model, DbErr> {
-        let now = chrono::Utc::now().naive_utc();
+        let now = chrono::Utc::now();
 
         let active_model = ActiveModel {
-            code: Set(url.code),
+            short_code: Set(url.short_code),
             original_url: Set(url.original_url),
-            describe: Set(url.describe),
+            description: Set(url.description),
             status: Set(url.status),
             created_at: Set(now),
             updated_at: Set(now),
@@ -102,7 +126,7 @@ impl UrlRepository for UrlRepositoryImpl {
 
     async fn find_by_code(&self, code: &str) -> Result<Option<Model>, DbErr> {
         Entity::find()
-            .filter(Column::Code.eq(code))
+            .filter(Column::ShortCode.eq(code))
             .one(&self.db)
             .await
     }
@@ -114,25 +138,35 @@ impl UrlRepository for UrlRepositoryImpl {
     async fn list(&self, params: ListParams) -> Result<(Vec<Model>, u64), DbErr> {
         let mut query = Entity::find();
 
+        // Apply code filter if provided
+        if let Some(code) = params.short_code {
+            query = query.filter(Column::ShortCode.eq(code));
+        }
+
+        // Apply original_url filter if provided (fuzzy search using LIKE)
+        if let Some(original_url) = params.original_url {
+            query = query.filter(Column::OriginalUrl.contains(&original_url));
+        }
+
         // Apply status filter if provided
         if let Some(status) = params.status {
             query = query.filter(Column::Status.eq(status));
         }
 
         // Apply sorting
-        let sort_column = params.sort_by.as_deref().unwrap_or("id");
+        let sort_column = params.sort_by.as_deref().unwrap_or("created_at");
         let order = params.order.as_deref().unwrap_or("desc");
 
         query = match (sort_column, order) {
             ("id", "asc") => query.order_by_asc(Column::Id),
             ("id", "desc") => query.order_by_desc(Column::Id),
-            ("code", "asc") => query.order_by_asc(Column::Code),
-            ("code", "desc") => query.order_by_desc(Column::Code),
+            ("short_code", "asc") => query.order_by_asc(Column::ShortCode),
+            ("short_code", "desc") => query.order_by_desc(Column::ShortCode),
             ("created_at", "asc") => query.order_by_asc(Column::CreatedAt),
             ("created_at", "desc") => query.order_by_desc(Column::CreatedAt),
             ("updated_at", "asc") => query.order_by_asc(Column::UpdatedAt),
             ("updated_at", "desc") => query.order_by_desc(Column::UpdatedAt),
-            _ => query.order_by_desc(Column::Id), // Default
+            _ => query.order_by_desc(Column::CreatedAt), // Default
         };
 
         // Get total count
@@ -159,15 +193,15 @@ impl UrlRepository for UrlRepositoryImpl {
         if let Some(original_url) = data.original_url {
             active_model.original_url = Set(original_url);
         }
-        if let Some(describe) = data.describe {
-            active_model.describe = Set(Some(describe));
+        if let Some(description) = data.description {
+            active_model.description = Set(Some(description));
         }
         if let Some(status) = data.status {
             active_model.status = Set(status);
         }
 
         // Always update the updated_at timestamp
-        active_model.updated_at = Set(chrono::Utc::now().naive_utc());
+        active_model.updated_at = Set(chrono::Utc::now());
 
         active_model.update(&self.db).await
     }
@@ -254,9 +288,9 @@ mod tests {
         let repo = UrlRepositoryImpl::new(db);
 
         let create_dto = CreateUrlDto {
-            code: "test123".to_string(),
+            short_code: "test123".to_string(),
             original_url: "https://example.com".to_string(),
-            describe: Some("Test URL".to_string()),
+            description: Some("Test URL".to_string()),
             status: UrlStatus::Enabled as i32,
         };
 
@@ -264,9 +298,9 @@ mod tests {
         assert!(result.is_ok());
 
         let url = result.unwrap();
-        assert_eq!(url.code, "test123");
+        assert_eq!(url.short_code, "test123");
         assert_eq!(url.original_url, "https://example.com");
-        assert_eq!(url.describe, Some("Test URL".to_string()));
+        assert_eq!(url.description, Some("Test URL".to_string()));
         assert_eq!(url.status, UrlStatus::Enabled as i32);
     }
 
@@ -277,9 +311,9 @@ mod tests {
 
         // Create a URL first
         let create_dto = CreateUrlDto {
-            code: "find123".to_string(),
+            short_code: "find123".to_string(),
             original_url: "https://example.com".to_string(),
-            describe: None,
+            description: None,
             status: UrlStatus::Enabled as i32,
         };
         repo.create(create_dto).await.unwrap();
@@ -302,9 +336,9 @@ mod tests {
 
         // Create a URL first
         let create_dto = CreateUrlDto {
-            code: "id123".to_string(),
+            short_code: "id123".to_string(),
             original_url: "https://example.com".to_string(),
-            describe: None,
+            description: None,
             status: UrlStatus::Enabled as i32,
         };
         let created = repo.create(create_dto).await.unwrap();
@@ -328,9 +362,9 @@ mod tests {
         // Create multiple URLs
         for i in 1..=5 {
             let create_dto = CreateUrlDto {
-                code: format!("list{}", i),
+                short_code: format!("list{}", i),
                 original_url: format!("https://example{}.com", i),
-                describe: Some(format!("URL {}", i)),
+                description: Some(format!("URL {}", i)),
                 status: if i % 2 == 0 {
                     UrlStatus::Disabled as i32
                 } else {
@@ -379,9 +413,9 @@ mod tests {
 
         // Create a URL first
         let create_dto = CreateUrlDto {
-            code: "update123".to_string(),
+            short_code: "update123".to_string(),
             original_url: "https://example.com".to_string(),
-            describe: Some("Original".to_string()),
+            description: Some("Original".to_string()),
             status: UrlStatus::Enabled as i32,
         };
         repo.create(create_dto).await.unwrap();
@@ -389,7 +423,7 @@ mod tests {
         // Update the URL
         let update_dto = UpdateUrlDto {
             original_url: Some("https://updated.com".to_string()),
-            describe: Some("Updated".to_string()),
+            description: Some("Updated".to_string()),
             status: Some(UrlStatus::Disabled as i32),
         };
         let result = repo.update("update123", update_dto).await;
@@ -397,13 +431,13 @@ mod tests {
 
         let updated = result.unwrap();
         assert_eq!(updated.original_url, "https://updated.com");
-        assert_eq!(updated.describe, Some("Updated".to_string()));
+        assert_eq!(updated.description, Some("Updated".to_string()));
         assert_eq!(updated.status, UrlStatus::Disabled as i32);
 
         // Try to update non-existent URL
         let update_dto = UpdateUrlDto {
             original_url: Some("https://test.com".to_string()),
-            describe: None,
+            description: None,
             status: None,
         };
         let result = repo.update("nonexistent", update_dto).await;
@@ -417,9 +451,9 @@ mod tests {
 
         // Create a URL first
         let create_dto = CreateUrlDto {
-            code: "delete123".to_string(),
+            short_code: "delete123".to_string(),
             original_url: "https://example.com".to_string(),
-            describe: None,
+            description: None,
             status: UrlStatus::Enabled as i32,
         };
         repo.create(create_dto).await.unwrap();
@@ -446,9 +480,9 @@ mod tests {
         let mut ids = Vec::new();
         for i in 1..=5 {
             let create_dto = CreateUrlDto {
-                code: format!("batch{}", i),
+                short_code: format!("batch{}", i),
                 original_url: format!("https://example{}.com", i),
-                describe: None,
+                description: None,
                 status: UrlStatus::Enabled as i32,
             };
             let created = repo.create(create_dto).await.unwrap();
@@ -466,5 +500,238 @@ mod tests {
         let (urls, total) = repo.list(params).await.unwrap();
         assert_eq!(urls.len(), 2);
         assert_eq!(total, 2);
+    }
+
+    #[tokio::test]
+    async fn test_list_urls_with_code_filter() {
+        let db = setup_test_db().await;
+        let repo = UrlRepositoryImpl::new(db);
+
+        // Create multiple URLs with different codes
+        for i in 1..=3 {
+            let create_dto = CreateUrlDto {
+                short_code: format!("test{}", i),
+                original_url: format!("https://example{}.com", i),
+                description: Some(format!("Test URL {}", i)),
+                status: UrlStatus::Enabled as i32,
+            };
+            repo.create(create_dto).await.unwrap();
+        }
+
+        // List with code filter
+        let params = ListParams {
+            page: 1,
+            page_size: 10,
+            short_code: Some("test2".to_string()),
+            ..Default::default()
+        };
+        let (urls, total) = repo.list(params).await.unwrap();
+        assert_eq!(urls.len(), 1);
+        assert_eq!(total, 1);
+        assert_eq!(urls[0].short_code, "test2");
+
+        // List with non-existent code
+        let params = ListParams {
+            page: 1,
+            page_size: 10,
+            short_code: Some("nonexistent".to_string()),
+            ..Default::default()
+        };
+        let (urls, total) = repo.list(params).await.unwrap();
+        assert_eq!(urls.len(), 0);
+        assert_eq!(total, 0);
+    }
+
+    #[tokio::test]
+    async fn test_list_urls_with_combined_filters() {
+        let db = setup_test_db().await;
+        let repo = UrlRepositoryImpl::new(db);
+
+        // Create URLs with different statuses
+        let create_dto1 = CreateUrlDto {
+            short_code: "enabled1".to_string(),
+            original_url: "https://example1.com".to_string(),
+            description: None,
+            status: UrlStatus::Enabled as i32,
+        };
+        repo.create(create_dto1).await.unwrap();
+
+        let create_dto2 = CreateUrlDto {
+            short_code: "disabled1".to_string(),
+            original_url: "https://example2.com".to_string(),
+            description: None,
+            status: UrlStatus::Disabled as i32,
+        };
+        repo.create(create_dto2).await.unwrap();
+
+        // List with status filter
+        let params = ListParams {
+            page: 1,
+            page_size: 10,
+            status: Some(UrlStatus::Enabled as i32),
+            ..Default::default()
+        };
+        let (urls, total) = repo.list(params).await.unwrap();
+        assert_eq!(urls.len(), 1);
+        assert_eq!(total, 1);
+        assert_eq!(urls[0].short_code, "enabled1");
+
+        // List with both code and status filters
+        let params = ListParams {
+            page: 1,
+            page_size: 10,
+            short_code: Some("disabled1".to_string()),
+            status: Some(UrlStatus::Disabled as i32),
+            ..Default::default()
+        };
+        let (urls, total) = repo.list(params).await.unwrap();
+        assert_eq!(urls.len(), 1);
+        assert_eq!(total, 1);
+        assert_eq!(urls[0].short_code, "disabled1");
+    }
+
+    #[tokio::test]
+    async fn test_list_urls_with_original_url_filter() {
+        let db = setup_test_db().await;
+        let repo = UrlRepositoryImpl::new(db);
+
+        // Create URLs with different original URLs
+        let create_dto1 = CreateUrlDto {
+            short_code: "github1".to_string(),
+            original_url: "https://github.com/user/repo1".to_string(),
+            description: None,
+            status: UrlStatus::Enabled as i32,
+        };
+        repo.create(create_dto1).await.unwrap();
+
+        let create_dto2 = CreateUrlDto {
+            short_code: "gitlab1".to_string(),
+            original_url: "https://gitlab.com/user/repo2".to_string(),
+            description: None,
+            status: UrlStatus::Enabled as i32,
+        };
+        repo.create(create_dto2).await.unwrap();
+
+        let create_dto3 = CreateUrlDto {
+            short_code: "github2".to_string(),
+            original_url: "https://github.com/another/project".to_string(),
+            description: None,
+            status: UrlStatus::Enabled as i32,
+        };
+        repo.create(create_dto3).await.unwrap();
+
+        // Test fuzzy search for "github"
+        let params = ListParams {
+            page: 1,
+            page_size: 10,
+            short_code: None,
+            original_url: Some("github".to_string()),
+            status: None,
+            sort_by: None,
+            order: None,
+        };
+        let (urls, total) = repo.list(params).await.unwrap();
+        assert_eq!(urls.len(), 2);
+        assert_eq!(total, 2);
+        // Both github URLs should be returned
+        let codes: Vec<&String> = urls.iter().map(|u| &u.short_code).collect();
+        assert!(codes.contains(&&"github1".to_string()));
+        assert!(codes.contains(&&"github2".to_string()));
+
+        // Test fuzzy search for "gitlab"
+        let params = ListParams {
+            page: 1,
+            page_size: 10,
+            short_code: None,
+            original_url: Some("gitlab".to_string()),
+            status: None,
+            sort_by: None,
+            order: None,
+        };
+        let (urls, total) = repo.list(params).await.unwrap();
+        assert_eq!(urls.len(), 1);
+        assert_eq!(total, 1);
+        assert_eq!(urls[0].short_code, "gitlab1");
+
+        // Test fuzzy search for "user"
+        let params = ListParams {
+            page: 1,
+            page_size: 10,
+            short_code: None,
+            original_url: Some("user".to_string()),
+            status: None,
+            sort_by: None,
+            order: None,
+        };
+        let (urls, total) = repo.list(params).await.unwrap();
+        assert_eq!(urls.len(), 2);
+        assert_eq!(total, 2);
+
+        // Test search with no matches
+        let params = ListParams {
+            page: 1,
+            page_size: 10,
+            short_code: None,
+            original_url: Some("nonexistent".to_string()),
+            status: None,
+            sort_by: None,
+            order: None,
+        };
+        let (urls, total) = repo.list(params).await.unwrap();
+        assert_eq!(urls.len(), 0);
+        assert_eq!(total, 0);
+    }
+
+    #[tokio::test]
+    async fn test_list_urls_with_all_filters() {
+        let db = setup_test_db().await;
+        let repo = UrlRepositoryImpl::new(db);
+
+        // Create URLs with different properties
+        let create_dto1 = CreateUrlDto {
+            short_code: "test1".to_string(),
+            original_url: "https://github.com/test/repo".to_string(),
+            description: None,
+            status: UrlStatus::Enabled as i32,
+        };
+        repo.create(create_dto1).await.unwrap();
+
+        let create_dto2 = CreateUrlDto {
+            short_code: "test2".to_string(),
+            original_url: "https://github.com/another/project".to_string(),
+            description: None,
+            status: UrlStatus::Disabled as i32,
+        };
+        repo.create(create_dto2).await.unwrap();
+
+        // Test combining original_url and status filters
+        let params = ListParams {
+            page: 1,
+            page_size: 10,
+            short_code: None,
+            original_url: Some("github".to_string()),
+            status: Some(UrlStatus::Enabled as i32),
+            sort_by: None,
+            order: None,
+        };
+        let (urls, total) = repo.list(params).await.unwrap();
+        assert_eq!(urls.len(), 1);
+        assert_eq!(total, 1);
+        assert_eq!(urls[0].short_code, "test1");
+
+        // Test combining all filters
+        let params = ListParams {
+            page: 1,
+            page_size: 10,
+            short_code: Some("test2".to_string()),
+            original_url: Some("github".to_string()),
+            status: Some(UrlStatus::Disabled as i32),
+            sort_by: None,
+            order: None,
+        };
+        let (urls, total) = repo.list(params).await.unwrap();
+        assert_eq!(urls.len(), 1);
+        assert_eq!(total, 1);
+        assert_eq!(urls[0].short_code, "test2");
     }
 }

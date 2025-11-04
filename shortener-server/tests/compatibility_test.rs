@@ -334,33 +334,34 @@ mod api_compatibility_tests {
 
     #[test]
     fn test_request_body_format_create_shorten() {
-        // Test that request body format matches Go version
+        // Test that request body format matches OpenAPI spec
         let request_body = json!({
             "original_url": "https://example.com",
-            "code": "abc123",
-            "describe": "Test URL"
+            "short_code": "abc123",
+            "description": "Test URL"
         });
 
         // Verify required fields
         assert!(request_body.get("original_url").is_some());
-        assert!(request_body.get("code").is_some());
-        assert!(request_body.get("describe").is_some());
+        assert!(request_body.get("short_code").is_some());
+        assert!(request_body.get("description").is_some());
 
-        // Verify field names match (not original_url vs originalUrl)
+        // Verify field names match OpenAPI spec
         let json_str = serde_json::to_string(&request_body).unwrap();
         assert!(json_str.contains("original_url"));
-        assert!(json_str.contains("describe")); // Not "description"
+        assert!(json_str.contains("short_code"));
+        assert!(json_str.contains("description"));
     }
 
     #[test]
     fn test_response_format_shorten() {
-        // Test that response format matches Go version
+        // Test that response format matches OpenAPI spec
         let response = json!({
             "id": 1,
-            "code": "abc123",
+            "short_code": "abc123",
             "short_url": "http://localhost:8080/abc123",
             "original_url": "https://example.com",
-            "describe": "Test URL",
+            "description": "Test URL",
             "status": 1,
             "created_at": "2024-01-01T00:00:00Z",
             "updated_at": "2024-01-01T00:00:00Z"
@@ -368,10 +369,10 @@ mod api_compatibility_tests {
 
         // Verify all expected fields exist
         assert!(response.get("id").is_some());
-        assert!(response.get("code").is_some());
+        assert!(response.get("short_code").is_some());
         assert!(response.get("short_url").is_some());
         assert!(response.get("original_url").is_some());
-        assert!(response.get("describe").is_some());
+        assert!(response.get("description").is_some());
         assert!(response.get("status").is_some());
         assert!(response.get("created_at").is_some());
         assert!(response.get("updated_at").is_some());

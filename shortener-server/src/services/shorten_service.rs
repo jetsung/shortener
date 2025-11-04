@@ -12,15 +12,15 @@ use tracing::{debug, info, warn};
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateShortenRequest {
     pub original_url: String,
-    pub code: Option<String>,
-    pub describe: Option<String>,
+    pub short_code: Option<String>,
+    pub description: Option<String>,
 }
 
 /// Request DTO for updating a short URL
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UpdateShortenRequest {
     pub original_url: Option<String>,
-    pub describe: Option<String>,
+    pub description: Option<String>,
     pub status: Option<i32>,
 }
 
@@ -28,10 +28,10 @@ pub struct UpdateShortenRequest {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ShortenResponse {
     pub id: i64,
-    pub code: String,
+    pub short_code: String,
     pub short_url: String,
     pub original_url: String,
-    pub describe: Option<String>,
+    pub description: Option<String>,
     pub status: i32,
     pub created_at: String,
     pub updated_at: String,
@@ -42,13 +42,13 @@ impl ShortenResponse {
     pub fn from_model(model: UrlModel, site_url: &str) -> Self {
         Self {
             id: model.id,
-            code: model.code.clone(),
-            short_url: format!("{}/{}", site_url.trim_end_matches('/'), model.code),
+            short_code: model.short_code.clone(),
+            short_url: format!("{}/{}", site_url.trim_end_matches('/'), model.short_code),
             original_url: model.original_url,
-            describe: model.describe,
+            description: model.description,
             status: model.status,
-            created_at: model.created_at.format("%Y-%m-%d %H:%M:%S").to_string(),
-            updated_at: model.updated_at.format("%Y-%m-%d %H:%M:%S").to_string(),
+            created_at: model.created_at.to_rfc3339(),
+            updated_at: model.updated_at.to_rfc3339(),
         }
     }
 }
@@ -57,9 +57,9 @@ impl ShortenResponse {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PageMeta {
     pub page: u64,
-    pub page_size: u64,
-    pub current_count: u64,
-    pub total_items: u64,
+    pub per_page: u64,
+    pub count: u64,
+    pub total: u64,
     pub total_pages: u64,
 }
 
@@ -124,7 +124,7 @@ impl ShortenService {
         }
 
         // Generate or use provided code
-        let code = if let Some(provided_code) = req.code {
+        let code = if let Some(provided_code) = req.short_code {
             // Validate provided code
             if !self.is_valid_code(&provided_code) {
                 return Err(ServiceError::InvalidInput(format!(
@@ -149,9 +149,9 @@ impl ShortenService {
 
         // Create URL in database
         let create_dto = CreateUrlDto {
-            code: code.clone(),
+            short_code: code.clone(),
             original_url: req.original_url.clone(),
-            describe: req.describe,
+            description: req.description,
             status: UrlStatus::Enabled as i32,
         };
 
@@ -226,9 +226,9 @@ impl ShortenService {
 
         let meta = PageMeta {
             page: params.page,
-            page_size: params.page_size,
-            current_count: data.len() as u64,
-            total_items: total,
+            per_page: params.page_size,
+            count: data.len() as u64,
+            total,
             total_pages,
         };
 
@@ -264,7 +264,7 @@ impl ShortenService {
         // Update in database
         let update_dto = UpdateUrlDto {
             original_url: req.original_url,
-            describe: req.describe,
+            description: req.description,
             status: req.status,
         };
 
@@ -319,7 +319,7 @@ impl ShortenService {
         let mut codes = Vec::new();
         for id in &ids {
             if let Ok(Some(url)) = self.url_repo.find_by_id(*id).await {
-                codes.push(url.code);
+                codes.push(url.short_code);
             }
         }
 
@@ -329,8 +329,8 @@ impl ShortenService {
         info!("Batch deleted {} short URLs", deleted_count);
 
         // Delete from cache
-        for code in codes {
-            if let Err(e) = self.delete_cached_url(&code).await {
+        for code in &codes {
+            if let Err(e) = self.delete_cached_url(code).await {
                 warn!("Failed to delete cache for URL {}: {}", code, e);
             }
         }
@@ -405,7 +405,7 @@ impl ShortenService {
 
     /// Cache a URL model
     async fn cache_url(&self, url: &UrlModel) -> Result<(), ServiceError> {
-        let cache_key = format!("url:{}", url.code);
+        let cache_key = format!("url:{}", url.short_code);
         let cache_value = serde_json::to_string(url)
             .map_err(|e| ServiceError::Cache(format!("Failed to serialize URL: {}", e)))?;
 
@@ -523,8 +523,8 @@ mod tests {
 
         let req = CreateShortenRequest {
             original_url: "https://example.com".to_string(),
-            code: None,
-            describe: Some("Test URL".to_string()),
+            short_code: None,
+            description: Some("Test URL".to_string()),
         };
 
         let result = service.create_shorten(req).await;
@@ -532,9 +532,9 @@ mod tests {
 
         let response = result.unwrap();
         assert_eq!(response.original_url, "https://example.com");
-        assert_eq!(response.describe, Some("Test URL".to_string()));
+        assert_eq!(response.description, Some("Test URL".to_string()));
         assert_eq!(response.status, UrlStatus::Enabled as i32);
-        assert_eq!(response.code.len(), 6);
+        assert_eq!(response.short_code.len(), 6);
     }
 
     #[tokio::test]
@@ -543,15 +543,15 @@ mod tests {
 
         let req = CreateShortenRequest {
             original_url: "https://example.com".to_string(),
-            code: Some("custom".to_string()),
-            describe: None,
+            short_code: Some("custom".to_string()),
+            description: None,
         };
 
         let result = service.create_shorten(req).await;
         assert!(result.is_ok());
 
         let response = result.unwrap();
-        assert_eq!(response.code, "custom");
+        assert_eq!(response.short_code, "custom");
         assert_eq!(response.original_url, "https://example.com");
     }
 
@@ -562,16 +562,16 @@ mod tests {
         // Create first URL
         let req1 = CreateShortenRequest {
             original_url: "https://example.com".to_string(),
-            code: Some("duplicate".to_string()),
-            describe: None,
+            short_code: Some("duplicate".to_string()),
+            description: None,
         };
         service.create_shorten(req1).await.unwrap();
 
         // Try to create with same code
         let req2 = CreateShortenRequest {
             original_url: "https://another.com".to_string(),
-            code: Some("duplicate".to_string()),
-            describe: None,
+            short_code: Some("duplicate".to_string()),
+            description: None,
         };
 
         let result = service.create_shorten(req2).await;
@@ -588,8 +588,8 @@ mod tests {
 
         let req = CreateShortenRequest {
             original_url: "not-a-url".to_string(),
-            code: None,
-            describe: None,
+            short_code: None,
+            description: None,
         };
 
         let result = service.create_shorten(req).await;
@@ -603,8 +603,8 @@ mod tests {
 
         let req = CreateShortenRequest {
             original_url: "".to_string(),
-            code: None,
-            describe: None,
+            short_code: None,
+            description: None,
         };
 
         let result = service.create_shorten(req).await;
@@ -619,8 +619,8 @@ mod tests {
         // Create a URL first
         let req = CreateShortenRequest {
             original_url: "https://example.com".to_string(),
-            code: Some("gettest".to_string()),
-            describe: Some("Get test".to_string()),
+            short_code: Some("gettest".to_string()),
+            description: Some("Get test".to_string()),
         };
         service.create_shorten(req).await.unwrap();
 
@@ -629,9 +629,9 @@ mod tests {
         assert!(result.is_ok());
 
         let response = result.unwrap();
-        assert_eq!(response.code, "gettest");
+        assert_eq!(response.short_code, "gettest");
         assert_eq!(response.original_url, "https://example.com");
-        assert_eq!(response.describe, Some("Get test".to_string()));
+        assert_eq!(response.description, Some("Get test".to_string()));
     }
 
     #[tokio::test]
@@ -651,8 +651,8 @@ mod tests {
         for i in 1..=5 {
             let req = CreateShortenRequest {
                 original_url: format!("https://example{}.com", i),
-                code: Some(format!("list{}", i)),
-                describe: Some(format!("URL {}", i)),
+                short_code: Some(format!("list{}", i)),
+                description: Some(format!("URL {}", i)),
             };
             service.create_shorten(req).await.unwrap();
         }
@@ -669,7 +669,7 @@ mod tests {
 
         let response = result.unwrap();
         assert_eq!(response.data.len(), 5);
-        assert_eq!(response.meta.total_items, 5);
+        assert_eq!(response.meta.total, 5);
         assert_eq!(response.meta.total_pages, 1);
     }
 
@@ -681,8 +681,8 @@ mod tests {
         for i in 1..=5 {
             let req = CreateShortenRequest {
                 original_url: format!("https://example{}.com", i),
-                code: Some(format!("page{}", i)),
-                describe: None,
+                short_code: Some(format!("page{}", i)),
+                description: None,
             };
             service.create_shorten(req).await.unwrap();
         }
@@ -699,7 +699,7 @@ mod tests {
 
         let response = result.unwrap();
         assert_eq!(response.data.len(), 2);
-        assert_eq!(response.meta.total_items, 5);
+        assert_eq!(response.meta.total, 5);
         assert_eq!(response.meta.total_pages, 3);
         assert_eq!(response.meta.page, 1);
     }
@@ -711,15 +711,15 @@ mod tests {
         // Create a URL first
         let req = CreateShortenRequest {
             original_url: "https://example.com".to_string(),
-            code: Some("update".to_string()),
-            describe: Some("Original".to_string()),
+            short_code: Some("update".to_string()),
+            description: Some("Original".to_string()),
         };
         service.create_shorten(req).await.unwrap();
 
         // Update the URL
         let update_req = UpdateShortenRequest {
             original_url: Some("https://updated.com".to_string()),
-            describe: Some("Updated".to_string()),
+            description: Some("Updated".to_string()),
             status: Some(UrlStatus::Disabled as i32),
         };
 
@@ -728,7 +728,7 @@ mod tests {
 
         let response = result.unwrap();
         assert_eq!(response.original_url, "https://updated.com");
-        assert_eq!(response.describe, Some("Updated".to_string()));
+        assert_eq!(response.description, Some("Updated".to_string()));
         assert_eq!(response.status, UrlStatus::Disabled as i32);
     }
 
@@ -738,7 +738,7 @@ mod tests {
 
         let update_req = UpdateShortenRequest {
             original_url: Some("https://test.com".to_string()),
-            describe: None,
+            description: None,
             status: None,
         };
 
@@ -753,8 +753,8 @@ mod tests {
         // Create a URL first
         let req = CreateShortenRequest {
             original_url: "https://example.com".to_string(),
-            code: Some("delete".to_string()),
-            describe: None,
+            short_code: Some("delete".to_string()),
+            description: None,
         };
         service.create_shorten(req).await.unwrap();
 
@@ -785,8 +785,8 @@ mod tests {
         for i in 1..=5 {
             let req = CreateShortenRequest {
                 original_url: format!("https://example{}.com", i),
-                code: Some(format!("batch{}", i)),
-                describe: None,
+                short_code: Some(format!("batch{}", i)),
+                description: None,
             };
             let response = service.create_shorten(req).await.unwrap();
             ids.push(response.id);

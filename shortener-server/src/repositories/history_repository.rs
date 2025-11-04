@@ -13,7 +13,7 @@ pub struct CreateHistoryDto {
     pub url_id: i32,
     pub short_code: String,
     pub ip_address: String,
-    pub user_agent: Option<String>,
+    pub user_agent: String,
     pub referer: Option<String>,
     pub country: Option<String>,
     pub region: Option<String>,
@@ -23,18 +23,39 @@ pub struct CreateHistoryDto {
     pub device_type: Option<String>,
     pub os: Option<String>,
     pub browser: Option<String>,
-    pub accessed_at: chrono::NaiveDateTime,
+    pub accessed_at: chrono::DateTime<chrono::Utc>,
 }
 
 /// Parameters for listing history records
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct HistoryListParams {
+    #[serde(default = "default_page")]
     pub page: u64,
+    #[serde(default = "default_per_page", rename = "per_page")]
     pub page_size: u64,
     pub short_code: Option<String>,
     pub url_id: Option<i32>,
+    pub ip_address: Option<String>,
+    #[serde(default = "default_sort_by")]
     pub sort_by: Option<String>,
+    #[serde(default = "default_order")]
     pub order: Option<String>,
+}
+
+fn default_page() -> u64 {
+    1
+}
+
+fn default_per_page() -> u64 {
+    10
+}
+
+fn default_sort_by() -> Option<String> {
+    Some("accessed_at".to_string())
+}
+
+fn default_order() -> Option<String> {
+    Some("desc".to_string())
 }
 
 impl Default for HistoryListParams {
@@ -44,8 +65,9 @@ impl Default for HistoryListParams {
             page_size: 10,
             short_code: None,
             url_id: None,
-            sort_by: None,
-            order: None,
+            ip_address: None,
+            sort_by: Some("accessed_at".to_string()),
+            order: Some("desc".to_string()),
         }
     }
 }
@@ -77,7 +99,7 @@ impl HistoryRepositoryImpl {
 #[async_trait]
 impl HistoryRepository for HistoryRepositoryImpl {
     async fn create(&self, history: CreateHistoryDto) -> Result<Model, DbErr> {
-        let now = chrono::Utc::now().naive_utc();
+        let now = chrono::Utc::now();
 
         let active_model = ActiveModel {
             url_id: Set(history.url_id),
@@ -110,6 +132,9 @@ impl HistoryRepository for HistoryRepositoryImpl {
         }
         if let Some(url_id) = params.url_id {
             query = query.filter(Column::UrlId.eq(url_id));
+        }
+        if let Some(ip_address) = params.ip_address {
+            query = query.filter(Column::IpAddress.eq(ip_address));
         }
 
         // Apply sorting
@@ -204,9 +229,9 @@ mod tests {
     async fn create_test_url(db: &DatabaseConnection) -> i64 {
         let url_repo = UrlRepositoryImpl::new(db.clone());
         let create_dto = CreateUrlDto {
-            code: "test123".to_string(),
+            short_code: "test123".to_string(),
             original_url: "https://example.com".to_string(),
-            describe: Some("Test URL".to_string()),
+            description: Some("Test URL".to_string()),
             status: UrlStatus::Enabled as i32,
         };
         let url = url_repo.create(create_dto).await.unwrap();
@@ -219,10 +244,10 @@ mod tests {
         let url_id = create_test_url(&db).await;
         let repo = HistoryRepositoryImpl::new(db);
 
-        let accessed_at = chrono::Utc::now().naive_utc();
+        let accessed_at = chrono::Utc::now();
         let create_dto = CreateHistoryDto {
             url_id: url_id as i32,
-            short_code: "test123".to_string(),
+            short_short_code: "test123".to_string(),
             ip_address: "192.168.1.1".to_string(),
             user_agent: Some("Mozilla/5.0".to_string()),
             referer: Some("https://google.com".to_string()),
@@ -255,10 +280,10 @@ mod tests {
 
         // Create multiple history records
         for i in 1..=5 {
-            let accessed_at = chrono::Utc::now().naive_utc();
+            let accessed_at = chrono::Utc::now();
             let create_dto = CreateHistoryDto {
                 url_id: url_id as i32,
-                short_code: "test123".to_string(),
+                short_short_code: "test123".to_string(),
                 ip_address: format!("192.168.1.{}", i),
                 user_agent: Some(format!("Browser {}", i)),
                 referer: None,
@@ -314,10 +339,10 @@ mod tests {
         let repo = HistoryRepositoryImpl::new(db);
 
         // Create history records
-        let accessed_at = chrono::Utc::now().naive_utc();
+        let accessed_at = chrono::Utc::now();
         let create_dto = CreateHistoryDto {
             url_id: url_id as i32,
-            short_code: "test123".to_string(),
+            short_short_code: "test123".to_string(),
             ip_address: "192.168.1.1".to_string(),
             user_agent: None,
             referer: None,
@@ -365,10 +390,10 @@ mod tests {
         // Create multiple history records
         let mut ids = Vec::new();
         for i in 1..=5 {
-            let accessed_at = chrono::Utc::now().naive_utc();
+            let accessed_at = chrono::Utc::now();
             let create_dto = CreateHistoryDto {
                 url_id: url_id as i32,
-                short_code: "test123".to_string(),
+                short_short_code: "test123".to_string(),
                 ip_address: format!("192.168.1.{}", i),
                 user_agent: None,
                 referer: None,
@@ -400,6 +425,58 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn test_list_histories_with_ip_address_filter() {
+        let db = setup_test_db().await;
+        let url_id = create_test_url(&db).await;
+        let repo = HistoryRepositoryImpl::new(db);
+
+        // Create history records with different IP addresses
+        for i in 1..=3 {
+            let accessed_at = chrono::Utc::now();
+            let create_dto = CreateHistoryDto {
+                url_id: url_id as i32,
+                short_short_code: "test123".to_string(),
+                ip_address: format!("192.168.1.{}", i),
+                user_agent: None,
+                referer: None,
+                country: None,
+                region: None,
+                province: None,
+                city: None,
+                isp: None,
+                device_type: None,
+                os: None,
+                browser: None,
+                accessed_at,
+            };
+            repo.create(create_dto).await.unwrap();
+        }
+
+        // List with IP address filter
+        let params = HistoryListParams {
+            page: 1,
+            page_size: 10,
+            ip_address: Some("192.168.1.2".to_string()),
+            ..Default::default()
+        };
+        let (histories, total) = repo.list(params).await.unwrap();
+        assert_eq!(histories.len(), 1);
+        assert_eq!(total, 1);
+        assert_eq!(histories[0].ip_address, "192.168.1.2");
+
+        // List with non-existent IP address
+        let params = HistoryListParams {
+            page: 1,
+            page_size: 10,
+            ip_address: Some("10.0.0.1".to_string()),
+            ..Default::default()
+        };
+        let (histories, total) = repo.list(params).await.unwrap();
+        assert_eq!(histories.len(), 0);
+        assert_eq!(total, 0);
+    }
+
+    #[tokio::test]
     async fn test_list_histories_sorting() {
         let db = setup_test_db().await;
         let url_id = create_test_url(&db).await;
@@ -407,10 +484,10 @@ mod tests {
 
         // Create history records with different timestamps
         for i in 1..=3 {
-            let accessed_at = chrono::Utc::now().naive_utc() - chrono::Duration::hours(i);
+            let accessed_at = chrono::Utc::now() - chrono::Duration::hours(i);
             let create_dto = CreateHistoryDto {
                 url_id: url_id as i32,
-                short_code: "test123".to_string(),
+                short_short_code: "test123".to_string(),
                 ip_address: format!("192.168.1.{}", i),
                 user_agent: None,
                 referer: None,
