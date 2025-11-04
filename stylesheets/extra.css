@@ -1,0 +1,49 @@
+/* 自定义样式 */
+
+/* 代码块样式优化 */
+.highlight {
+  border-radius: 4px;
+}
+
+/* 表格样式优化 */
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1em 0;
+}
+
+table th {
+  background-color: var(--md-primary-fg-color--light);
+  color: white;
+  font-weight: 600;
+}
+
+/* 链接样式 */
+a {
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* 提示框样式 */
+.admonition {
+  border-radius: 4px;
+  margin: 1.5em 0;
+}
+
+/* 导航标签样式 */
+.md-tabs {
+  background-color: var(--md-primary-fg-color);
+}
+
+/* 代码复制按钮 */
+.md-clipboard {
+  color: var(--md-primary-fg-color);
+}
+
+/* 搜索框样式 */
+.md-search__input {
+  border-radius: 4px;
+}
