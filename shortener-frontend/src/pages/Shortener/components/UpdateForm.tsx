@@ -49,9 +49,8 @@ const UpdateForm: React.FC<UpdateFormProps> = (props) => {
             ...values,
             short_code: values.short_code || '',
             original_url: values.original_url || '',
-            description: values.description || ''
+            description: values.description || '',
           };
-
 
           formRef.current.setValues(formValues);
         }
@@ -87,9 +86,7 @@ const UpdateForm: React.FC<UpdateFormProps> = (props) => {
         label="短码"
         placeholder="短码"
         disabled
-        rules={[
-          { required: true, message: '短码为必填项' }
-        ]}
+        rules={[{ required: true, message: '短码为必填项' }]}
       />
       <Form.Input
         field="original_url"
@@ -97,15 +94,10 @@ const UpdateForm: React.FC<UpdateFormProps> = (props) => {
         placeholder="请输入源链接"
         rules={[
           { required: true, message: '源链接为必填项' },
-          { type: 'url', message: '请输入有效的 URL' }
+          { type: 'url', message: '请输入有效的 URL' },
         ]}
       />
-      <Form.TextArea
-        field="description"
-        label="链接描述"
-        placeholder="链接描述"
-        rows={3}
-      />
+      <Form.TextArea field="description" label="链接描述" placeholder="链接描述" rows={3} />
     </SemiModalForm>
   );
 };

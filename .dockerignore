@@ -22,8 +22,8 @@ docs/
 # Test files
 tests/
 **/tests/
-benches/
-**/benches/
+# benches/
+# **/benches/
 
 # CI/CD
 .gitlab-ci.yml

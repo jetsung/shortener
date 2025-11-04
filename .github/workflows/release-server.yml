@@ -1,0 +1,155 @@
+name: Build Server on Release
+
+on:
+  push:
+    tags:
+      - 'shortener-server-v*'
+  release:
+    types:
+      - created
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+  RELEASE_DIR: dist
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+            submodules: true
+      - name: Update Rust
+        run: |
+          rustup update
+          rustc --version
+      - uses: jetsung/install-zig@v1
+        with:
+          version: "0.14.1"
+      - name: Check zig version
+        run: |
+          zig version            
+      - name: Install target for Linux
+        run: |
+          for arch in x86_64 aarch64 loongarch64; do
+            rustup target add $arch-unknown-linux-musl
+          done    
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y musl-tools musl-dev
+      - name: Install cargo-zigbuild
+        run: cargo install cargo-zigbuild
+      - name: Add OpenSSL
+        run: |
+          cargo add openssl --features vendored -p shortener-server
+          cargo add openssl --features vendored -p shortener-cli
+      - name: Update submodules
+        run: git submodule update --init --recursive
+      - name: Build server and cli for Linux
+        run: |
+          cargo zigbuild -p shortener-server --release --target x86_64-unknown-linux-musl --features openssl/vendored
+          cargo zigbuild -p shortener-server --release --target aarch64-unknown-linux-musl --features openssl/vendored
+          cargo zigbuild -p shortener-server --release --target loongarch64-unknown-linux-musl --features openssl/vendored
+          cargo zigbuild -p shortener-cli --release --target x86_64-unknown-linux-musl --features openssl/vendored
+          cargo zigbuild -p shortener-cli --release --target aarch64-unknown-linux-musl --features openssl/vendored
+          cargo zigbuild -p shortener-cli --release --target loongarch64-unknown-linux-musl --features openssl/vendored
+      - name: Create release tarballs
+        run: |
+          mkdir ${{ env.RELEASE_DIR }}
+          for arch in x86_64 aarch64 loongarch64; do
+            tar -cJf "${{ env.RELEASE_DIR }}/shortener-server-${{ github.event.release.tag_name }}-$arch-unknown-linux-musl.tar.xz" -C target/$arch-unknown-linux-musl/release shortener-server
+            tar -cJf "${{ env.RELEASE_DIR }}/shortener-cli-${{ github.event.release.tag_name }}-$arch-unknown-linux-musl.tar.xz" -C target/$arch-unknown-linux-musl/release shortener-cli
+          done    
+      - name: Upload release assets
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.release.tag_name }}
+          files: ${{ env.RELEASE_DIR }}/*.tar.xz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}                       
+
+  build-macos:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+            submodules: true
+      - name: Update Rust
+        run: |
+          rustup update
+          rustc --version
+      - name: Install target for MacOS
+        run: |
+          for arch in x86_64 aarch64; do
+            rustup target add $arch-apple-darwin
+          done       
+      - name: Update submodules
+        run: git submodule update --init --recursive
+      - name: Build server and cli for MacOS
+        run: |
+          cargo build -p shortener-server --release --target x86_64-apple-darwin
+          cargo build -p shortener-server --release --target aarch64-apple-darwin
+          cargo build -p shortener-cli --release --target x86_64-apple-darwin
+          cargo build -p shortener-cli --release --target aarch64-apple-darwin
+      - name: Create release tarballs
+        run: |
+          mkdir ${{ env.RELEASE_DIR }}
+          for arch in x86_64 aarch64; do
+            tar -cJf "${{ env.RELEASE_DIR }}/shortener-server-${{ github.event.release.tag_name }}-$arch-apple-darwin.tar.xz" -C target/$arch-apple-darwin/release shortener-server
+            tar -cJf "${{ env.RELEASE_DIR }}/shortener-cli-${{ github.event.release.tag_name }}-$arch-apple-darwin.tar.xz" -C target/$arch-apple-darwin/release shortener-cli
+          done
+      - name: Upload release assets
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.release.tag_name }}
+          files: ${{ env.RELEASE_DIR }}/*.tar.xz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}          
+
+  build-windows:
+    runs-on: windows-2025
+    steps:
+      - uses: actions/checkout@v4
+        with:
+            submodules: true
+      - name: Update Rust
+        run: |
+          rustup update
+          rustc --version
+      - name: Install zip utility
+        run: choco install zip -y
+        shell: powershell          
+      - name: Install target for Windows
+        shell: bash
+        run: |
+          for arch in x86_64 aarch64; do
+            rustup target add $arch-pc-windows-msvc
+          done       
+      - name: Update submodules
+        run: git submodule update --init --recursive
+      - name: Build server and cli for Windows
+        run: |
+          cargo build -p shortener-server --release --target x86_64-pc-windows-msvc
+          cargo build -p shortener-server --release --target aarch64-pc-windows-msvc
+          cargo build -p shortener-cli --release --target x86_64-pc-windows-msvc
+          cargo build -p shortener-cli --release --target aarch64-pc-windows-msvc
+      - name: Create release zip files
+        shell: bash
+        run: |
+          mkdir "${{ env.RELEASE_DIR }}"
+          for arch in x86_64 aarch64; do
+            zip -j "${{ env.RELEASE_DIR }}/shortener-server-${{ github.event.release.tag_name }}-$arch-pc-windows-msvc.zip" target/$arch-pc-windows-msvc/release/shortener-server.exe
+            zip -j "${{ env.RELEASE_DIR }}/shortener-cli-${{ github.event.release.tag_name }}-$arch-pc-windows-msvc.zip" target/$arch-pc-windows-msvc/release/shortener-cli.exe
+          done      
+      - name: Upload release assets
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.release.tag_name }}
+          files: ${{ env.RELEASE_DIR }}/*.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}      

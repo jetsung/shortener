@@ -78,7 +78,7 @@ class NotificationManager {
     const container = this.getContainer();
     container.appendChild(notification);
     this.notifications.set(id, notification);
-    
+
     // 记录最后一个通知的 ID
     this.lastNotificationId = id;
 
@@ -193,7 +193,8 @@ export const Toast = {
   error: (message: string, duration?: number) => notificationManager.error(message, duration),
   warning: (message: string, duration?: number) => notificationManager.warning(message, duration),
   info: (message: string, duration?: number) => notificationManager.info(message, duration),
-  update: (message: string, type: NotificationType) => notificationManager.updateLast(message, type),
+  update: (message: string, type: NotificationType) =>
+    notificationManager.updateLast(message, type),
 };
 
 export default Toast;

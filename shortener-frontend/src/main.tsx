@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
@@ -7,8 +6,6 @@ import zh_CN from '@douyinfe/semi-ui/lib/es/locale/source/zh_CN';
 import App from './App';
 import { applyThemeTokens } from '../config/theme';
 import { initWebVitals, PerformanceMonitor } from './utils/performance';
-
-
 
 // 全局样式
 import './global.css';
@@ -35,7 +32,7 @@ root.render(
         <App />
       </LocaleProvider>
     </BrowserRouter>
-  </React.StrictMode>
+  </React.StrictMode>,
 );
 
 // 结束应用启动性能测量

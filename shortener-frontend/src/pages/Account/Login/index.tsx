@@ -63,18 +63,20 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div style={{
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      minHeight: '100vh',
-      background: 'var(--semi-color-fill-0)'
-    }}>
+    <div
+      style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        minHeight: '100vh',
+        background: 'var(--semi-color-fill-0)',
+      }}
+    >
       <Card
         style={{
           width: 400,
           padding: 24,
-          boxShadow: 'var(--semi-shadow-elevated)'
+          boxShadow: 'var(--semi-shadow-elevated)',
         }}
       >
         <Title
@@ -82,7 +84,7 @@ const Login: React.FC = () => {
           style={{
             textAlign: 'center',
             marginBottom: 32,
-            color: 'var(--semi-color-primary)'
+            color: 'var(--semi-color-primary)',
           }}
         >
           Shortener
@@ -108,13 +110,7 @@ const Login: React.FC = () => {
             autoComplete="current-password"
           />
 
-          <Button
-            type="primary"
-            htmlType="submit"
-            loading={loading}
-            block
-            size="large"
-          >
+          <Button type="primary" htmlType="submit" loading={loading} block size="large">
             登录
           </Button>
         </Form>

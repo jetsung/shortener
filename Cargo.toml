@@ -44,7 +44,11 @@ toml = "0.9"
 
 # 日志
 tracing = "0.1"
-tracing-subscriber = { version = "0.3", features = ["env-filter", "json", "time"] }
+tracing-subscriber = { version = "0.3", features = [
+    "env-filter",
+    "json",
+    "time",
+] }
 
 # 错误处理
 thiserror = "2.0"
@@ -74,7 +78,7 @@ directories = "6.0"
 tabled = "0.20"
 
 # 终端工具
-crossterm = "0.28"
+crossterm = "0.29"
 
 # 异步 trait
 async-trait = "0.1"

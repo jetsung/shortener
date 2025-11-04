@@ -7,7 +7,6 @@
 - [构建准备](#构建准备)
 - [环境变量配置](#环境变量配置)
 - [Docker 部署](#docker-部署)
-- [Nginx 部署](#nginx-部署)
 - [云服务部署](#云服务部署)
 - [性能优化](#性能优化)
 - [监控和日志](#监控和日志)
@@ -17,7 +16,7 @@
 ### 系统要求
 
 - Node.js >= 18.0.0
-- pnpm >= 8.0.0 (推荐) 或 npm >= 9.0.0
+- pnpm >= 10.0.0 (推荐) 或 npm >= 9.0.0
 - 至少 2GB 可用内存用于构建
 
 ### 构建步骤
@@ -94,67 +93,47 @@ VITE_CDN_URL=https://cdn.yourdomain.com
 VITE_APP_VERSION=2.0.0
 ```
 
-### 测试环境 (.env.test)
-
-```bash
-# API 基础地址
-VITE_API_BASE_URL=https://test-api.yourdomain.com
-
-# 应用标题
-VITE_APP_TITLE=Shortener (测试)
-
-# 是否启用调试模式
-VITE_DEBUG=true
-
-# 是否启用 Mock 数据
-VITE_USE_MOCK=false
-```
-
 ## Docker 部署
 
-### 方式一：多阶段构建
+### 使用 Static Web Server
+
+我们使用 [static-web-server](https://static-web-server.net/) 作为生产环境的静态文件服务器，它是一个高性能、轻量级的静态文件服务器。
 
 创建 `Dockerfile`：
 
 ```dockerfile
 # 构建阶段
-FROM node:18-alpine as builder
+FROM node:20-alpine as builder
 
-# 设置工作目录
 WORKDIR /app
 
-# 复制 package 文件
 COPY package*.json pnpm-lock.yaml ./
 
-# 安装 pnpm
-RUN npm install -g pnpm
+RUN corepack enable && corepack prepare pnpm@10.18.3 --activate
 
-# 安装依赖
 RUN pnpm install --frozen-lockfile
 
-# 复制源代码
 COPY . .
 
-# 构建应用
 RUN pnpm build
 
 # 生产阶段
-FROM nginx:alpine
+FROM joseluisq/static-web-server:2
 
-# 复制构建结果
-COPY --from=builder /app/dist /usr/share/nginx/html
+COPY --from=builder /app/dist /public
 
-# 复制 nginx 配置
-COPY nginx.conf /etc/nginx/nginx.conf
+EXPOSE 8080
 
-# 暴露端口
-EXPOSE 80
-
-# 启动 nginx
-CMD ["nginx", "-g", "daemon off;"]
+ENV SERVER_PORT=8080 \
+    SERVER_ROOT=/public \
+    SERVER_LOG_LEVEL=info \
+    SERVER_FALLBACK_PAGE=/public/index.html \
+    SERVER_COMPRESSION_GZIP=true \
+    SERVER_COMPRESSION_BROTLI=true \
+    SERVER_CACHE_CONTROL_HEADERS=true
 ```
 
-### 方式二：使用预构建镜像
+### Docker Compose 部署
 
 创建 `docker-compose.yml`：
 
@@ -164,14 +143,19 @@ version: '3.8'
 services:
   shortener-frontend:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ../shortener-frontend
+      dockerfile: ../docker/Dockerfile.frontend
+    container_name: shortener-frontend
     ports:
-      - "80:80"
+      - "80:8080"
     environment:
-      - VITE_API_BASE_URL=https://api.yourdomain.com
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - SERVER_PORT=8080
+      - SERVER_ROOT=/public
+      - SERVER_LOG_LEVEL=info
+      - SERVER_FALLBACK_PAGE=/public/index.html
+      - SERVER_COMPRESSION_GZIP=true
+      - SERVER_COMPRESSION_BROTLI=true
+      - SERVER_CACHE_CONTROL_HEADERS=true
     restart: unless-stopped
     networks:
       - shortener-network
@@ -179,160 +163,42 @@ services:
 networks:
   shortener-network:
     driver: bridge
+    name: shortener-network
 ```
 
 ### 构建和运行
 
 ```bash
 # 构建镜像
-docker build -t shortener-frontend .
+docker build -f docker/Dockerfile.frontend -t shortener-frontend ./shortener-frontend
 
 # 运行容器
 docker run -d \
   --name shortener-frontend \
-  -p 80:80 \
-  -e VITE_API_BASE_URL=https://api.yourdomain.com \
+  -p 80:8080 \
+  -e SERVER_LOG_LEVEL=info \
   shortener-frontend
 
 # 或使用 docker-compose
-docker-compose up -d
+docker-compose -f docker/docker-compose.frontend.yml up -d
 ```
 
-## Nginx 部署
+### Static Web Server 环境变量
 
-### Nginx 配置文件
+常用环境变量配置：
 
-创建 `nginx.conf`：
+| 变量名 | 默认值 | 说明 |
+|--------|--------|------|
+| `SERVER_PORT` | 8080 | 服务监听端口 |
+| `SERVER_ROOT` | /public | 静态文件根目录 |
+| `SERVER_LOG_LEVEL` | error | 日志级别 (error/warn/info/debug/trace) |
+| `SERVER_FALLBACK_PAGE` | - | SPA 路由回退页面 |
+| `SERVER_COMPRESSION_GZIP` | false | 启用 Gzip 压缩 |
+| `SERVER_COMPRESSION_BROTLI` | false | 启用 Brotli 压缩 |
+| `SERVER_CACHE_CONTROL_HEADERS` | false | 启用缓存控制头 |
+| `SERVER_CORS_ALLOW_ORIGINS` | - | CORS 允许的源 |
 
-```nginx
-user nginx;
-worker_processes auto;
-error_log /var/log/nginx/error.log warn;
-pid /var/run/nginx.pid;
-
-events {
-    worker_connections 1024;
-    use epoll;
-    multi_accept on;
-}
-
-http {
-    include /etc/nginx/mime.types;
-    default_type application/octet-stream;
-
-    # 日志格式
-    log_format main '$remote_addr - $remote_user [$time_local] "$request" '
-                    '$status $body_bytes_sent "$http_referer" '
-                    '"$http_user_agent" "$http_x_forwarded_for"';
-
-    access_log /var/log/nginx/access.log main;
-
-    # 基本设置
-    sendfile on;
-    tcp_nopush on;
-    tcp_nodelay on;
-    keepalive_timeout 65;
-    types_hash_max_size 2048;
-    client_max_body_size 16M;
-
-    # Gzip 压缩
-    gzip on;
-    gzip_vary on;
-    gzip_min_length 1024;
-    gzip_proxied any;
-    gzip_comp_level 6;
-    gzip_types
-        text/plain
-        text/css
-        text/xml
-        text/javascript
-        application/json
-        application/javascript
-        application/xml+rss
-        application/atom+xml
-        image/svg+xml;
-
-    # 缓存设置
-    map $sent_http_content_type $expires {
-        default                    off;
-        text/html                  epoch;
-        text/css                   max;
-        application/javascript     max;
-        ~image/                    max;
-        ~font/                     max;
-    }
-
-    server {
-        listen 80;
-        server_name localhost;
-        root /usr/share/nginx/html;
-        index index.html;
-
-        # 设置缓存
-        expires $expires;
-
-        # 处理 SPA 路由
-        location / {
-            try_files $uri $uri/ /index.html;
-        }
-
-        # API 代理 (可选)
-        location /api/ {
-            proxy_pass http://backend-server:8080/;
-            proxy_set_header Host $host;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto $scheme;
-        }
-
-        # 静态资源缓存
-        location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
-            expires 1y;
-            add_header Cache-Control "public, immutable";
-        }
-
-        # 安全头
-        add_header X-Frame-Options "SAMEORIGIN" always;
-        add_header X-XSS-Protection "1; mode=block" always;
-        add_header X-Content-Type-Options "nosniff" always;
-        add_header Referrer-Policy "no-referrer-when-downgrade" always;
-        add_header Content-Security-Policy "default-src 'self' http: https: data: blob: 'unsafe-inline'" always;
-
-        # 健康检查
-        location /health {
-            access_log off;
-            return 200 "healthy\n";
-            add_header Content-Type text/plain;
-        }
-    }
-}
-```
-
-### 部署步骤
-
-1. **上传构建文件**
-
-```bash
-# 将 dist 目录内容上传到服务器
-scp -r dist/* user@server:/var/www/shortener/
-
-# 或使用 rsync
-rsync -avz --delete dist/ user@server:/var/www/shortener/
-```
-
-2. **配置 Nginx**
-
-```bash
-# 复制配置文件
-sudo cp nginx.conf /etc/nginx/sites-available/shortener
-sudo ln -s /etc/nginx/sites-available/shortener /etc/nginx/sites-enabled/
-
-# 测试配置
-sudo nginx -t
-
-# 重启 Nginx
-sudo systemctl restart nginx
-```
+更多配置选项请参考：https://static-web-server.net/configuration/environment-variables/
 
 ## 云服务部署
 
@@ -389,7 +255,7 @@ vercel --prod
   command = "pnpm build"
 
 [build.environment]
-  NODE_VERSION = "18"
+  NODE_VERSION = "20"
 
 [[redirects]]
   from = "/*"
@@ -397,7 +263,7 @@ vercel --prod
   status = 200
 
 [[headers]]
-  for = "/static/*"
+  for = "/assets/*"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
 ```
@@ -438,42 +304,28 @@ aws s3 cp dist/index.html s3://your-bucket-name/index.html \
 
 ## 性能优化
 
-### 1. 启用 Gzip/Brotli 压缩
+### 1. 压缩配置
 
-```nginx
-# Nginx 配置
-gzip on;
-gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
+Static Web Server 内置支持 Gzip 和 Brotli 压缩：
 
-# 或启用 Brotli (需要模块支持)
-brotli on;
-brotli_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
+```bash
+# 启用压缩
+SERVER_COMPRESSION_GZIP=true
+SERVER_COMPRESSION_BROTLI=true
 ```
 
-### 2. 设置合适的缓存策略
+### 2. 缓存策略
 
-```nginx
-# 静态资源长期缓存
-location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2)$ {
-    expires 1y;
-    add_header Cache-Control "public, immutable";
-}
+Static Web Server 自动为静态资源设置合适的缓存头：
 
-# HTML 文件不缓存
-location ~* \.html$ {
-    expires -1;
-    add_header Cache-Control "no-cache, no-store, must-revalidate";
-}
+```bash
+# 启用缓存控制
+SERVER_CACHE_CONTROL_HEADERS=true
 ```
 
-### 3. 启用 HTTP/2
+### 3. HTTP/2 支持
 
-```nginx
-server {
-    listen 443 ssl http2;
-    # SSL 配置...
-}
-```
+Static Web Server 原生支持 HTTP/2，无需额外配置。
 
 ### 4. 预加载关键资源
 
@@ -513,27 +365,16 @@ window.addEventListener('unhandledrejection', (event) => {
 });
 ```
 
-### 3. 访问日志分析
+### 3. 日志级别
 
-使用 Nginx 日志分析工具：
+通过环境变量控制日志输出：
 
 ```bash
-# 安装 GoAccess
-sudo apt-get install goaccess
+# 生产环境
+SERVER_LOG_LEVEL=error
 
-# 分析日志
-goaccess /var/log/nginx/access.log -o report.html --log-format=COMBINED
-```
-
-### 4. 健康检查
-
-```nginx
-# Nginx 健康检查端点
-location /health {
-    access_log off;
-    return 200 "healthy\n";
-    add_header Content-Type text/plain;
-}
+# 开发环境
+SERVER_LOG_LEVEL=debug
 ```
 
 ## 故障排除
@@ -546,8 +387,8 @@ location /health {
    - 检查 API 地址配置
 
 2. **路由 404 错误**
-   - 确认 Nginx 配置了 SPA 路由重写
-   - 检查 `try_files` 配置
+   - 确认设置了 `SERVER_FALLBACK_PAGE=/public/index.html`
+   - 检查 SPA 路由配置
 
 3. **API 请求失败**
    - 检查 CORS 配置
@@ -562,32 +403,39 @@ location /health {
 ### 调试工具
 
 ```bash
-# 检查 Nginx 配置
-sudo nginx -t
+# 查看容器日志
+docker logs shortener-frontend
 
-# 查看 Nginx 日志
-sudo tail -f /var/log/nginx/error.log
+# 进入容器（注意：基于 scratch 的镜像无法进入）
+# 使用 alpine 版本进行调试
+docker run -it joseluisq/static-web-server:2-alpine sh
 
 # 检查端口占用
-sudo netstat -tlnp | grep :80
+sudo netstat -tlnp | grep :8080
 
-# 检查服务状态
-sudo systemctl status nginx
+# 检查容器状态
+docker ps -a | grep shortener-frontend
 ```
 
 ## 安全建议
 
 1. **HTTPS 配置**
-   - 使用 Let's Encrypt 免费证书
+   - 使用反向代理（如 Caddy、Traefik）处理 HTTPS
    - 配置 HSTS 头
    - 禁用不安全的 SSL/TLS 版本
 
 2. **安全头设置**
+   
+   使用反向代理添加安全头：
+   
    ```nginx
-   add_header X-Frame-Options "SAMEORIGIN";
-   add_header X-XSS-Protection "1; mode=block";
-   add_header X-Content-Type-Options "nosniff";
-   add_header Referrer-Policy "strict-origin-when-cross-origin";
+   # Caddy 示例
+   header {
+       X-Frame-Options "SAMEORIGIN"
+       X-XSS-Protection "1; mode=block"
+       X-Content-Type-Options "nosniff"
+       Referrer-Policy "strict-origin-when-cross-origin"
+   }
    ```
 
 3. **访问控制**
@@ -597,7 +445,7 @@ sudo systemctl status nginx
 
 4. **定期更新**
    - 及时更新依赖包
-   - 定期更新服务器系统
+   - 定期更新容器镜像
    - 监控安全漏洞
 
-更多部署相关问题，请参考 [Semi Design 部署指南](https://semi.design/zh-CN/start/getting-started#%E9%83%A8%E7%BD%B2) 或联系技术支持。
+更多部署相关问题，请参考 [Static Web Server 文档](https://static-web-server.net/) 或联系技术支持。

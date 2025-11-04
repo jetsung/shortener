@@ -1,0 +1,94 @@
+name: Docker-Server-Dev-Alpine
+
+on:
+  push:
+    branches:
+      - dev*
+    paths:
+      - "docker/Dockerfile.alpine"
+      - ".github/workflows/docker-server-dev-alpine.yml"
+      - "docker-bake.hcl"
+      - "shortener-server/Cargo.toml"
+      - "shortener-server/src"
+      
+env:
+  package_name: shortener-server
+  GHCR_SLUG: ghcr.io/${{ github.repository }}-server
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        arch: [amd64, arm64]
+        include:
+          - arch: amd64
+            runner: ubuntu-24.04
+            tag: dev-alpine-amd64
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+            tag: dev-alpine-arm64
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Login to GitHub Container Registry (ghcr.io)
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.GHCR_SLUG }}
+          labels: |
+            org.opencontainers.image.title=Shortener (Alpine)
+            org.opencontainers.image.description=Shortener is a URL shortening service (Alpine Linux).
+            org.opencontainers.image.vendor=Jetsung Chan
+          tags: ${{ matrix.tag }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./docker/Dockerfile.alpine
+          platforms: linux/${{ matrix.arch }}
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ env.GHCR_SLUG }}:${{ matrix.tag }}
+
+  manifest:
+    needs: build
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create and push multi-arch manifest
+        run: |
+          docker manifest create ${{ env.GHCR_SLUG }}:dev-alpine \
+            --amend ${{ env.GHCR_SLUG }}:dev-alpine-amd64 \
+            --amend ${{ env.GHCR_SLUG }}:dev-alpine-arm64
+          docker manifest push ${{ env.GHCR_SLUG }}:dev-alpine
+        shell: bash
+
+      - uses: actions/delete-package-versions@v5
+        continue-on-error: true
+        with:
+          package-name: ${{ env.package_name }}
+          package-type: "container"
+          min-versions-to-keep: 2
+          delete-only-untagged-versions: "true"

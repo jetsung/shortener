@@ -1,60 +1,42 @@
 # 构建阶段
-FROM node:18-alpine as builder
+FROM node:24-alpine as builder
 
 # 设置工作目录
 WORKDIR /app
 
 # 复制 package 文件
-COPY package*.json pnpm-lock.yaml ./
+COPY shortener-frontend/package*.json shortener-frontend/pnpm-lock.yaml ./
 
 # 安装 pnpm
-RUN npm install -g pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
 
 # 安装依赖
 RUN pnpm install --frozen-lockfile
 
 # 复制源代码
-COPY . .
+COPY shortener-frontend/ .
 
 # 构建应用
 RUN pnpm build
 
 # 生产阶段
-FROM nginx:alpine
+FROM joseluisq/static-web-server:2
 
-# 安装 dumb-init 用于信号处理
-RUN apk add --no-cache dumb-init
-
-# 创建非 root 用户
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nextjs -u 1001
-
-# 复制构建结果
-COPY --from=builder /app/dist /usr/share/nginx/html
-
-# 复制 nginx 配置
-COPY nginx.conf /etc/nginx/nginx.conf
-
-# 设置权限
-RUN chown -R nextjs:nodejs /usr/share/nginx/html && \
-    chown -R nextjs:nodejs /var/cache/nginx && \
-    chown -R nextjs:nodejs /var/log/nginx && \
-    chown -R nextjs:nodejs /etc/nginx/conf.d
-
-# 创建 nginx 运行时需要的目录
-RUN touch /var/run/nginx.pid && \
-    chown -R nextjs:nodejs /var/run/nginx.pid
-
-# 切换到非 root 用户
-USER nextjs
+# 复制构建结果到静态文件目录
+COPY --from=builder /app/dist /public
 
 # 暴露端口
 EXPOSE 8080
 
-# 健康检查
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:8080/health || exit 1
+# 环境变量配置
+ENV SERVER_PORT=8080 \
+    SERVER_ROOT=/public \
+    SERVER_LOG_LEVEL=info \
+    SERVER_FALLBACK_PAGE=/public/index.html \
+    SERVER_COMPRESSION_GZIP=true \
+    SERVER_COMPRESSION_BROTLI=true \
+    SERVER_CACHE_CONTROL_HEADERS=true
 
-# 使用 dumb-init 启动 nginx
-ENTRYPOINT ["dumb-init", "--"]
-CMD ["nginx", "-g", "daemon off;"]
+# static-web-server 镜像已经包含了默认的 ENTRYPOINT 和 CMD
+# 会自动启动服务器，无需额外配置
+# 注意：基于 scratch 的镜像不支持 HEALTHCHECK，需要在编排层（如 docker-compose 或 k8s）配置健康检查

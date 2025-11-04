@@ -103,7 +103,7 @@ docker buildx bake --set "*.platform=linux/amd64,linux/arm64,linux/arm/v7"
 #### 服务器配置
 
 - `RUST_LOG`：日志级别（debug、info、warn、error）
-- `CONFIG_PATH`：配置文件路径（默认：`/etc/shortener/config.toml`）
+- `CONFIG_PATH`：配置文件路径（默认：`/app/config.toml`）
 
 #### 数据库配置
 
@@ -132,9 +132,9 @@ docker buildx bake --set "*.platform=linux/amd64,linux/arm64,linux/arm/v7"
 
 ```yaml
 volumes:
-  - ../config/config.toml:/etc/shortener/config.toml:ro # 配置文件
-  - ../data:/var/lib/shortener:ro # 数据文件
-  - shortener-logs:/var/log/shortener # 日志
+  - ../config/config.docker.toml:/app/config.toml:ro # 配置文件
+  - ../data:/app/data # 数据文件（数据库、GeoIP等）
+  - app-logs:/app/logs # 日志
 ```
 
 ## Makefile 命令
@@ -219,7 +219,8 @@ networks:
 - `postgres-data`：PostgreSQL 数据
 - `mysql-data`：MySQL 数据
 - `redis-data`：Redis 数据
-- `shortener-logs`：应用日志
+- `app-logs`：应用日志
+- `/app/data`：应用数据（SQLite 数据库、GeoIP 数据库等）
 
 ## 安全考虑
 
@@ -285,7 +286,7 @@ docker compose -f docker/docker-compose.yml ps
 docker compose -f docker/docker-compose.yml exec shortener-server sh
 
 # 检查配置
-docker compose -f docker/docker-compose.yml exec shortener-server cat /etc/shortener/config.toml
+docker compose -f docker/docker-compose.yml exec shortener-server cat /app/config.toml
 
 # 检查数据库连接
 docker compose -f docker/docker-compose.yml exec postgres psql -U shortener -d shortener

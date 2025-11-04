@@ -33,21 +33,37 @@ vi.mock('@douyinfe/semi-ui', () => ({
     </button>
   ),
   Space: ({ children }: any) => <div data-testid="space">{children}</div>,
-  Modal: ({ visible, title, children, onOk, onCancel }: any) => (
+  Modal: ({ visible, title, children, onOk, onCancel }: any) =>
     visible ? (
       <div data-testid="modal">
         <div data-testid="modal-title">{title}</div>
         <div>{children}</div>
-        <button onClick={onOk} data-testid="modal-ok">确定</button>
-        <button onClick={onCancel} data-testid="modal-cancel">取消</button>
+        <button onClick={onOk} data-testid="modal-ok">
+          确定
+        </button>
+        <button onClick={onCancel} data-testid="modal-cancel">
+          取消
+        </button>
       </div>
-    ) : null
-  ),
+    ) : null,
   Form: ({ children, onSubmit }: any) => (
     <form onSubmit={onSubmit} data-testid="form">
       {children}
     </form>
   ),
+  Typography: Object.assign(({ children, ...props }: any) => <div {...props}>{children}</div>, {
+    Title: ({ children, heading, style, ...props }: any) => (
+      <h1 style={style} data-heading={heading} {...props}>
+        {children}
+      </h1>
+    ),
+    Text: ({ children, type, size, ...props }: any) => (
+      <span data-type={type} data-size={size} {...props}>
+        {children}
+      </span>
+    ),
+    Paragraph: ({ children, ...props }: any) => <p {...props}>{children}</p>,
+  }),
   Toast: {
     success: vi.fn(),
     error: vi.fn(),
@@ -56,7 +72,13 @@ vi.mock('@douyinfe/semi-ui', () => ({
 
 // Mock SemiTable component
 vi.mock('../../components/SemiTable', () => ({
-  default: ({ headerTitle, request, columns, toolBarRender, actionRef }: any) => {
+  default: function MockSemiTable({
+    headerTitle,
+    request,
+    columns,
+    toolBarRender,
+    actionRef,
+  }: any) {
     const mockData = [
       { id: 1, code: 'abc123', original_url: 'https://example.com', created_at: '2024-01-01' },
       { id: 2, code: 'def456', original_url: 'https://test.com', created_at: '2024-01-02' },
@@ -84,9 +106,7 @@ vi.mock('../../components/SemiTable', () => ({
     return (
       <div data-testid="semi-table">
         <div data-testid="table-title">{headerTitle}</div>
-        <div data-testid="table-toolbar">
-          {toolBarRender && toolBarRender()}
-        </div>
+        <div data-testid="table-toolbar">{toolBarRender && toolBarRender()}</div>
         <table>
           <thead>
             <tr>
@@ -125,7 +145,7 @@ vi.mock('../../components/SemiForm', () => ({
       {children}
     </form>
   ),
-  ModalForm: ({ visible, title, children, onFinish }: any) => (
+  ModalForm: ({ visible, title, children, onFinish }: any) =>
     visible ? (
       <div data-testid="modal-form">
         <div data-testid="modal-form-title">{title}</div>
@@ -136,11 +156,12 @@ vi.mock('../../components/SemiForm', () => ({
           }}
         >
           {children}
-          <button type="submit" data-testid="modal-form-submit">提交</button>
+          <button type="submit" data-testid="modal-form-submit">
+            提交
+          </button>
         </form>
       </div>
-    ) : null
-  ),
+    ) : null,
 }));
 
 const renderWithRouter = (component: React.ReactElement) => {
@@ -193,7 +214,7 @@ describe('Shortener Integration Tests', () => {
           pageSize: 10,
         }),
         {},
-        {}
+        {},
       );
     });
   });
@@ -329,7 +350,7 @@ describe('Shortener Integration Tests', () => {
           pageSize: 10,
         }),
         {},
-        {}
+        {},
       );
     });
   });

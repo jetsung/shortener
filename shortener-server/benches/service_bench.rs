@@ -77,8 +77,8 @@ fn benchmark_service_create(c: &mut Criterion) {
             counter += 1;
             let req = CreateShortenRequest {
                 original_url: format!("https://example{}.com", counter),
-                code: None,
-                describe: Some("Benchmark URL".to_string()),
+                short_code: None,
+                description: Some("Benchmark URL".to_string()),
             };
             rt.block_on(async { black_box(service.create_shorten(req).await.unwrap()) })
         });
@@ -91,8 +91,8 @@ fn benchmark_service_create(c: &mut Criterion) {
             custom_counter += 1;
             let req = CreateShortenRequest {
                 original_url: "https://example.com".to_string(),
-                code: Some(format!("custom{}", custom_counter)),
-                describe: Some("Benchmark URL".to_string()),
+                short_code: Some(format!("custom{}", custom_counter)),
+                description: Some("Benchmark URL".to_string()),
             };
             rt.block_on(async { black_box(service.create_shorten(req).await.unwrap()) })
         });
@@ -109,8 +109,8 @@ fn benchmark_service_get(c: &mut Criterion) {
         for i in 0..100 {
             let req = CreateShortenRequest {
                 original_url: format!("https://example{}.com", i),
-                code: Some(format!("get{}", i)),
-                describe: None,
+                short_code: Some(format!("get{}", i)),
+                description: None,
             };
             service.create_shorten(req).await.unwrap();
         }
@@ -131,8 +131,8 @@ fn benchmark_service_list(c: &mut Criterion) {
         for i in 0..500 {
             let req = CreateShortenRequest {
                 original_url: format!("https://example{}.com", i),
-                code: Some(format!("list{}", i)),
-                describe: Some(format!("URL {}", i)),
+                short_code: Some(format!("list{}", i)),
+                description: Some(format!("URL {}", i)),
             };
             service.create_shorten(req).await.unwrap();
         }
@@ -170,8 +170,8 @@ fn benchmark_service_update(c: &mut Criterion) {
         for i in 0..100 {
             let req = CreateShortenRequest {
                 original_url: format!("https://example{}.com", i),
-                code: Some(format!("update{}", i)),
-                describe: Some(format!("URL {}", i)),
+                short_code: Some(format!("update{}", i)),
+                description: Some(format!("URL {}", i)),
             };
             service.create_shorten(req).await.unwrap();
         }
@@ -181,7 +181,7 @@ fn benchmark_service_update(c: &mut Criterion) {
         b.iter(|| {
             let req = UpdateShortenRequest {
                 original_url: Some("https://updated.com".to_string()),
-                describe: Some("Updated".to_string()),
+                description: Some("Updated".to_string()),
                 status: None,
             };
             rt.block_on(async { black_box(service.update_shorten("update50", req).await.unwrap()) })
@@ -199,8 +199,8 @@ fn benchmark_service_code_generation(c: &mut Criterion) {
         for i in 0..100 {
             let req = CreateShortenRequest {
                 original_url: format!("https://example{}.com", i),
-                code: None,
-                describe: None,
+                short_code: None,
+                description: None,
             };
             service.create_shorten(req).await.unwrap();
         }
@@ -213,8 +213,8 @@ fn benchmark_service_code_generation(c: &mut Criterion) {
             counter += 1;
             let req = CreateShortenRequest {
                 original_url: format!("https://unique{}.com", counter),
-                code: None,
-                describe: None,
+                short_code: None,
+                description: None,
             };
             rt.block_on(async { black_box(service.create_shorten(req).await.unwrap()) })
         });
@@ -232,8 +232,8 @@ fn benchmark_service_validation(c: &mut Criterion) {
             counter += 1;
             let req = CreateShortenRequest {
                 original_url: format!("https://example{}.com", counter),
-                code: Some(format!("valid{}", counter)),
-                describe: Some("Test description".to_string()),
+                short_code: Some(format!("valid{}", counter)),
+                description: Some("Test description".to_string()),
             };
             rt.block_on(async { black_box(service.create_shorten(req).await.unwrap()) })
         });

@@ -60,7 +60,9 @@ cargo build --release -p shortener-server
 ### 部署指南
 
 - [部署概述](deployment/README.md) - 部署方式总览
-- [Docker 部署](deployment/DOCKER.md) - 使用 Docker 部署
+- [Docker 后端部署](deployment/DOCKER.md) - 使用 Docker 部署后端服务
+- [Docker 前端部署](deployment/DOCKER_FRONTEND.md) - 使用 Docker 部署前端应用
+- [前端部署指南](frontend/DEPLOYMENT.md) - 前端部署详细说明
 - [生产部署](deployment/DEPLOYMENT.md) - 生产环境部署
 - [DEB 打包](deployment/DEB_PACKAGING_SIMPLIFIED.md) - Debian 包制作
 

@@ -10,6 +10,7 @@ Shortener 服务器的完整配置参考。
 - [服务器配置](#服务器配置)
 - [数据库配置](#数据库配置)
 - [缓存配置](#缓存配置)
+- [GeoIP 配置](#geoip-配置)
 
 ## 概述
 
@@ -183,9 +184,11 @@ db = 0
 
 ## GeoIP 配置
 
+GeoIP 功能用于追踪访问者的地理位置信息。默认禁用，需要手动配置。
+
 ```toml
 [geoip]
-enabled = true
+enabled = false  # 默认禁用
 type = "ip2region"
 
 [geoip.ip2region]
@@ -193,6 +196,26 @@ path = "data/ip2region.xdb"
 mode = "vector"
 version = "4"
 ```
+
+### 启用 GeoIP
+
+要启用 GeoIP 功能，需要：
+
+1. 下载 ip2region 数据库文件：
+   ```bash
+   curl -fsSL https://github.com/lionsoul2014/ip2region/raw/master/data/ip2region_v4.xdb \
+       -o data/ip2region.xdb
+   ```
+
+2. 在配置文件中启用：
+   ```toml
+   [geoip]
+   enabled = true
+   ```
+
+3. 重启服务
+
+详细的 GeoIP 配置和使用说明，请参阅 [GeoIP 配置指南](GEOIP.md)。
 
 ## 配置示例
 
@@ -270,6 +293,7 @@ path = "/var/lib/shortener/ip2region.xdb"
 
 ## 另见
 
-- [API 文档](API.md)
-- [部署指南](DEPLOYMENT.md)
-- [Docker 部署](DOCKER.md)
+- [GeoIP 配置指南](GEOIP.md)
+- [API 文档](../server/API.md)
+- [部署指南](../deployment/DEPLOYMENT.md)
+- [Docker 部署](../deployment/DOCKER.md)

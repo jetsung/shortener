@@ -18,10 +18,10 @@ password = "${ADMIN_PASSWORD}"
 
 [database]
 type = "${DATABASE_TYPE:-sqlite}"
-log_level = 1
+log_level = 0
 
 [database.sqlite]
-path = "/var/lib/shortener/shortener.db"
+path = "/app/data/shortener.db"
 
 [database.postgres]
 host = "${DATABASE_HOST:-postgres}"
@@ -62,11 +62,11 @@ password = "${VALKEY_PASSWORD:-}"
 db = 0
 
 [geoip]
-enabled = true
+enabled = false
 type = "ip2region"
 
 [geoip.ip2region]
-path = "/var/lib/shortener/ip2region.xdb"
+path = "/app/data/ip2region.xdb"
 mode = "vector"
 version = "4"
 

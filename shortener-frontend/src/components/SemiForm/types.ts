@@ -1,7 +1,9 @@
+import type { ReactNode } from 'react';
+
 export interface SemiFormProps {
   onFinish?: (values: any) => Promise<boolean> | boolean;
   onFinishFailed?: (errorInfo: any) => void;
-  children?: React.ReactNode;
+  children?: ReactNode;
   labelPosition?: 'left' | 'top' | 'inset';
   labelWidth?: number | string;
   initValues?: any;
@@ -24,5 +26,5 @@ export interface SemiModalFormProps extends SemiFormProps {
   width?: number | string;
   okText?: string;
   cancelText?: string;
-  modalProps?: any;
+  modalProps?: unknown;
 }

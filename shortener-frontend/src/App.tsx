@@ -14,12 +14,14 @@ const NotFound = React.lazy(() => import('./pages/404'));
 
 // 加载中组件
 const PageLoading: React.FC = () => (
-  <div style={{
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    height: '200px'
-  }}>
+  <div
+    style={{
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      height: '200px',
+    }}
+  >
     <Spin size="large" />
   </div>
 );

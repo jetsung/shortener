@@ -1,5 +1,5 @@
-import '@testing-library/jest-dom'
-import { vi } from 'vitest'
+import '@testing-library/jest-dom';
+import { vi, beforeAll, afterAll } from 'vitest';
 
 // 抑制ReactDOM.render警告
 const originalError = console.error;

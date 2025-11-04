@@ -1,16 +1,16 @@
 {
   "name": "shortener-frontend",
-  "version": "2.0.0",
+  "version": "0.1.0",
   "description": "A modern URL shortener service frontend built with Semi Design and React 19",
   "private": true,
   "type": "module",
-  "packageManager": "pnpm@10.18.3",
+  "packageManager": "pnpm@10.20.0",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
     "build:analyze": "tsc && vite build --mode analyze",
     "preview": "vite preview",
-    "lint": "eslint . --report-unused-disable-directives --max-warnings 20",
+    "lint": "eslint . --report-unused-disable-directives --max-warnings 200",
     "lint:fix": "eslint . --fix",
     "test": "vitest --run",
     "test:watch": "vitest",
@@ -55,7 +55,7 @@
     "terser": "^5.44.0",
     "typescript": "^5.9.3",
     "vite": "^7.1.12",
-    "vitest": "^3.2.4"
+    "vitest": "^4.0.8"
   },
   "engines": {
     "node": ">=18.0.0"

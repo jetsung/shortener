@@ -42,3 +42,296 @@ exports[`Visual Regression Tests > Dashboard Component > renders with consistent
   "textContent": "欢迎使用 Shortener 短网址生成器Shortener 是一个使用 Go 语言开发的短网址生成器。后端使用 Gin 框架，前端使用 React 框架，UI 框架使用 Semi Design。",
 }
 `;
+
+exports[`Visual Regression Tests > History Component > renders with consistent table layout > history-structure 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "className": "semi-table-header",
+          "tagName": "div",
+          "textContent": "日志列表",
+        },
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "children": [
+                    {
+                      "className": "semi-table-th",
+                      "tagName": "th",
+                      "textContent": "ID",
+                    },
+                    {
+                      "className": "semi-table-th",
+                      "tagName": "th",
+                      "textContent": "短码",
+                    },
+                    {
+                      "className": "semi-table-th",
+                      "tagName": "th",
+                      "textContent": "访问者 IP",
+                    },
+                    {
+                      "className": "semi-table-th",
+                      "tagName": "th",
+                      "textContent": "来源 URL",
+                    },
+                    {
+                      "className": "semi-table-th",
+                      "tagName": "th",
+                      "textContent": "User-Agent",
+                    },
+                    {
+                      "className": "semi-table-th",
+                      "tagName": "th",
+                      "textContent": "国家",
+                    },
+                    {
+                      "className": "semi-table-th",
+                      "tagName": "th",
+                      "textContent": "省份",
+                    },
+                    {
+                      "className": "semi-table-th",
+                      "tagName": "th",
+                      "textContent": "城市",
+                    },
+                    {
+                      "className": "semi-table-th",
+                      "tagName": "th",
+                      "textContent": "运营商",
+                    },
+                    {
+                      "className": "semi-table-th",
+                      "tagName": "th",
+                      "textContent": "设备类型",
+                    },
+                    {
+                      "className": "semi-table-th",
+                      "tagName": "th",
+                      "textContent": "操作系统",
+                    },
+                    {
+                      "className": "semi-table-th",
+                      "tagName": "th",
+                      "textContent": "浏览器",
+                    },
+                    {
+                      "className": "semi-table-th",
+                      "tagName": "th",
+                      "textContent": "访问时间",
+                    },
+                    {
+                      "className": "semi-table-th",
+                      "tagName": "th",
+                      "textContent": "创建时间",
+                    },
+                  ],
+                  "tagName": "tr",
+                  "textContent": "ID短码访问者 IP来源 URLUser-Agent国家省份城市运营商设备类型操作系统浏览器访问时间创建时间",
+                },
+              ],
+              "tagName": "thead",
+              "textContent": "ID短码访问者 IP来源 URLUser-Agent国家省份城市运营商设备类型操作系统浏览器访问时间创建时间",
+            },
+            {
+              "children": [
+                {
+                  "children": [
+                    {
+                      "className": "semi-table-td",
+                      "tagName": "td",
+                      "textContent": "Sample Data",
+                    },
+                  ],
+                  "tagName": "tr",
+                  "textContent": "Sample Data",
+                },
+              ],
+              "tagName": "tbody",
+              "textContent": "Sample Data",
+            },
+          ],
+          "className": "semi-table",
+          "tagName": "table",
+          "textContent": "ID短码访问者 IP来源 URLUser-Agent国家省份城市运营商设备类型操作系统浏览器访问时间创建时间Sample Data",
+        },
+      ],
+      "className": "semi-table-wrapper",
+      "tagName": "div",
+      "textContent": "日志列表ID短码访问者 IP来源 URLUser-Agent国家省份城市运营商设备类型操作系统浏览器访问时间创建时间Sample Data",
+    },
+  ],
+  "tagName": "div",
+  "textContent": "日志列表ID短码访问者 IP来源 URLUser-Agent国家省份城市运营商设备类型操作系统浏览器访问时间创建时间Sample Data",
+}
+`;
+
+exports[`Visual Regression Tests > MainLayout Component > renders layout with consistent structure > main-layout-structure 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "className": "semi-typography-title semi-typography-h4",
+                  "tagName": "h1",
+                  "textContent": "Shortener",
+                },
+              ],
+              "tagName": "div",
+              "textContent": "Shortener",
+            },
+            {
+              "children": [
+                {
+                  "children": [
+                    {
+                      "children": [
+                        {
+                          "className": "semi-icon semi-icon-home",
+                          "tagName": "span",
+                          "textContent": "🏠",
+                        },
+                        {
+                          "tagName": "span",
+                          "textContent": "仪表盘",
+                        },
+                      ],
+                      "className": "semi-nav-item semi-nav-item-selected",
+                      "tagName": "div",
+                      "textContent": "🏠仪表盘",
+                    },
+                    {
+                      "children": [
+                        {
+                          "className": "semi-icon semi-icon-link",
+                          "tagName": "span",
+                          "textContent": "🔗",
+                        },
+                        {
+                          "tagName": "span",
+                          "textContent": "短址管理",
+                        },
+                      ],
+                      "className": "semi-nav-item ",
+                      "tagName": "div",
+                      "textContent": "🔗短址管理",
+                    },
+                    {
+                      "children": [
+                        {
+                          "className": "semi-icon semi-icon-histogram",
+                          "tagName": "span",
+                          "textContent": "📊",
+                        },
+                        {
+                          "tagName": "span",
+                          "textContent": "日志管理",
+                        },
+                      ],
+                      "className": "semi-nav-item ",
+                      "tagName": "div",
+                      "textContent": "📊日志管理",
+                    },
+                  ],
+                  "className": "semi-nav semi-nav-vertical ",
+                  "tagName": "nav",
+                  "textContent": "🏠仪表盘🔗短址管理📊日志管理",
+                },
+              ],
+              "tagName": "div",
+              "textContent": "🏠仪表盘🔗短址管理📊日志管理",
+            },
+          ],
+          "tagName": "div",
+          "textContent": "Shortener🏠仪表盘🔗短址管理📊日志管理",
+        },
+      ],
+      "tagName": "div",
+      "textContent": "Shortener🏠仪表盘🔗短址管理📊日志管理",
+    },
+    {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "className": "semi-button semi-button-default semi-button-borderless semi-button-default",
+                  "tagName": "button",
+                },
+              ],
+              "tagName": "div",
+            },
+            {
+              "children": [
+                {
+                  "children": [
+                    {
+                      "className": "avatar-text",
+                      "tagName": "span",
+                      "textContent": "Test User",
+                    },
+                  ],
+                  "className": "avatar-dropdown",
+                  "tagName": "div",
+                  "textContent": "Test User",
+                },
+              ],
+              "tagName": "div",
+              "textContent": "Test User",
+            },
+          ],
+          "tagName": "div",
+          "textContent": "Test User",
+        },
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "className": "router-outlet",
+                  "tagName": "div",
+                  "textContent": "Page Content",
+                },
+              ],
+              "tagName": "div",
+              "textContent": "Page Content",
+            },
+          ],
+          "tagName": "div",
+          "textContent": "Page Content",
+        },
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "tagName": "span",
+                  "textContent": "© 2024 Shortener. All rights reserved.",
+                },
+              ],
+              "className": "footer-component",
+              "tagName": "div",
+              "textContent": "© 2024 Shortener. All rights reserved.",
+            },
+          ],
+          "tagName": "div",
+          "textContent": "© 2024 Shortener. All rights reserved.",
+        },
+      ],
+      "tagName": "div",
+      "textContent": "Test UserPage Content© 2024 Shortener. All rights reserved.",
+    },
+  ],
+  "tagName": "div",
+  "textContent": "Shortener🏠仪表盘🔗短址管理📊日志管理Test UserPage Content© 2024 Shortener. All rights reserved.",
+}
+`;

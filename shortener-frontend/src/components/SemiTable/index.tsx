@@ -1,20 +1,12 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import {
-  Table,
-  Button,
-  Form,
-  Card,
-  Space,
-  Toast,
-  Typography,
-  Spin,
-} from '@douyinfe/semi-ui';
+import { Table, Button, Form, Card, Space, Toast, Typography, Spin } from '@douyinfe/semi-ui';
 import { IconSearch, IconRefresh } from '@douyinfe/semi-icons';
 import type { ColumnProps } from '@douyinfe/semi-ui/lib/es/table';
 
 const { Text } = Typography;
 
-export interface SemiTableColumn<T extends Record<string, any> = any> extends Omit<ColumnProps<T>, 'render'> {
+export interface SemiTableColumn<T extends Record<string, any> = any>
+  extends Omit<ColumnProps<T>, 'render'> {
   title: React.ReactNode;
   dataIndex: string;
   key?: string;
@@ -42,7 +34,7 @@ export interface SemiTableProps<T extends Record<string, any> = any, P = any> {
   request?: (
     params: P & { current?: number; pageSize?: number },
     sorter: Record<string, any>,
-    filter: Record<string, any>
+    filter: Record<string, any>,
   ) => Promise<{
     data: T[];
     success: boolean;
@@ -125,7 +117,10 @@ function SemiTable<T extends Record<string, any> = any, P = any>(props: SemiTabl
       if (col.valueType === 'dateTime' && !col.render) {
         processedCol.render = (value: unknown) => {
           if (!value) return '-';
-          return new Date(value).toLocaleString('zh-CN');
+          if (typeof value === 'string' || typeof value === 'number') {
+            return new Date(value).toLocaleString('zh-CN');
+          }
+          return '-';
         };
       }
 
@@ -151,7 +146,12 @@ function SemiTable<T extends Record<string, any> = any, P = any>(props: SemiTabl
       if (result.success) {
         setDataSource(result.data);
         setTotal(result.total);
-        console.log('Data loaded:', { dataLength: result.data.length, total: result.total, currentPage, pageSize });
+        console.log('Data loaded:', {
+          dataLength: result.data.length,
+          total: result.total,
+          currentPage,
+          pageSize,
+        });
       } else {
         Toast.error('数据加载失败');
       }
@@ -193,8 +193,6 @@ function SemiTable<T extends Record<string, any> = any, P = any>(props: SemiTabl
     }
   }, [actionRef, loadData]);
 
-
-
   // 处理搜索
   const handleSearch = (values: Record<string, unknown>) => {
     setSearchParams(values);
@@ -203,7 +201,7 @@ function SemiTable<T extends Record<string, any> = any, P = any>(props: SemiTabl
 
   // 渲染搜索表单
   const renderSearchForm = () => {
-    const searchColumns = columns.filter(col => !col.hideInSearch);
+    const searchColumns = columns.filter((col) => !col.hideInSearch);
 
     if (searchColumns.length === 0) return null;
 
@@ -253,11 +251,7 @@ function SemiTable<T extends Record<string, any> = any, P = any>(props: SemiTabl
               <Button htmlType="submit" type="primary" icon={<IconSearch />}>
                 查询
               </Button>
-              <Button
-                type="tertiary"
-                icon={<IconRefresh />}
-                htmlType='reset'
-              >
+              <Button type="tertiary" icon={<IconRefresh />} htmlType="reset">
                 重置
               </Button>
             </Space>
@@ -267,40 +261,48 @@ function SemiTable<T extends Record<string, any> = any, P = any>(props: SemiTabl
     );
   };
 
-  const paginationConfig = useMemo(() => pagination === false ? false : {
-    current: currentPage,
-    pageSize: pageSize,
-    total: total,
-    showSizeChanger: true,
-    showQuickJumper: true,
-    pageSizeOpts: [10, 20, 50, 100],
-    onChange: (page: number) => {
-      console.log('Page change from pagination:', { page });
-      setCurrentPage(page);
-    },
-    onPageSizeChange: (size: number) => {
-      console.log('Size change from pagination:', { size });
-      setPageSize(size);
-      setCurrentPage(1); // 改变页面大小时，重置到第一页
-    },
-    ...(typeof pagination === 'object' ? pagination : {}),
-  }, [currentPage, pageSize, total, pagination]);
+  const paginationConfig = useMemo(
+    () =>
+      pagination === false
+        ? false
+        : {
+            current: currentPage,
+            pageSize: pageSize,
+            total: total,
+            showSizeChanger: true,
+            showQuickJumper: true,
+            pageSizeOpts: [10, 20, 50, 100],
+            onChange: (page: number) => {
+              console.log('Page change from pagination:', { page });
+              setCurrentPage(page);
+            },
+            onPageSizeChange: (size: number) => {
+              console.log('Size change from pagination:', { size });
+              setPageSize(size);
+              setCurrentPage(1); // 改变页面大小时，重置到第一页
+            },
+            ...(typeof pagination === 'object' ? pagination : {}),
+          },
+    [currentPage, pageSize, total, pagination],
+  );
 
   // 添加调试日志
   console.log('Pagination config:', paginationConfig);
   console.log('Current page in state:', currentPage);
 
-  const rowSelectionConfig = rowSelection ? {
-    selectedRowKeys,
-    onChange: (selectedKeys?: (string | number)[], selectedRows?: T[]) => {
-      if (selectedKeys) {
-        setSelectedRowKeys(selectedKeys);
+  const rowSelectionConfig = rowSelection
+    ? {
+        selectedRowKeys,
+        onChange: (selectedKeys?: (string | number)[], selectedRows?: T[]) => {
+          if (selectedKeys) {
+            setSelectedRowKeys(selectedKeys);
+          }
+          if (rowSelection?.onChange && selectedKeys && selectedRows) {
+            rowSelection.onChange(selectedKeys, selectedRows);
+          }
+        },
       }
-      if (rowSelection?.onChange && selectedKeys && selectedRows) {
-        rowSelection.onChange(selectedKeys, selectedRows);
-      }
-    },
-  } : undefined;
+    : undefined;
 
   return (
     <div>
@@ -309,11 +311,7 @@ function SemiTable<T extends Record<string, any> = any, P = any>(props: SemiTabl
         <Card style={{ marginBottom: 16 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             {headerTitle && <Typography.Title heading={4}>{headerTitle}</Typography.Title>}
-            {toolBarRender && (
-              <Space>
-                {toolBarRender()}
-              </Space>
-            )}
+            {toolBarRender && <Space>{toolBarRender()}</Space>}
           </div>
         </Card>
       )}

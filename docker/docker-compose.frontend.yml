@@ -3,24 +3,22 @@ version: '3.8'
 services:
   shortener-frontend:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ../shortener-frontend
+      dockerfile: ../docker/Dockerfile.frontend
     container_name: shortener-frontend
     ports:
       - "80:8080"
     environment:
-      - NODE_ENV=production
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - SERVER_PORT=8080
+      - SERVER_ROOT=/public
+      - SERVER_LOG_LEVEL=info
+      - SERVER_FALLBACK_PAGE=/public/index.html
+      - SERVER_COMPRESSION_GZIP=true
+      - SERVER_COMPRESSION_BROTLI=true
+      - SERVER_CACHE_CONTROL_HEADERS=true
     restart: unless-stopped
     networks:
       - shortener-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
 
 networks:
   shortener-network:

@@ -13,17 +13,17 @@ services:
     environment:
       - RUST_LOG=debug
       - DATABASE_TYPE=sqlite
-      - DATABASE_PATH=/var/lib/shortener/shortener.db
+      - DATABASE_PATH=/app/data/shortener.db
       - CACHE_ENABLED=true
       - CACHE_TYPE=redis
       - CACHE_HOST=redis
       - CACHE_PORT=6379
       - GEOIP_ENABLED=true
-      - GEOIP_DB_PATH=/var/lib/shortener/ip2region.xdb
+      - GEOIP_DB_PATH=/app/data/ip2region.xdb
     volumes:
-      - ../config/config.toml:/etc/shortener/config.toml:ro
-      - ../data:/var/lib/shortener
-      - shortener-logs:/var/log/shortener
+      - ../config/config.docker.toml:/app/config.toml:ro
+      - ../data:/app/data
+      - app-logs:/app/logs
     depends_on:
       redis:
         condition: service_healthy
@@ -51,7 +51,7 @@ services:
 volumes:
   redis-data:
     driver: local
-  shortener-logs:
+  app-logs:
     driver: local
 
 networks:

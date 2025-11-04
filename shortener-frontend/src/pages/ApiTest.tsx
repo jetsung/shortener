@@ -19,7 +19,7 @@ const ApiTest: React.FC = () => {
 
       const result = await login({
         username: 'admin', // 使用更常见的测试用户名
-        password: 'admin123'
+        password: 'admin123',
       });
 
       console.log('登录API响应:', result);
@@ -31,7 +31,7 @@ const ApiTest: React.FC = () => {
         token: resultData?.token,
         access_token: resultData?.access_token,
         accessToken: resultData?.accessToken,
-        data_token: resultData?.data?.token
+        data_token: resultData?.data?.token,
       };
 
       console.log('可能的token字段:', possibleTokens);
@@ -41,7 +41,7 @@ const ApiTest: React.FC = () => {
         possibleTokens,
         responseType: typeof result,
         isObject: result && typeof result === 'object',
-        keys: result && typeof result === 'object' ? Object.keys(result) : []
+        keys: result && typeof result === 'object' ? Object.keys(result) : [],
       });
       Toast.success('API调用成功');
     } catch (err: any) {
@@ -68,8 +68,8 @@ const ApiTest: React.FC = () => {
         },
         body: JSON.stringify({
           username: 'admin',
-          password: 'admin123'
-        })
+          password: 'admin123',
+        }),
       });
 
       console.log('Fetch响应状态:', response.status);
@@ -82,7 +82,7 @@ const ApiTest: React.FC = () => {
         status: response.status,
         statusText: response.statusText,
         headers: Object.fromEntries(response.headers.entries()),
-        data: data
+        data: data,
       });
 
       Toast.success('Fetch调用成功');
@@ -110,8 +110,8 @@ const ApiTest: React.FC = () => {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       console.log('获取用户信息响应状态:', response.status);
@@ -125,7 +125,7 @@ const ApiTest: React.FC = () => {
         statusText: response.statusText,
         headers: Object.fromEntries(response.headers.entries()),
         data: data,
-        token: token
+        token: token,
       });
 
       if (response.status === 200) {
@@ -135,7 +135,8 @@ const ApiTest: React.FC = () => {
       }
     } catch (err: unknown) {
       console.error('获取用户信息错误:', err);
-      setError(err.message || '未知错误');
+      const errorMessage = err instanceof Error ? err.message : '未知错误';
+      setError(errorMessage);
       Toast.error('获取用户信息失败');
     } finally {
       setLoading(false);
@@ -148,25 +149,15 @@ const ApiTest: React.FC = () => {
         <Title heading={3}>API 调试工具</Title>
 
         <Space style={{ marginTop: 16, marginBottom: 24 }}>
-          <Button
-            type="primary"
-            loading={loading}
-            onClick={testLogin}
-          >
+          <Button type="primary" loading={loading} onClick={testLogin}>
             测试登录API (axios)
           </Button>
 
-          <Button
-            loading={loading}
-            onClick={testDirectFetch}
-          >
+          <Button loading={loading} onClick={testDirectFetch}>
             测试登录API (fetch)
           </Button>
 
-          <Button
-            loading={loading}
-            onClick={testCurrentUser}
-          >
+          <Button loading={loading} onClick={testCurrentUser}>
             测试获取用户信息
           </Button>
         </Space>
@@ -174,13 +165,15 @@ const ApiTest: React.FC = () => {
         {response && (
           <Card style={{ marginTop: 16, backgroundColor: '#f8f9fa' }}>
             <Title heading={4}>响应数据:</Title>
-            <pre style={{
-              background: '#fff',
-              padding: 12,
-              borderRadius: 4,
-              overflow: 'auto',
-              fontSize: 12
-            }}>
+            <pre
+              style={{
+                background: '#fff',
+                padding: 12,
+                borderRadius: 4,
+                overflow: 'auto',
+                fontSize: 12,
+              }}
+            >
               {JSON.stringify(response, null, 2)}
             </pre>
           </Card>
@@ -188,7 +181,9 @@ const ApiTest: React.FC = () => {
 
         {error && (
           <Card style={{ marginTop: 16, backgroundColor: '#fff2f0', borderColor: '#ffccc7' }}>
-            <Title heading={4} style={{ color: '#ff4d4f' }}>错误信息:</Title>
+            <Title heading={4} style={{ color: '#ff4d4f' }}>
+              错误信息:
+            </Title>
             <Text type="danger">{error}</Text>
           </Card>
         )}

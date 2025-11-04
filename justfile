@@ -11,8 +11,11 @@ default:
 
 alias b := build
 
-# Build all packages
-build:
+# Build all packages (backend + frontend)
+build: build-backend build-frontend
+
+# Build backend packages
+build-backend:
     cargo build --release
 
 # Build server only
@@ -23,9 +26,24 @@ build-server:
 build-cli:
     cargo build --release -p shortener-cli
 
+# Build frontend for production
+build-frontend:
+    cd shortener-frontend && pnpm install && pnpm build
+
+# Build frontend with bundle analysis
+build-frontend-analyze:
+    cd shortener-frontend && pnpm install && pnpm build:analyze
+
 # Clean build artifacts
-clean:
+clean: clean-backend clean-frontend
+
+# Clean backend artifacts
+clean-backend:
     cargo clean
+
+# Clean frontend artifacts
+clean-frontend:
+    cd shortener-frontend && pnpm clean
 
 # ============================================================================
 # Run
@@ -39,17 +57,28 @@ run:
 run-cli *ARGS:
     cargo run -p shortener-cli -- {{ARGS}}
 
+# Run frontend development server
+run-frontend:
+    cd shortener-frontend && pnpm dev
+
+# Preview frontend production build
+preview-frontend:
+    cd shortener-frontend && pnpm preview
+
 # ============================================================================
 # Test
 # ============================================================================
 
 alias t := test
 
-# Run all tests
-test:
+# Run all tests (backend + frontend)
+test: test-backend test-frontend
+
+# Run backend tests
+test-backend:
     cargo test --all
 
-# Run tests with output
+# Run backend tests with output
 test-verbose:
     cargo test --all -- --nocapture
 
@@ -57,24 +86,76 @@ test-verbose:
 bench:
     cargo bench --all
 
+# Run frontend tests
+test-frontend:
+    cd shortener-frontend && pnpm test
+
+# Run frontend tests in watch mode
+test-frontend-watch:
+    cd shortener-frontend && pnpm test:watch
+
+# Run frontend tests with coverage
+test-frontend-coverage:
+    cd shortener-frontend && pnpm test:coverage
+
+# Run frontend tests with UI
+test-frontend-ui:
+    cd shortener-frontend && pnpm test:ui
+
 # ============================================================================
 # Code Quality
 # ============================================================================
 
-# Format code
-fmt:
+# Format all code (backend + frontend)
+fmt: fmt-backend fmt-frontend
+
+# Format backend code
+fmt-backend:
     cargo fmt --all
 
-# Check formatting
-fmt-check:
+# Format frontend code
+fmt-frontend:
+    cd shortener-frontend && pnpm prettier
+
+# Check formatting for all code
+fmt-check: fmt-check-backend fmt-check-frontend
+
+# Check backend formatting
+fmt-check-backend:
     cargo fmt --all -- --check
+
+# Check frontend formatting
+fmt-check-frontend:
+    cd shortener-frontend && pnpm prettier:check
 
 # Run clippy
 clippy:
     cargo clippy --all-targets --all-features -- -D warnings
 
-# Run all checks
-check: fmt-check clippy test
+# Lint frontend code
+lint-frontend:
+    cd shortener-frontend && pnpm lint
+
+# Fix frontend linting issues
+lint-frontend-fix:
+    cd shortener-frontend && pnpm lint:fix
+
+# Type check frontend
+type-check-frontend:
+    cd shortener-frontend && pnpm type-check
+
+# Run all checks (backend + frontend)
+check: fmt-check clippy test type-check-frontend lint-frontend
+
+# Run backend checks only
+check-backend: fmt-check-backend clippy test-backend
+
+# Run frontend checks only
+check-frontend: fmt-check-frontend lint-frontend type-check-frontend test-frontend
+
+# Run CI checks for frontend
+ci-frontend:
+    cd shortener-frontend && pnpm ci
 
 # ============================================================================
 # Docker
@@ -88,6 +169,10 @@ docker-build:
 docker-build-alpine:
     docker build -f docker/Dockerfile.alpine -t shortener-server:alpine .
 
+# Build frontend Docker image
+docker-build-frontend:
+    docker build -f docker/Dockerfile.frontend -t shortener-frontend:latest .
+
 # Run with docker compose
 docker-run:
     docker compose -f docker/docker-compose.yml up -d
@@ -96,10 +181,15 @@ docker-run:
 docker-run-dev:
     docker compose -f docker/docker-compose.dev.yml up -d
 
+# Run frontend with docker compose
+docker-run-frontend:
+    docker compose -f docker/docker-compose.frontend.yml up -d
+
 # Stop Docker containers
 docker-stop:
     docker compose -f docker/docker-compose.yml down
     docker compose -f docker/docker-compose.dev.yml down
+    docker compose -f docker/docker-compose.frontend.yml down
 
 # View Docker logs
 docker-logs:
@@ -175,12 +265,26 @@ doc:
     cargo doc --all --no-deps --open
 
 # Update dependencies
-update:
+update: update-backend update-frontend
+
+# Update backend dependencies
+update-backend:
     cargo update
 
+# Update frontend dependencies
+update-frontend:
+    cd shortener-frontend && pnpm update
+
 # Audit dependencies for security issues
-audit:
+audit: audit-backend
+
+# Audit backend dependencies
+audit-backend:
     cargo audit
+
+# Install frontend dependencies
+install-frontend:
+    cd shortener-frontend && pnpm install
 
 # Install development tools
 install-tools:
@@ -221,21 +325,39 @@ docs-deploy:
 
 # Show project statistics
 stats:
-    @echo "Lines of code:"
+    @echo "=== Backend Statistics ==="
+    @echo "Lines of Rust code:"
     @find . -name '*.rs' -not -path './target/*' | xargs wc -l | tail -1
     @echo ""
     @echo "Number of Rust files:"
     @find . -name '*.rs' -not -path './target/*' | wc -l
     @echo ""
-    @echo "Dependencies:"
+    @echo "Backend dependencies:"
     @cargo tree --depth 1
+    @echo ""
+    @echo "=== Frontend Statistics ==="
+    @echo "Lines of TypeScript/TSX code:"
+    @find shortener-frontend/src -name '*.ts' -o -name '*.tsx' | xargs wc -l | tail -1 || echo "N/A"
+    @echo ""
+    @echo "Number of TypeScript/TSX files:"
+    @find shortener-frontend/src -name '*.ts' -o -name '*.tsx' | wc -l || echo "N/A"
 
 # Check for outdated dependencies
-outdated:
+outdated: outdated-backend outdated-frontend
+
+# Check for outdated backend dependencies
+outdated-backend:
     cargo outdated
+
+# Check for outdated frontend dependencies
+outdated-frontend:
+    cd shortener-frontend && pnpm outdated
 
 # Show binary sizes
 sizes:
-    @echo "Binary sizes:"
+    @echo "=== Backend Binary Sizes ==="
     @ls -lh target/release/shortener-server 2>/dev/null || echo "Server not built"
     @ls -lh target/release/shortener-cli 2>/dev/null || echo "CLI not built"
+    @echo ""
+    @echo "=== Frontend Build Size ==="
+    @du -sh shortener-frontend/dist 2>/dev/null || echo "Frontend not built"

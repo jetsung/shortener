@@ -32,7 +32,7 @@ request.interceptors.request.use(
   },
   (error) => {
     return Promise.reject(error);
-  }
+  },
 );
 
 // 响应拦截器
@@ -76,7 +76,7 @@ request.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 export default request;

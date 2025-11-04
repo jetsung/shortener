@@ -8,10 +8,35 @@ import { useNavigate } from 'react-router-dom';
 
 const { Text } = Typography;
 
+interface HistoryResponse {
+  id: number;
+  short_code: string;
+  ip_address: string;
+  referer?: string;
+  user_agent?: string;
+  country?: string;
+  province?: string;
+  city?: string;
+  isp?: string;
+  device_type?: string;
+  os?: string;
+  browser?: string;
+  accessed_at: string;
+  created_at: string;
+}
+
+interface GetHistoriesParams {
+  page?: number;
+  page_size?: number;
+  short_code?: string;
+  sort_by?: string;
+  order?: 'asc' | 'desc';
+}
+
 /**
  * 删除节点
  */
-const handleRemove = async (selectedRows: API.HistoryResponse[]) => {
+const handleRemove = async (selectedRows: HistoryResponse[]) => {
   Toast.info('正在删除');
   if (!selectedRows) return true;
   try {
@@ -20,7 +45,7 @@ const handleRemove = async (selectedRows: API.HistoryResponse[]) => {
     });
     Toast.success('删除成功，即将刷新');
     return true;
-  } catch (error) {
+  } catch {
     Toast.error('删除失败，请重试');
     return false;
   }
@@ -28,10 +53,10 @@ const handleRemove = async (selectedRows: API.HistoryResponse[]) => {
 
 const History: React.FC = () => {
   const actionRef = useRef<SemiTableActionRef>(undefined);
-  const [selectedRowsState, setSelectedRows] = useState<API.HistoryResponse[]>([]);
+  const [selectedRowsState, setSelectedRows] = useState<HistoryResponse[]>([]);
   const navigate = useNavigate();
 
-  const columns: SemiTableColumn<API.HistoryResponse>[] = [
+  const columns: SemiTableColumn<HistoryResponse>[] = [
     {
       title: 'ID',
       dataIndex: 'id',
@@ -119,7 +144,7 @@ const History: React.FC = () => {
 
   return (
     <div style={{ padding: 0 }}>
-      <SemiTable<API.HistoryResponse, API.getHistoriesParams>
+      <SemiTable<HistoryResponse, GetHistoriesParams>
         headerTitle="日志列表"
         actionRef={actionRef}
         rowKey="id"
@@ -127,13 +152,13 @@ const History: React.FC = () => {
           labelWidth: 120,
         }}
         request={async (params, sorter) => {
-          let data: any = [];
+          let data: HistoryResponse[] = [];
           let total = 0;
           let success = false;
 
           try {
             const { current: page, pageSize: page_size, ...rest } = params;
-            const query: API.getHistoriesParams = {
+            const query: GetHistoriesParams = {
               page: page || 1,
               page_size: page_size || 10,
               ...rest,
@@ -144,14 +169,15 @@ const History: React.FC = () => {
               query.order = orderBy[1] === 'ascend' ? 'asc' : 'desc';
             }
             const res = await getHistories(query);
-            data = res.data || [];
-            total = (res as any).meta?.total_items || 0;
+            data = (res.data || []) as HistoryResponse[];
+            total = (res as { meta?: { total_items?: number } }).meta?.total_items || 0;
             success = true;
           } catch (error: unknown) {
-            let { errinfo } = error?.response?.data;
+            const err = error as { response?: { data?: { errinfo?: string }; status?: number } };
+            const errinfo = err?.response?.data?.errinfo;
             Toast.error(errinfo ?? '数据获取失败');
 
-            const { status } = error?.response;
+            const status = err?.response?.status;
             if (status === 401) {
               navigate('/account/login');
             }

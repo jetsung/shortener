@@ -108,7 +108,7 @@ impl Ip2RegionGeoIp {
 
 #[async_trait]
 impl GeoIp for Ip2RegionGeoIp {
-    async fn lookup(&self, mut ip: &str) -> Result<GeoIpInfo, GeoIpError> {
+    async fn lookup(&self, ip: &str) -> Result<GeoIpInfo, GeoIpError> {
         // 验证 IP 地址格式
         if ip.is_empty() {
             return Err(GeoIpError::InvalidIpAddress(
@@ -118,8 +118,6 @@ impl GeoIp for Ip2RegionGeoIp {
 
         // 获取 searcher 锁
         let searcher = self.searcher.lock().await;
-        println!("searcher: {:?}", ip);
-        ip = "223.223.3.3";
 
         // 查询 IP 地址
         let region = searcher.search(ip).map_err(|e| {

@@ -1,0 +1,234 @@
+name: Docker-Release-Server-Debian
+
+on:
+  push:
+    tags:
+      - "shortener-server-v*"
+  workflow_dispatch:
+
+env:
+  branch: latest
+  image_org: jetsung
+  package_name: shortener-server
+  acr_registry: registry.cn-guangzhou.aliyuncs.com
+  hcr_registry: swr.ap-southeast-3.myhuaweicloud.com
+  tcr_registry: sgccr.ccs.tencentyun.com
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    outputs:
+      tag: ${{ steps.set_tag.outputs.tag }}
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Set tag without prefix
+        id: set_tag
+        run: |
+            ref_tag="${{ github.ref_name }}"
+            ref_tag="${ref_tag#shortener-server-v}"
+            echo "Detected tag: $ref_tag"
+            echo "tag=$ref_tag" >> $GITHUB_ENV
+            echo "tag=$ref_tag" >> $GITHUB_OUTPUT
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.package_name }}
+          labels: |
+            org.opencontainers.image.title=${{ env.package_name }}
+            org.opencontainers.image.vendor=Jetsung Chan
+          tags: 
+            latest
+
+      - name: Build Debian variant with Bake
+        uses: docker/bake-action@v6
+        with:
+          files: |
+            ./docker-bake.hcl
+            cwd://${{ steps.meta.outputs.bake-file }}
+          targets: release
+          push: false
+          set: |
+            *.output=type=oci,dest=./image.tar
+
+      - name: Upload image as artifact
+        uses: actions/upload-artifact@v5
+        with:
+          name: docker-image
+          path: ./image.tar
+          retention-days: 1
+
+  sync-to-docker:
+    needs: build
+    runs-on: ubuntu-24.04
+    continue-on-error: true
+    steps:
+    - name: Check Docker Hub credentials
+      id: check_dockerhub
+      run: |
+        if [ -z "${{ secrets.DOCKERHUB_USERNAME }}" ] || [ -z "${{ secrets.DOCKERHUB_TOKEN }}" ]; then
+          echo "Docker Hub credentials not configured, skipping..."
+          echo "skip=true" >> $GITHUB_OUTPUT
+        else
+          echo "skip=false" >> $GITHUB_OUTPUT
+        fi
+    - name: Install Dependencies
+      if: steps.check_dockerhub.outputs.skip != 'true'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y skopeo
+        skopeo --version
+    - name: Login to Docker Hub
+      if: steps.check_dockerhub.outputs.skip != 'true'
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+    - name: Download image artifact
+      if: steps.check_dockerhub.outputs.skip != 'true'
+      uses: actions/download-artifact@v6
+      with:
+        name: docker-image
+        path: .  
+    - name: Sync to Docker Hub
+      if: steps.check_dockerhub.outputs.skip != 'true'
+      env:
+        SRC_IMAGE: oci-archive:./image.tar
+        DEST_REPO: ${{ env.image_org }}/${{ env.package_name }}
+        DEST_TAG: ${{ needs.build.outputs.tag }}
+      run: |
+          skopeo copy --all $SRC_IMAGE docker://$DEST_REPO:$DEST_TAG
+          skopeo copy --all $SRC_IMAGE docker://$DEST_REPO:latest
+
+  sync-to-ghcr:
+    needs: build
+    runs-on: ubuntu-24.04
+    steps:
+    - name: Install Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y skopeo
+        skopeo --version
+    - name: Login to GitHub Container Registry (ghcr.io)
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    - name: Download image artifact
+      uses: actions/download-artifact@v6
+      with:
+        name: docker-image
+        path: .        
+    - name: Sync to GitHub Container Registry (ghcr.io)
+      env:
+        SRC_IMAGE: oci-archive:./image.tar
+        DEST_REPO: ghcr.io/${{ github.repository_owner }}/${{ env.package_name }}
+        DEST_TAG: ${{ needs.build.outputs.tag }}
+      run: |
+          skopeo copy --all $SRC_IMAGE docker://$DEST_REPO:$DEST_TAG
+          skopeo copy --all $SRC_IMAGE docker://$DEST_REPO:latest
+    - uses: actions/delete-package-versions@v5
+      continue-on-error: true
+      with:
+        package-name: ${{ env.package_name }}
+        package-type: 'container'
+        min-versions-to-keep: 2
+        delete-only-untagged-versions: 'true'
+
+  sync-to-aliyun:
+    needs: build
+    runs-on: ubuntu-24.04
+    continue-on-error: true
+    steps:
+    - name: Check Aliyun credentials
+      id: check_aliyun
+      run: |
+        if [ -z "${{ secrets.ALIYUN_USERNAME }}" ] || [ -z "${{ secrets.ALIYUN_TOKEN }}" ]; then
+          echo "Aliyun credentials not configured, skipping..."
+          echo "skip=true" >> $GITHUB_OUTPUT
+        else
+          echo "skip=false" >> $GITHUB_OUTPUT
+        fi
+    - name: Install Dependencies
+      if: steps.check_aliyun.outputs.skip != 'true'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y skopeo
+    - name: Login to Aliyun
+      if: steps.check_aliyun.outputs.skip != 'true'
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.acr_registry }}
+        username: ${{ secrets.ALIYUN_USERNAME }}
+        password: ${{ secrets.ALIYUN_TOKEN }}
+    - name: Download image artifact
+      if: steps.check_aliyun.outputs.skip != 'true'
+      uses: actions/download-artifact@v6
+      with:
+        name: docker-image
+        path: .        
+    - name: Sync to Aliyun
+      if: steps.check_aliyun.outputs.skip != 'true'
+      env:
+        SRC_IMAGE: oci-archive:./image.tar
+        DEST_REPO: ${{ env.acr_registry }}/${{ env.image_org }}/${{ env.package_name }}
+        DEST_TAG: ${{ needs.build.outputs.tag }}
+      run: |
+          skopeo copy --all $SRC_IMAGE docker://$DEST_REPO:$DEST_TAG
+          skopeo copy --all $SRC_IMAGE docker://$DEST_REPO:latest
+
+  sync-to-tencent:
+    needs: build
+    runs-on: ubuntu-24.04
+    continue-on-error: true
+    steps:
+    - name: Check Tencent credentials
+      id: check_tencent
+      run: |
+        if [ -z "${{ secrets.TENCENT_USERNAME }}" ] || [ -z "${{ secrets.TENCENT_TOKEN }}" ]; then
+          echo "Tencent credentials not configured, skipping..."
+          echo "skip=true" >> $GITHUB_OUTPUT
+        else
+          echo "skip=false" >> $GITHUB_OUTPUT
+        fi
+    - name: Install Dependencies
+      if: steps.check_tencent.outputs.skip != 'true'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y skopeo
+    - name: Login to Tencent
+      if: steps.check_tencent.outputs.skip != 'true'
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.tcr_registry }}
+        username: ${{ secrets.TENCENT_USERNAME }}
+        password: ${{ secrets.TENCENT_TOKEN }}
+    - name: Download image artifact
+      if: steps.check_tencent.outputs.skip != 'true'
+      uses: actions/download-artifact@v6
+      with:
+        name: docker-image
+        path: .         
+    - name: Sync to Tencent
+      if: steps.check_tencent.outputs.skip != 'true'
+      env:
+        SRC_IMAGE: oci-archive:./image.tar
+        DEST_REPO: ${{ env.tcr_registry }}/${{ env.image_org }}/${{ env.package_name }}
+        DEST_TAG: ${{ needs.build.outputs.tag }}
+      run: |
+          skopeo copy --all $SRC_IMAGE docker://$DEST_REPO:$DEST_TAG
+          skopeo copy --all $SRC_IMAGE docker://$DEST_REPO:latest

@@ -8,7 +8,6 @@ import { PerformanceMonitor } from '../utils/performance';
  */
 export function usePerformance(componentName: string) {
   const performanceMonitor = useRef(PerformanceMonitor.getInstance());
-  const renderCount = useRef(0);
   const mountTime = useRef<number | undefined>(undefined);
 
   // 组件挂载时开始计时
@@ -28,23 +27,12 @@ export function usePerformance(componentName: string) {
     };
   }, [componentName]);
 
-  // 记录渲染次数
-  useEffect(() => {
-    renderCount.current += 1;
-    if (import.meta.env.DEV && renderCount.current > 1) {
-      console.log(`Component ${componentName} rendered ${renderCount.current} times`);
-    }
-  });
-
   // 测量异步操作性能
   const measureAsync = useCallback(
     async <T>(operationName: string, asyncFn: () => Promise<T>): Promise<T> => {
-      return performanceMonitor.current.measureAsync(
-        `${componentName}-${operationName}`,
-        asyncFn
-      );
+      return performanceMonitor.current.measureAsync(`${componentName}-${operationName}`, asyncFn);
     },
-    [componentName]
+    [componentName],
   );
 
   // 开始测量
@@ -52,7 +40,7 @@ export function usePerformance(componentName: string) {
     (operationName: string) => {
       performanceMonitor.current.startMeasure(`${componentName}-${operationName}`);
     },
-    [componentName]
+    [componentName],
   );
 
   // 结束测量
@@ -60,14 +48,13 @@ export function usePerformance(componentName: string) {
     (operationName: string) => {
       return performanceMonitor.current.endMeasure(`${componentName}-${operationName}`);
     },
-    [componentName]
+    [componentName],
   );
 
   return {
     measureAsync,
     startMeasure,
     endMeasure,
-    renderCount: renderCount.current,
   };
 }
 
@@ -80,6 +67,7 @@ export function useRenderOptimization(componentName: string, props: Record<strin
   const renderCount = useRef(0);
 
   useEffect(() => {
+    // 在 effect 中更新计数和检查 props 变化
     renderCount.current += 1;
 
     if (import.meta.env.DEV && prevProps.current) {
@@ -95,11 +83,11 @@ export function useRenderOptimization(componentName: string, props: Record<strin
       if (changedProps.length > 0) {
         console.log(
           `${componentName} re-rendered (${renderCount.current}) due to props change:`,
-          changedProps
+          changedProps,
         );
-      } else if (renderCount.current > 1) {
+      } else if (renderCount.current > 1 && renderCount.current % 100 === 0) {
         console.warn(
-          `${componentName} re-rendered (${renderCount.current}) without props change - consider using React.memo`
+          `${componentName} re-rendered (${renderCount.current}) without props change - possible infinite loop!`,
         );
       }
     }
@@ -107,7 +95,8 @@ export function useRenderOptimization(componentName: string, props: Record<strin
     prevProps.current = { ...props };
   });
 
-  return renderCount.current;
+  // 返回一个固定值，避免在渲染时访问 ref
+  return 0;
 }
 
 /**

@@ -1,15 +1,7 @@
 import React, { useRef, useState } from 'react';
-import {
-  Button,
-  Form,
-  Typography,
-  Modal,
-} from '@douyinfe/semi-ui';
+import { Button, Form, Typography, Modal } from '@douyinfe/semi-ui';
 import { Toast } from '@/utils/notification';
-import {
-  IconPlus,
-  IconCopy,
-} from '@douyinfe/semi-icons';
+import { IconPlus, IconCopy } from '@douyinfe/semi-icons';
 import { SemiTable, SemiModalForm } from '@/components';
 import type { SemiTableActionRef, SemiTableColumn } from '@/components/SemiTable';
 import {
@@ -21,11 +13,7 @@ import {
 import type { FormValueType } from './components/UpdateForm';
 import UpdateForm from './components/UpdateForm';
 import { useNavigate } from 'react-router-dom';
-import type {
-  ShortenResponse,
-  Shorten,
-  GetShortensParams
-} from '@/types/api';
+import type { ShortenResponse, Shorten, GetShortensParams } from '@/types/api';
 
 const { Text } = Typography;
 
@@ -115,7 +103,7 @@ const Shortener: React.FC = () => {
       dataIndex: 'short_code',
       width: 120,
       render: (_, entity) => {
-        return  (
+        return (
           <div style={{ display: 'flex', alignItems: 'center', gap: '0px' }}>
             <a
               href={entity.short_url}
@@ -141,7 +129,7 @@ const Shortener: React.FC = () => {
               onClick={() => copyToClipboard(entity.short_url as string, '短链复制成功')}
             />
           </div>
-        )
+        );
       },
     },
     {
@@ -162,7 +150,7 @@ const Shortener: React.FC = () => {
             maxWidth: '180px',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap'
+            whiteSpace: 'nowrap',
           }}
           title={text}
         >
@@ -262,7 +250,9 @@ const Shortener: React.FC = () => {
 
             // 过滤掉空值参数，特别是 status 为空字符串时
             const filteredRest = Object.fromEntries(
-              Object.entries(rest).filter(([_, value]) => value !== '' && value !== null && value !== undefined)
+              Object.entries(rest).filter(
+                ([_, value]) => value !== '' && value !== null && value !== undefined,
+              ),
             );
 
             const query: GetShortensParams = {
@@ -366,26 +356,17 @@ const Shortener: React.FC = () => {
         okText="确定"
         cancelText="取消"
       >
-        <Form.Input
-          field="short_code"
-          label="短码"
-          placeholder="请输入短码。可选"
-        />
+        <Form.Input field="short_code" label="短码" placeholder="请输入短码。可选" />
         <Form.Input
           field="original_url"
           label="源链接"
           placeholder="请输入源链接"
           rules={[
             { required: true, message: '源链接为必填项' },
-            { type: 'url', message: '请输入有效的 URL' }
+            { type: 'url', message: '请输入有效的 URL' },
           ]}
         />
-        <Form.TextArea
-          field="description"
-          label="描述"
-          placeholder="链接描述"
-          rows={3}
-        />
+        <Form.TextArea field="description" label="描述" placeholder="链接描述" rows={3} />
       </SemiModalForm>
 
       {/* 更新短链模态框 */}

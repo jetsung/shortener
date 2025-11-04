@@ -1,4 +1,4 @@
-# Multi-stage build for shortener-server
+# Multi-stage build for shortener-server (Distroless-based for minimal image size)
 # Stage 1: Build the application
 FROM rust:1.90-slim as builder
 
@@ -22,53 +22,34 @@ COPY shortener-server/src ./shortener-server/src
 COPY shortener-cli/src ./shortener-cli/src
 COPY shortener-common/src ./shortener-common/src
 
-# Build for release
-RUN cargo build --release -p shortener-server
+# Copy configuration file (needed at build time for include_str! macro)
+RUN mkdir -p ./config
+COPY config/config.toml ./config/config.toml
 
-# Stage 2: Create the runtime image
-FROM debian:trixie-slim
+# Copy benches (required for Cargo.toml validation, but won't be compiled)
+COPY shortener-server/benches ./shortener-server/benches
 
-# Install runtime dependencies
-RUN apt-get update && apt-get install -y \
-    ca-certificates \
-    libssl3 \
-    && rm -rf /var/lib/apt/lists/*
+# Build for release (skip benches and tests)
+RUN cargo build --release -p shortener-server --bins
 
-# Create a non-root user
-RUN useradd -m -u 1000 shortener
-
-# Create necessary directories
-RUN mkdir -p /etc/shortener /var/lib/shortener /var/log/shortener && \
-    chown -R shortener:shortener /etc/shortener /var/lib/shortener /var/log/shortener
+# Stage 2: Create the runtime image using distroless
+FROM gcr.io/distroless/cc-debian12:nonroot
 
 # Copy the binary from builder
 COPY --from=builder /app/target/release/shortener-server /usr/local/bin/shortener-server
 
 # Copy configuration file
-COPY config/config.toml /etc/shortener/config.toml
-
-# Copy GeoIP database if exists
-COPY data/ip2region.xdb /var/lib/shortener/ip2region.xdb 2>/dev/null || true
-
-# Set ownership
-RUN chown shortener:shortener /usr/local/bin/shortener-server
-
-# Switch to non-root user
-USER shortener
+COPY config/config.docker.toml /app/config.toml
 
 # Set working directory
-WORKDIR /var/lib/shortener
+WORKDIR /app
 
 # Expose port
 EXPOSE 8080
 
 # Set environment variables
 ENV RUST_LOG=info
-ENV CONFIG_PATH=/etc/shortener/config.toml
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD ["/usr/local/bin/shortener-server", "--version"] || exit 1
+ENV CONFIG_PATH=/app/config.toml
 
 # Run the binary
 CMD ["/usr/local/bin/shortener-server"]

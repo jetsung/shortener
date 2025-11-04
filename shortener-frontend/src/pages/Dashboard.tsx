@@ -4,13 +4,13 @@ import { Card, Typography } from '@douyinfe/semi-ui';
 const { Title, Text } = Typography;
 
 const Dashboard: React.FC = () => {
-
   return (
     <Card
       data-testid="card"
       style={{
         borderRadius: 8,
-        background: 'linear-gradient(75deg, var(--semi-color-bg-0) 0%, var(--semi-color-fill-0) 100%)',
+        background:
+          'linear-gradient(75deg, var(--semi-color-bg-0) 0%, var(--semi-color-fill-0) 100%)',
         border: '1px solid var(--semi-color-border)',
       }}
       bodyStyle={{

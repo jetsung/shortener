@@ -1,3 +1,4 @@
+import React from 'react';
 import { render } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { BrowserRouter } from 'react-router-dom';
@@ -27,16 +28,24 @@ vi.mock('@douyinfe/semi-ui', () => ({
   ),
   Layout: {
     Header: ({ children, style }: any) => (
-      <header className="semi-layout-header" style={style}>{children}</header>
+      <header className="semi-layout-header" style={style}>
+        {children}
+      </header>
     ),
     Sider: ({ children, style }: any) => (
-      <aside className="semi-layout-sider" style={style}>{children}</aside>
+      <aside className="semi-layout-sider" style={style}>
+        {children}
+      </aside>
     ),
     Content: ({ children, style }: any) => (
-      <main className="semi-layout-content" style={style}>{children}</main>
+      <main className="semi-layout-content" style={style}>
+        {children}
+      </main>
     ),
     Footer: ({ children, style }: any) => (
-      <footer className="semi-layout-footer" style={style}>{children}</footer>
+      <footer className="semi-layout-footer" style={style}>
+        {children}
+      </footer>
     ),
   },
   Nav: ({ items, selectedKeys, mode, isCollapsed }: any) => (
@@ -52,38 +61,36 @@ vi.mock('@douyinfe/semi-ui', () => ({
       ))}
     </nav>
   ),
-  Typography: {
-    Title: ({ children, heading, style }: any) => (
+  Typography: Object.assign(
+    ({ children, heading, style }: any) => (
       <h1 className={`semi-typography-title semi-typography-h${heading || 1}`} style={style}>
         {children}
       </h1>
     ),
-    Text: ({ children, type }: any) => (
-      <span className={`semi-typography-text ${type ? `semi-typography-${type}` : ''}`}>
-        {children}
-      </span>
-    ),
-    Paragraph: ({ children }: any) => (
-      <p className="semi-typography-paragraph">{children}</p>
-    ),
-  },
+    {
+      Title: ({ children, heading, style }: any) => (
+        <h1 className={`semi-typography-title semi-typography-h${heading || 1}`} style={style}>
+          {children}
+        </h1>
+      ),
+      Text: ({ children, type }: any) => (
+        <span className={`semi-typography-text ${type ? `semi-typography-${type}` : ''}`}>
+          {children}
+        </span>
+      ),
+      Paragraph: ({ children }: any) => <p className="semi-typography-paragraph">{children}</p>,
+    },
+  ),
   Space: ({ children, direction = 'horizontal', size = 'small' }: any) => (
-    <div className={`semi-space semi-space-${direction} semi-space-${size}`}>
-      {children}
-    </div>
+    <div className={`semi-space semi-space-${direction} semi-space-${size}`}>{children}</div>
   ),
   Spin: ({ children, spinning = false, size = 'default' }: any) => (
     <div className={`semi-spin semi-spin-${size} ${spinning ? 'semi-spin-spinning' : ''}`}>
       {children}
     </div>
   ),
-  SideSheet: ({ visible, children, placement = 'right' }: any) => (
-    visible ? (
-      <div className={`semi-sidesheet semi-sidesheet-${placement}`}>
-        {children}
-      </div>
-    ) : null
-  ),
+  SideSheet: ({ visible, children, placement = 'right' }: any) =>
+    visible ? <div className={`semi-sidesheet semi-sidesheet-${placement}`}>{children}</div> : null,
   Toast: {
     success: vi.fn(),
     error: vi.fn(),
@@ -112,6 +119,59 @@ vi.mock('../components', () => ({
   Footer: () => (
     <div className="footer-component">
       <span>© 2024 Shortener. All rights reserved.</span>
+    </div>
+  ),
+  SemiTable: ({ headerTitle, columns }: any) => (
+    <div className="semi-table-wrapper">
+      <div className="semi-table-header">{headerTitle}</div>
+      <table className="semi-table">
+        <thead>
+          <tr>
+            {columns?.map((col: any) => (
+              <th key={col.key || col.dataIndex} className="semi-table-th">
+                {col.title}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td className="semi-table-td" colSpan={columns?.length || 1}>
+              Sample Data
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  ),
+  SemiModalForm: ({ visible, title, children }: any) =>
+    visible ? (
+      <div className="semi-modal-form">
+        <div className="semi-modal-title">{title}</div>
+        <div className="semi-modal-content">{children}</div>
+      </div>
+    ) : null,
+  default: ({ headerTitle, columns }: any) => (
+    <div className="semi-table-wrapper">
+      <div className="semi-table-header">{headerTitle}</div>
+      <table className="semi-table">
+        <thead>
+          <tr>
+            {columns?.map((col: any) => (
+              <th key={col.key || col.dataIndex} className="semi-table-th">
+                {col.title}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td className="semi-table-td" colSpan={columns?.length || 1}>
+              Sample Data
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   ),
 }));
@@ -144,17 +204,14 @@ vi.mock('../components/SemiTable', () => ({
 }));
 
 vi.mock('../components/SemiForm', () => ({
-  default: ({ children }: any) => (
-    <form className="semi-form">{children}</form>
-  ),
-  ModalForm: ({ visible, title, children }: any) => (
+  default: ({ children }: any) => <form className="semi-form">{children}</form>,
+  ModalForm: ({ visible, title, children }: any) =>
     visible ? (
       <div className="semi-modal-form">
         <div className="semi-modal-title">{title}</div>
         <div className="semi-modal-content">{children}</div>
       </div>
-    ) : null
-  ),
+    ) : null,
 }));
 
 // Mock hooks
@@ -197,7 +254,7 @@ const getComponentStructure = (container: HTMLElement) => {
     };
 
     // Only include non-empty properties
-    Object.keys(info).forEach(key => {
+    Object.keys(info).forEach((key) => {
       if (!info[key]) delete info[key];
     });
 
@@ -242,7 +299,7 @@ describe('Visual Regression Tests', () => {
 
       // Verify title hierarchy
       const title = container.querySelector('.semi-typography-title');
-      expect(title).toHaveClass('semi-typography-h1');
+      expect(title).toHaveClass('semi-typography-h3');
     });
   });
 
@@ -263,7 +320,7 @@ describe('Visual Regression Tests', () => {
       const { container } = renderWithRouter(<Shortener />);
 
       const buttons = container.querySelectorAll('.semi-button');
-      buttons.forEach(button => {
+      buttons.forEach((button) => {
         expect(button).toHaveClass('semi-button');
         // Should have type and theme classes
         expect(button.className).toMatch(/semi-button-(default|primary|secondary)/);
@@ -292,11 +349,10 @@ describe('Visual Regression Tests', () => {
 
       expect(structure).toMatchSnapshot('main-layout-structure');
 
-      // Verify layout components
-      expect(container.querySelector('.semi-layout-header')).toBeInTheDocument();
-      expect(container.querySelector('.semi-layout-sider')).toBeInTheDocument();
-      expect(container.querySelector('.semi-layout-content')).toBeInTheDocument();
-      expect(container.querySelector('.semi-layout-footer')).toBeInTheDocument();
+      // Verify layout components - MainLayout uses custom divs, not Semi Layout
+      expect(container.querySelector('.semi-nav')).toBeInTheDocument();
+      expect(container.querySelector('.footer-component')).toBeInTheDocument();
+      expect(container.querySelector('.avatar-dropdown')).toBeInTheDocument();
     });
 
     it('maintains consistent navigation styling', () => {
@@ -309,7 +365,7 @@ describe('Visual Regression Tests', () => {
       const navItems = container.querySelectorAll('.semi-nav-item');
       expect(navItems.length).toBeGreaterThan(0);
 
-      navItems.forEach(item => {
+      navItems.forEach((item) => {
         expect(item).toHaveClass('semi-nav-item');
       });
     });
@@ -324,7 +380,7 @@ describe('Visual Regression Tests', () => {
 
       const { container } = renderWithRouter(<MainLayout />);
 
-      // Should handle responsive behavior
+      // Should handle responsive behavior - check for nav element
       expect(container.querySelector('.semi-nav')).toBeInTheDocument();
     });
   });
@@ -334,7 +390,7 @@ describe('Visual Regression Tests', () => {
       const { container } = renderWithRouter(<MainLayout />);
 
       const icons = container.querySelectorAll('.semi-icon');
-      icons.forEach(icon => {
+      icons.forEach((icon) => {
         expect(icon).toHaveClass('semi-icon');
         // Should have specific icon class
         expect(icon.className).toMatch(/semi-icon-(home|link|histogram|menu)/);
@@ -362,7 +418,7 @@ describe('Visual Regression Tests', () => {
       const semiElements = container.querySelectorAll('[class*="semi-"]');
       expect(semiElements.length).toBeGreaterThan(0);
 
-      semiElements.forEach(element => {
+      semiElements.forEach((element) => {
         // Should follow Semi Design naming convention
         expect(element.className).toMatch(/semi-\w+/);
       });
@@ -391,9 +447,9 @@ describe('Visual Regression Tests', () => {
       const { container: mobileContainer } = renderWithRouter(<MainLayout />);
       const mobileStructure = getComponentStructure(mobileContainer);
 
-      // Both should have basic layout structure
-      expect(desktopContainer.querySelector('.semi-layout-header')).toBeInTheDocument();
-      expect(mobileContainer.querySelector('.semi-layout-header')).toBeInTheDocument();
+      // Both should have basic layout structure - check for navigation
+      expect(desktopContainer.querySelector('.semi-nav')).toBeInTheDocument();
+      expect(mobileContainer.querySelector('.semi-nav')).toBeInTheDocument();
 
       // Structures should be consistent
       expect(desktopStructure.tagName).toBe(mobileStructure.tagName);

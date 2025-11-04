@@ -40,6 +40,19 @@ vi.mock('@douyinfe/semi-ui', () => ({
       {children}
     </select>
   ),
+  Typography: Object.assign(({ children, ...props }: any) => <div {...props}>{children}</div>, {
+    Title: ({ children, heading, style, ...props }: any) => (
+      <h1 style={style} data-heading={heading} {...props}>
+        {children}
+      </h1>
+    ),
+    Text: ({ children, type, size, ...props }: any) => (
+      <span data-type={type} data-size={size} {...props}>
+        {children}
+      </span>
+    ),
+    Paragraph: ({ children, ...props }: any) => <p {...props}>{children}</p>,
+  }),
   Toast: {
     success: vi.fn(),
     error: vi.fn(),
@@ -48,7 +61,7 @@ vi.mock('@douyinfe/semi-ui', () => ({
 
 // Mock SemiTable component
 vi.mock('../../components/SemiTable', () => ({
-  default: ({ headerTitle, request, columns, search, actionRef }: any) => {
+  default: function MockSemiTable({ headerTitle, request, columns, search, actionRef }: any) {
     const mockData = [
       {
         id: 1,
@@ -56,7 +69,7 @@ vi.mock('../../components/SemiTable', () => ({
         original_url: 'https://example.com',
         click_count: 10,
         created_at: '2024-01-01',
-        last_accessed: '2024-01-02'
+        last_accessed: '2024-01-02',
       },
       {
         id: 2,
@@ -64,7 +77,7 @@ vi.mock('../../components/SemiTable', () => ({
         original_url: 'https://test.com',
         click_count: 5,
         created_at: '2024-01-02',
-        last_accessed: '2024-01-03'
+        last_accessed: '2024-01-03',
       },
     ];
 
@@ -138,7 +151,7 @@ describe('History Integration Tests', () => {
           original_url: 'https://example.com',
           click_count: 10,
           created_at: '2024-01-01T00:00:00Z',
-          last_accessed: '2024-01-02T00:00:00Z'
+          last_accessed: '2024-01-02T00:00:00Z',
         },
         {
           id: 2,
@@ -146,7 +159,7 @@ describe('History Integration Tests', () => {
           original_url: 'https://test.com',
           click_count: 5,
           created_at: '2024-01-02T00:00:00Z',
-          last_accessed: '2024-01-03T00:00:00Z'
+          last_accessed: '2024-01-03T00:00:00Z',
         },
       ],
       success: true,
@@ -172,7 +185,7 @@ describe('History Integration Tests', () => {
           pageSize: 10,
         }),
         {},
-        {}
+        {},
       );
     });
   });
@@ -227,7 +240,7 @@ describe('History Integration Tests', () => {
           pageSize: 10,
         }),
         {},
-        {}
+        {},
       );
     });
   });
@@ -238,7 +251,7 @@ describe('History Integration Tests', () => {
     await waitFor(() => {
       // Check if click count data is displayed
       expect(screen.getByText('10')).toBeInTheDocument(); // First item click count
-      expect(screen.getByText('5')).toBeInTheDocument();  // Second item click count
+      expect(screen.getByText('5')).toBeInTheDocument(); // Second item click count
     });
   });
 

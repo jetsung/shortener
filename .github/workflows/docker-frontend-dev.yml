@@ -1,20 +1,21 @@
-name: Docker-Dev
+name: Docker-Frontend-Dev
 
 on:
   push:
     branches:
       - dev*
     paths:
-      - "deploy/docker/Dockerfile"
-      - ".github/workflows/docker-dev.yml"
-      - "internal/**"
-      - "go.mod"
-      - "go.sum"
-      - "justfile"
+      - "shortener-frontend/**"
+      - "docker/Dockerfile.frontend"
+      - ".github/workflows/docker-frontend-dev.yml"
 
 env:
-  package_name: shortener-server
-  GHCR_SLUG: ghcr.io/${{ github.repository }}
+  package_name: shortener-frontend
+  GHCR_SLUG: ghcr.io/${{ github.repository }}-frontend
+
+permissions:
+  contents: read
+  packages: write
 
 jobs:
   build:
@@ -46,28 +47,16 @@ jobs:
         with:
           images: ${{ env.GHCR_SLUG }}
           labels: |
-            org.opencontainers.image.title=Shortener
-            org.opencontainers.image.description=Shortener is a URL shortening service.
+            org.opencontainers.image.title=Shortener Frontend
+            org.opencontainers.image.description=Shortener Frontend - A modern URL shortener service frontend
             org.opencontainers.image.vendor=Jetsung Chan
           tags: ${{ matrix.tag }}
-
-      # - name: Set up Docker Buildx
-      #   uses: docker/setup-buildx-action@v3
-
-      # - name: Build (without push)
-      #   uses: docker/bake-action@v6
-      #   with:
-      #     files: |
-      #       ./docker-bake.hcl
-      #       cwd://${{ steps.meta.outputs.bake-file }}
-      #     targets: ${{ matrix.tag }}
-      #     push: ${{ github.event_name != 'pull_request' }}
 
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
-          context: .
-          file: ./deploy/docker/Dockerfile
+          context: ./shortener-frontend
+          file: ./docker/Dockerfile.frontend
           platforms: linux/${{ matrix.arch }}
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ env.GHCR_SLUG }}:${{ matrix.tag }}
@@ -98,6 +87,6 @@ jobs:
         continue-on-error: true
         with:
           package-name: ${{ env.package_name }}
-          package-type: 'container'
+          package-type: "container"
           min-versions-to-keep: 2
-          delete-only-untagged-versions: 'true'
+          delete-only-untagged-versions: "true"

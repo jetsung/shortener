@@ -68,10 +68,10 @@ fn benchmark_db_create(c: &mut Criterion) {
         b.iter(|| {
             counter += 1;
             let create_dto = CreateUrlDto {
-                code: format!("bench{}", counter),
+                short_code: format!("bench{}", counter),
                 original_url: "https://example.com".to_string(),
-                describe: Some("Benchmark URL".to_string()),
-                status: UrlStatus::Active as i32,
+                description: Some("Benchmark URL".to_string()),
+                status: UrlStatus::Enabled as i32,
             };
 
             rt.block_on(async { black_box(repo.create(create_dto).await.unwrap()) })
@@ -89,10 +89,10 @@ fn benchmark_db_find(c: &mut Criterion) {
     rt.block_on(async {
         for i in 0..100 {
             let create_dto = CreateUrlDto {
-                code: format!("find{}", i),
+                short_code: format!("find{}", i),
                 original_url: format!("https://example{}.com", i),
-                describe: Some(format!("URL {}", i)),
-                status: UrlStatus::Active as i32,
+                description: Some(format!("URL {}", i)),
+                status: UrlStatus::Enabled as i32,
             };
             repo.create(create_dto).await.unwrap();
         }
@@ -117,11 +117,11 @@ fn benchmark_db_list(c: &mut Criterion) {
     rt.block_on(async {
         for i in 0..1000 {
             let create_dto = CreateUrlDto {
-                code: format!("list{}", i),
+                short_code: format!("list{}", i),
                 original_url: format!("https://example{}.com", i),
-                describe: Some(format!("URL {}", i)),
+                description: Some(format!("URL {}", i)),
                 status: if i % 2 == 0 {
-                    UrlStatus::Active as i32
+                    UrlStatus::Enabled as i32
                 } else {
                     UrlStatus::Disabled as i32
                 },
@@ -162,11 +162,11 @@ fn benchmark_db_list_filtered(c: &mut Criterion) {
     rt.block_on(async {
         for i in 0..1000 {
             let create_dto = CreateUrlDto {
-                code: format!("filter{}", i),
+                short_code: format!("filter{}", i),
                 original_url: format!("https://example{}.com", i),
-                describe: Some(format!("URL {}", i)),
+                description: Some(format!("URL {}", i)),
                 status: if i % 2 == 0 {
-                    UrlStatus::Active as i32
+                    UrlStatus::Enabled as i32
                 } else {
                     UrlStatus::Disabled as i32
                 },
@@ -180,7 +180,7 @@ fn benchmark_db_list_filtered(c: &mut Criterion) {
             let params = ListParams {
                 page: 1,
                 page_size: 50,
-                status: Some(UrlStatus::Active as i32),
+                status: Some(UrlStatus::Enabled as i32),
                 ..Default::default()
             };
             rt.block_on(async { black_box(repo.list(params).await.unwrap()) })
@@ -211,10 +211,10 @@ fn benchmark_db_update(c: &mut Criterion) {
     rt.block_on(async {
         for i in 0..100 {
             let create_dto = CreateUrlDto {
-                code: format!("update{}", i),
+                short_code: format!("update{}", i),
                 original_url: format!("https://example{}.com", i),
-                describe: Some(format!("URL {}", i)),
-                status: UrlStatus::Active as i32,
+                description: Some(format!("URL {}", i)),
+                status: UrlStatus::Enabled as i32,
             };
             repo.create(create_dto).await.unwrap();
         }
@@ -224,7 +224,7 @@ fn benchmark_db_update(c: &mut Criterion) {
         b.iter(|| {
             let update_dto = shortener_server::repositories::url_repository::UpdateUrlDto {
                 original_url: Some("https://updated.com".to_string()),
-                describe: Some("Updated".to_string()),
+                description: Some("Updated".to_string()),
                 status: Some(UrlStatus::Disabled as i32),
             };
             rt.block_on(async { black_box(repo.update("update50", update_dto).await.unwrap()) })
@@ -244,10 +244,10 @@ fn benchmark_db_delete(c: &mut Criterion) {
                 let repo = UrlRepositoryImpl::new(db);
                 rt.block_on(async {
                     let create_dto = CreateUrlDto {
-                        code: "delete_test".to_string(),
+                        short_code: "delete_test".to_string(),
                         original_url: "https://example.com".to_string(),
-                        describe: None,
-                        status: UrlStatus::Active as i32,
+                        description: None,
+                        status: UrlStatus::Enabled as i32,
                     };
                     repo.create(create_dto).await.unwrap();
                     repo
@@ -285,10 +285,10 @@ fn benchmark_db_delete_batch(c: &mut Criterion) {
                             let mut ids = Vec::new();
                             for i in 0..batch_size {
                                 let create_dto = CreateUrlDto {
-                                    code: format!("batch{}", i),
+                                    short_code: format!("batch{}", i),
                                     original_url: format!("https://example{}.com", i),
-                                    describe: None,
-                                    status: UrlStatus::Active as i32,
+                                    description: None,
+                                    status: UrlStatus::Enabled as i32,
                                 };
                                 let url = repo.create(create_dto).await.unwrap();
                                 ids.push(url.id);

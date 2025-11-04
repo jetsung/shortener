@@ -7,7 +7,7 @@ import React from 'react';
  * @returns 懒加载组件
  */
 export function createLazyComponent<T extends React.ComponentType<any>>(
-  importFunc: () => Promise<{ default: T }>
+  importFunc: () => Promise<{ default: T }>,
 ) {
   return React.lazy(importFunc);
 }
@@ -80,7 +80,7 @@ export class PerformanceMonitor {
  * 预加载组件
  * @param importFunc 动态导入函数
  */
-export function preloadComponent(importFunc: () => Promise<any>): void {
+export function preloadComponent(importFunc: () => Promise<unknown>): void {
   // 在空闲时间预加载组件
   if ('requestIdleCallback' in window) {
     requestIdleCallback(() => {
@@ -121,7 +121,7 @@ export function initWebVitals(): void {
       console.log('LCP:', lastEntry.startTime);
     });
     observer.observe({ entryTypes: ['largest-contentful-paint'] });
-  } catch (e) {
+  } catch {
     // 静默处理不支持的情况
   }
 
@@ -130,11 +130,14 @@ export function initWebVitals(): void {
     const observer = new PerformanceObserver((list) => {
       const entries = list.getEntries();
       entries.forEach((entry) => {
-        console.log('FID:', (entry as any).processingStart - entry.startTime);
+        const fidEntry = entry as PerformanceEventTiming;
+        if (fidEntry.processingStart) {
+          console.log('FID:', fidEntry.processingStart - entry.startTime);
+        }
       });
     });
     observer.observe({ entryTypes: ['first-input'] });
-  } catch (e) {
+  } catch {
     // 静默处理不支持的情况
   }
 }

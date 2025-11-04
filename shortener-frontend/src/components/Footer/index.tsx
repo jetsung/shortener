@@ -16,7 +16,7 @@ const Footer: React.FC = () => {
         justifyContent: 'center',
         alignItems: 'center',
         flexWrap: 'wrap',
-        gap: '16px'
+        gap: '16px',
       }}
     >
       <a
@@ -27,7 +27,7 @@ const Footer: React.FC = () => {
           color: 'var(--semi-color-primary)',
           textDecoration: 'none',
           display: 'flex',
-          alignItems: 'center'
+          alignItems: 'center',
         }}
       >
         <IconHome style={{ marginRight: 4 }} />
@@ -41,7 +41,7 @@ const Footer: React.FC = () => {
           color: 'var(--semi-color-primary)',
           textDecoration: 'none',
           display: 'flex',
-          alignItems: 'center'
+          alignItems: 'center',
         }}
       >
         <IconGitlabLogo style={{ marginRight: 4 }} />
@@ -55,7 +55,7 @@ const Footer: React.FC = () => {
           color: 'var(--semi-color-primary)',
           textDecoration: 'none',
           display: 'flex',
-          alignItems: 'center'
+          alignItems: 'center',
         }}
       >
         <IconGithubLogo style={{ marginRight: 4 }} />

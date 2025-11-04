@@ -1,0 +1,23 @@
+# Demo Dockerfile for testing CI/CD pipeline
+FROM alpine:3.19
+
+# Add metadata
+LABEL org.opencontainers.image.title="Shortener Server Demo"
+LABEL org.opencontainers.image.description="Demo image for testing CI/CD"
+LABEL org.opencontainers.image.vendor="Jetsung Chan"
+
+# Install basic tools
+RUN apk add --no-cache curl bash
+
+# Create a simple app
+RUN echo '#!/bin/bash' > /app.sh && \
+    echo 'echo "Shortener Server Demo - Version: ${VERSION:-unknown}"' >> /app.sh && \
+    echo 'echo "Build time: $(date)"' >> /app.sh && \
+    echo 'echo "Architecture: $(uname -m)"' >> /app.sh && \
+    echo 'echo "Server is running..."' >> /app.sh && \
+    echo 'tail -f /dev/null' >> /app.sh && \
+    chmod +x /app.sh
+
+EXPOSE 8080
+
+CMD ["/app.sh"]

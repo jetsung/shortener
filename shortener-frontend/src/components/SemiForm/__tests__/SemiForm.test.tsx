@@ -6,13 +6,27 @@ import type { SemiFormRef } from '../index';
 
 // Mock Semi UI Form component
 vi.mock('@douyinfe/semi-ui', () => ({
-  Form: vi.fn().mockImplementation(({ children, onSubmit, ...props }: any) => {
+  Form: vi.fn().mockImplementation(({ children, onSubmit, getFormApi, ...props }: any) => {
     const mockFormRef = {
       validate: vi.fn().mockResolvedValue({ test: 'value' }),
       reset: vi.fn(),
       setValues: vi.fn(),
       getValues: vi.fn().mockReturnValue({ test: 'value' }),
+      submitForm: vi.fn().mockImplementation(() => {
+        // Trigger form submission
+        const form = document.querySelector('[data-testid="semi-form"]') as HTMLFormElement;
+        if (form) {
+          const formData = new FormData(form);
+          const values = Object.fromEntries(formData.entries());
+          return onSubmit?.(values);
+        }
+      }),
     };
+
+    // Call getFormApi if provided
+    if (getFormApi) {
+      getFormApi(mockFormRef);
+    }
 
     // Expose the mock ref for testing
     if (props.ref) {
@@ -44,24 +58,14 @@ const TestFormComponent = ({ onFinish, onFinishFailed }: any) => {
 
   return (
     <div>
-      <SemiForm
-        ref={formRef}
-        onFinish={onFinish}
-        onFinishFailed={onFinishFailed}
-      >
+      <SemiForm ref={formRef} onFinish={onFinish} onFinishFailed={onFinishFailed}>
         <input name="username" data-testid="username-input" />
         <input name="email" data-testid="email-input" />
       </SemiForm>
-      <button
-        onClick={() => formRef.current?.submit()}
-        data-testid="external-submit"
-      >
+      <button onClick={() => formRef.current?.submit()} data-testid="external-submit">
         External Submit
       </button>
-      <button
-        onClick={() => formRef.current?.reset()}
-        data-testid="external-reset"
-      >
+      <button onClick={() => formRef.current?.reset()} data-testid="external-reset">
         External Reset
       </button>
       <button
@@ -86,7 +90,7 @@ describe('SemiForm', () => {
     render(
       <SemiForm onFinish={mockOnFinish}>
         <input data-testid="test-input" />
-      </SemiForm>
+      </SemiForm>,
     );
 
     expect(screen.getByTestId('semi-form')).toBeInTheDocument();
@@ -99,8 +103,10 @@ describe('SemiForm', () => {
     render(
       <SemiForm onFinish={mockOnFinish}>
         <input name="test" defaultValue="value" />
-        <button type="submit" data-testid="submit-btn">Submit</button>
-      </SemiForm>
+        <button type="submit" data-testid="submit-btn">
+          Submit
+        </button>
+      </SemiForm>,
     );
 
     fireEvent.click(screen.getByTestId('submit-btn'));
@@ -117,8 +123,10 @@ describe('SemiForm', () => {
     render(
       <SemiForm onFinish={mockOnFinish} onFinishFailed={mockOnFinishFailed}>
         <input name="test" defaultValue="value" />
-        <button type="submit" data-testid="submit-btn">Submit</button>
-      </SemiForm>
+        <button type="submit" data-testid="submit-btn">
+          Submit
+        </button>
+      </SemiForm>,
     );
 
     fireEvent.click(screen.getByTestId('submit-btn'));
@@ -164,10 +172,10 @@ describe('SemiForm', () => {
 
     // Fill form
     fireEvent.change(screen.getByTestId('username-input'), {
-      target: { value: 'testuser' }
+      target: { value: 'testuser' },
     });
     fireEvent.change(screen.getByTestId('email-input'), {
-      target: { value: 'test@example.com' }
+      target: { value: 'test@example.com' },
     });
 
     // Submit via external button
@@ -187,24 +195,29 @@ describe('SemiForm', () => {
         data-testid="custom-form"
       >
         <input data-testid="test-input" />
-      </SemiForm>
+      </SemiForm>,
     );
 
-    const form = screen.getByTestId('semi-form');
-    expect(form).toHaveAttribute('data-testid', 'custom-form');
+    // Form should have the custom testid passed through
+    const form = screen.getByTestId('custom-form');
+    expect(form).toBeInTheDocument();
+    expect(form).toHaveAttribute('labelposition', 'top');
+    expect(form).toHaveAttribute('labelwidth', '100');
   });
 
   it('handles async onFinish correctly', async () => {
     const asyncOnFinish = vi.fn().mockImplementation(async (_values) => {
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
       return true;
     });
 
     render(
       <SemiForm onFinish={asyncOnFinish}>
         <input name="test" defaultValue="value" />
-        <button type="submit" data-testid="submit-btn">Submit</button>
-      </SemiForm>
+        <button type="submit" data-testid="submit-btn">
+          Submit
+        </button>
+      </SemiForm>,
     );
 
     fireEvent.click(screen.getByTestId('submit-btn'));
@@ -218,8 +231,10 @@ describe('SemiForm', () => {
     render(
       <SemiForm>
         <input name="test" defaultValue="value" />
-        <button type="submit" data-testid="submit-btn">Submit</button>
-      </SemiForm>
+        <button type="submit" data-testid="submit-btn">
+          Submit
+        </button>
+      </SemiForm>,
     );
 
     // Should not throw error when submitting without onFinish

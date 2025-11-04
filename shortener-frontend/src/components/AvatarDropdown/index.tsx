@@ -12,10 +12,7 @@ export interface AvatarDropdownProps {
   onLogout?: () => void;
 }
 
-const AvatarDropdown: React.FC<AvatarDropdownProps> = ({
-  currentUser,
-  onLogout
-}) => {
+const AvatarDropdown: React.FC<AvatarDropdownProps> = ({ currentUser, onLogout }) => {
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -51,17 +48,9 @@ const AvatarDropdown: React.FC<AvatarDropdownProps> = ({
   ];
 
   return (
-    <Dropdown
-      trigger="click"
-      position="bottomRight"
-      menu={menuItems}
-    >
+    <Dropdown trigger="click" position="bottomRight" menu={menuItems}>
       <div style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}>
-        <Avatar
-          size="small"
-          color="blue"
-          src={currentUser?.avatar}
-        >
+        <Avatar size="small" color="blue" src={currentUser?.avatar}>
           {currentUser?.name ? currentUser.name.charAt(0).toUpperCase() : <IconUser />}
         </Avatar>
       </div>

@@ -66,12 +66,7 @@ const SemiModalForm = forwardRef<SemiFormRef, SemiModalFormProps>((props, ref) =
       confirmLoading={loading}
       {...modalProps}
     >
-      <SemiForm
-        ref={internalFormRef}
-        labelPosition="left"
-        labelWidth={80}
-        {...formProps}
-      >
+      <SemiForm ref={internalFormRef} labelPosition="left" labelWidth={80} {...formProps}>
         {children}
       </SemiForm>
     </Modal>

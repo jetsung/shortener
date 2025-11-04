@@ -4,16 +4,19 @@ import SemiModalForm from '../ModalForm';
 
 // Mock Semi UI components
 vi.mock('@douyinfe/semi-ui', () => ({
-  Modal: ({ title, visible, onOk, onCancel, children, okText, cancelText }: any) => (
+  Modal: ({ title, visible, onOk, onCancel, children, okText, cancelText }: any) =>
     visible ? (
       <div data-testid="modal">
         <div data-testid="modal-title">{title}</div>
         <div data-testid="modal-content">{children}</div>
-        <button onClick={onOk} data-testid="modal-ok">{okText || '确定'}</button>
-        <button onClick={onCancel} data-testid="modal-cancel">{cancelText || '取消'}</button>
+        <button onClick={onOk} data-testid="modal-ok">
+          {okText || '确定'}
+        </button>
+        <button onClick={onCancel} data-testid="modal-cancel">
+          {cancelText || '取消'}
+        </button>
       </div>
-    ) : null
-  ),
+    ) : null,
 }));
 
 // Mock SemiForm
@@ -80,13 +83,7 @@ describe('SemiModalForm', () => {
   });
 
   it('renders custom button text', () => {
-    render(
-      <SemiModalForm
-        {...defaultProps}
-        okText="保存"
-        cancelText="关闭"
-      />
-    );
+    render(<SemiModalForm {...defaultProps} okText="保存" cancelText="关闭" />);
 
     expect(screen.getByTestId('modal-ok')).toHaveTextContent('保存');
     expect(screen.getByTestId('modal-cancel')).toHaveTextContent('关闭');
@@ -95,12 +92,7 @@ describe('SemiModalForm', () => {
   it('passes form props to SemiForm', () => {
     const onFinish = vi.fn();
     render(
-      <SemiModalForm
-        {...defaultProps}
-        onFinish={onFinish}
-        labelPosition="top"
-        labelWidth={100}
-      />
+      <SemiModalForm {...defaultProps} onFinish={onFinish} labelPosition="top" labelWidth={100} />,
     );
 
     const form = screen.getByTestId('semi-form');
@@ -111,7 +103,7 @@ describe('SemiModalForm', () => {
     render(
       <SemiModalForm {...defaultProps}>
         <div data-testid="custom-content">Custom Form Content</div>
-      </SemiModalForm>
+      </SemiModalForm>,
     );
 
     expect(screen.getByTestId('custom-content')).toBeInTheDocument();
@@ -124,7 +116,7 @@ describe('SemiModalForm', () => {
         {...defaultProps}
         width={600}
         modalProps={{ 'data-testid': 'custom-modal' }}
-      />
+      />,
     );
 
     expect(screen.getByTestId('modal')).toBeInTheDocument();
@@ -132,7 +124,7 @@ describe('SemiModalForm', () => {
 
   it('handles async onOk correctly', async () => {
     const onOk = vi.fn().mockImplementation(async () => {
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
     });
 
     render(<SemiModalForm {...defaultProps} onOk={onOk} />);
@@ -154,10 +146,7 @@ describe('SemiModalForm', () => {
 
     await waitFor(() => {
       expect(onOk).toHaveBeenCalledTimes(1);
-      expect(consoleError).toHaveBeenCalledWith(
-        'Modal form submission failed:',
-        expect.any(Error)
-      );
+      expect(consoleError).toHaveBeenCalledWith('Modal form submission failed:', expect.any(Error));
     });
 
     consoleError.mockRestore();

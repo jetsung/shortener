@@ -1,12 +1,7 @@
 import React, { useState, useEffect, memo } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Nav, Button, Typography, Spin, SideSheet } from '@douyinfe/semi-ui';
-import {
-  IconHome,
-  IconLink,
-  IconHistogram,
-  IconMenu
-} from '@douyinfe/semi-icons';
+import { IconHome, IconLink, IconHistogram, IconMenu } from '@douyinfe/semi-icons';
 import { AvatarDropdown, Footer } from '../components';
 import { useAuth } from '../hooks/useAuth';
 import { usePerformance } from '../hooks/usePerformance';
@@ -36,8 +31,6 @@ const MainLayout: React.FC = memo(() => {
     window.addEventListener('resize', checkScreenSize);
     return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
-
-
 
   // 导航菜单项
   const navItems = [
@@ -74,17 +67,17 @@ const MainLayout: React.FC = memo(() => {
     }
   };
 
-
-
   // 如果正在加载，显示加载状态
   if (loading) {
     return (
-      <div style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '100vh'
-      }}>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '100vh',
+        }}
+      >
         <Spin size="large" />
       </div>
     );
@@ -92,22 +85,24 @@ const MainLayout: React.FC = memo(() => {
 
   // 渲染侧边栏内容
   const renderSidebarContent = (isInDrawer = false) => (
-    <div style={{
-      height: '100%',
-      display: 'flex',
-      flexDirection: 'column',
-      overflow: 'hidden'
-    }}>
+    <div
+      style={{
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+      }}
+    >
       {/* Logo 区域 */}
       <div
         style={{
           height: 64,
           display: 'flex',
           alignItems: 'center',
-          justifyContent: (collapsed && !isInDrawer) ? 'center' : 'flex-start',
-          padding: (collapsed && !isInDrawer) ? 0 : '0 24px',
+          justifyContent: collapsed && !isInDrawer ? 'center' : 'flex-start',
+          padding: collapsed && !isInDrawer ? 0 : '0 24px',
           borderBottom: '1px solid var(--semi-color-border)',
-          flexShrink: 0
+          flexShrink: 0,
         }}
       >
         {(!collapsed || isInDrawer) && (
@@ -135,11 +130,13 @@ const MainLayout: React.FC = memo(() => {
       </div>
 
       {/* 导航菜单 */}
-      <div style={{
-        flex: 1,
-        overflow: 'hidden',
-        paddingTop: 16
-      }}>
+      <div
+        style={{
+          flex: 1,
+          overflow: 'hidden',
+          paddingTop: 16,
+        }}
+      >
         <Nav
           items={navItems}
           selectedKeys={[location.pathname]}
@@ -152,12 +149,14 @@ const MainLayout: React.FC = memo(() => {
   );
 
   return (
-    <div style={{
-      height: '100vh',
-      overflow: 'hidden',
-      display: 'flex',
-      flexDirection: 'row'
-    }}>
+    <div
+      style={{
+        height: '100vh',
+        overflow: 'hidden',
+        display: 'flex',
+        flexDirection: 'row',
+      }}
+    >
       {/* 桌面端固定侧边栏 */}
       {!isMobile && (
         <div
@@ -171,7 +170,7 @@ const MainLayout: React.FC = memo(() => {
             top: 0,
             zIndex: 100,
             transition: 'width 0.2s ease',
-            overflow: 'hidden'
+            overflow: 'hidden',
           }}
         >
           {renderSidebarContent()}
@@ -200,10 +199,10 @@ const MainLayout: React.FC = memo(() => {
         style={{
           flex: 1,
           height: '100vh',
-          marginLeft: isMobile ? 0 : (collapsed ? 64 : 240),
+          marginLeft: isMobile ? 0 : collapsed ? 64 : 240,
           display: 'flex',
           flexDirection: 'column',
-          transition: 'margin-left 0.2s ease'
+          transition: 'margin-left 0.2s ease',
         }}
       >
         {/* 固定顶部导航栏 */}
@@ -219,9 +218,9 @@ const MainLayout: React.FC = memo(() => {
             position: 'fixed',
             top: 0,
             right: 0,
-            left: isMobile ? 0 : (collapsed ? 64 : 240),
+            left: isMobile ? 0 : collapsed ? 64 : 240,
             zIndex: 99,
-            transition: 'left 0.2s ease'
+            transition: 'left 0.2s ease',
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
@@ -243,10 +242,7 @@ const MainLayout: React.FC = memo(() => {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-            <AvatarDropdown
-              currentUser={currentUser || undefined}
-              onLogout={handleLogout}
-            />
+            <AvatarDropdown currentUser={currentUser || undefined} onLogout={handleLogout} />
           </div>
         </div>
 
@@ -257,14 +253,16 @@ const MainLayout: React.FC = memo(() => {
             marginTop: 64, // 为固定的顶部导航留出空间
             backgroundColor: 'var(--semi-color-bg-0)',
             overflow: 'auto',
-            width: '100%'
+            width: '100%',
           }}
         >
-          <div style={{
-            width: '100%',
-            minHeight: '100%',
-            padding: isMobile ? 16 : 24
-          }}>
+          <div
+            style={{
+              width: '100%',
+              minHeight: '100%',
+              padding: isMobile ? 16 : 24,
+            }}
+          >
             <Outlet />
           </div>
         </div>
@@ -274,7 +272,7 @@ const MainLayout: React.FC = memo(() => {
           style={{
             backgroundColor: 'var(--semi-color-bg-1)',
             borderTop: '1px solid var(--semi-color-border)',
-            flexShrink: 0
+            flexShrink: 0,
           }}
         >
           <Footer />

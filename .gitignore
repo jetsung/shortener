@@ -29,7 +29,6 @@ target/
 
 # Configuration files with secrets
 *.local.toml
-config/config.toml
 
 # Database files
 *.db

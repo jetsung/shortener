@@ -33,4 +33,4 @@ cargo run --release -p shortener-server -- --config config/config.local.toml
 - [API 文档](../docs/server/API.md)
 - [配置说明](../docs/server/CONFIG.md)
 - [性能基准](../docs/server/BENCHMARKS.md)
-- [在线文档](https://jetsung.github.io/shortener/server/README/)
+- [在线文档](https://jetsung.github.io/shortener/server/)

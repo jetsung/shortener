@@ -9,23 +9,37 @@ default-target = "x86_64-unknown-linux-gnu"
 passthrough = [
     "RUST_LOG",
     "CARGO_INCREMENTAL",
+    "OPENSSL_STATIC",
+    "OPENSSL_VENDORED",
 ]
 
 # Linux x86_64 (GNU)
 [target.x86_64-unknown-linux-gnu]
 image = "ghcr.io/cross-rs/x86_64-unknown-linux-gnu:latest"
 
+[target.x86_64-unknown-linux-gnu.env]
+passthrough = ["OPENSSL_STATIC", "OPENSSL_VENDORED"]
+
 # Linux x86_64 (musl - static linking)
 [target.x86_64-unknown-linux-musl]
 image = "ghcr.io/cross-rs/x86_64-unknown-linux-musl:latest"
+
+[target.x86_64-unknown-linux-musl.env]
+passthrough = ["OPENSSL_STATIC", "OPENSSL_VENDORED"]
 
 # Linux ARM64 (aarch64)
 [target.aarch64-unknown-linux-gnu]
 image = "ghcr.io/cross-rs/aarch64-unknown-linux-gnu:latest"
 
+[target.aarch64-unknown-linux-gnu.env]
+passthrough = ["OPENSSL_STATIC", "OPENSSL_VENDORED"]
+
 # Linux ARM64 (musl)
 [target.aarch64-unknown-linux-musl]
 image = "ghcr.io/cross-rs/aarch64-unknown-linux-musl:latest"
+
+[target.aarch64-unknown-linux-musl.env]
+passthrough = ["OPENSSL_STATIC", "OPENSSL_VENDORED"]
 
 # Linux ARMv7
 [target.armv7-unknown-linux-gnueabihf]

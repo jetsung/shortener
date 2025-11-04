@@ -27,7 +27,10 @@ export {
  * @param format 格式
  * @returns 格式化后的日期字符串
  */
-export const formatDate = (date: Date | string | number, format = 'YYYY-MM-DD HH:mm:ss'): string => {
+export const formatDate = (
+  date: Date | string | number,
+  format = 'YYYY-MM-DD HH:mm:ss',
+): string => {
   const d = new Date(date);
 
   const year = d.getFullYear();
@@ -84,7 +87,7 @@ export const copyToClipboard = async (text: string): Promise<boolean> => {
  */
 export const debounce = <T extends (...args: any[]) => any>(
   func: T,
-  wait: number
+  wait: number,
 ): ((...args: Parameters<T>) => void) => {
   let timeout: ReturnType<typeof setTimeout>;
 
@@ -102,7 +105,7 @@ export const debounce = <T extends (...args: any[]) => any>(
  */
 export const throttle = <T extends (...args: any[]) => any>(
   func: T,
-  limit: number
+  limit: number,
 ): ((...args: Parameters<T>) => void) => {
   let inThrottle: boolean;
 
