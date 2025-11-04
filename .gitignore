@@ -52,3 +52,12 @@ site/
 /**/package-lock.json
 /**/yarn.lock
 /**/dist/
+
+# act
+.actrc
+.actenv
+.actimages
+.artifacts
+.secrets
+event.json
+
