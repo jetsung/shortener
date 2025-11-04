@@ -1857,7 +1857,7 @@
 <h4 id="_7">服务器配置<a class="headerlink" href="#_7" title="Permanent link">&para;</a></h4>
 <ul>
 <li><code>RUST_LOG</code>：日志级别（debug、info、warn、error）</li>
-<li><code>CONFIG_PATH</code>：配置文件路径（默认：<code>/etc/shortener/config.toml</code>）</li>
+<li><code>CONFIG_PATH</code>：配置文件路径（默认：<code>/app/config.toml</code>）</li>
 </ul>
 <h4 id="_8">数据库配置<a class="headerlink" href="#_8" title="Permanent link">&para;</a></h4>
 <ul>
@@ -1884,9 +1884,9 @@
 </ul>
 <h3 id="_10">卷挂载<a class="headerlink" href="#_10" title="Permanent link">&para;</a></h3>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="nt">volumes</span><span class="p">:</span>
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">../config/config.toml:/etc/shortener/config.toml:ro</span><span class="w"> </span><span class="c1"># 配置文件</span>
-</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">../data:/var/lib/shortener:ro</span><span class="w"> </span><span class="c1"># 数据文件</span>
-</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">shortener-logs:/var/log/shortener</span><span class="w"> </span><span class="c1"># 日志</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">../config/config.docker.toml:/app/config.toml:ro</span><span class="w"> </span><span class="c1"># 配置文件</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">../data:/app/data</span><span class="w"> </span><span class="c1"># 数据文件（数据库、GeoIP等）</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">app-logs:/app/logs</span><span class="w"> </span><span class="c1"># 日志</span>
 </span></code></pre></div>
 <h2 id="makefile">Makefile 命令<a class="headerlink" href="#makefile" title="Permanent link">&para;</a></h2>
 <p>从项目根目录运行：</p>
@@ -1953,7 +1953,8 @@
 <li><code>postgres-data</code>：PostgreSQL 数据</li>
 <li><code>mysql-data</code>：MySQL 数据</li>
 <li><code>redis-data</code>：Redis 数据</li>
-<li><code>shortener-logs</code>：应用日志</li>
+<li><code>app-logs</code>：应用日志</li>
+<li><code>/app/data</code>：应用数据（SQLite 数据库、GeoIP 数据库等）</li>
 </ul>
 <h2 id="_14">安全考虑<a class="headerlink" href="#_14" title="Permanent link">&para;</a></h2>
 <h3 id="root">非 root 用户<a class="headerlink" href="#root" title="Permanent link">&para;</a></h3>
@@ -1996,7 +1997,7 @@
 </span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>docker<span class="w"> </span>compose<span class="w"> </span>-f<span class="w"> </span>docker/docker-compose.yml<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>shortener-server<span class="w"> </span>sh
 </span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>
 </span><span id="__span-17-4"><a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="c1"># 检查配置</span>
-</span><span id="__span-17-5"><a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a>docker<span class="w"> </span>compose<span class="w"> </span>-f<span class="w"> </span>docker/docker-compose.yml<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>shortener-server<span class="w"> </span>cat<span class="w"> </span>/etc/shortener/config.toml
+</span><span id="__span-17-5"><a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a>docker<span class="w"> </span>compose<span class="w"> </span>-f<span class="w"> </span>docker/docker-compose.yml<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>shortener-server<span class="w"> </span>cat<span class="w"> </span>/app/config.toml
 </span><span id="__span-17-6"><a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a>
 </span><span id="__span-17-7"><a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a><span class="c1"># 检查数据库连接</span>
 </span><span id="__span-17-8"><a id="__codelineno-17-8" name="__codelineno-17-8" href="#__codelineno-17-8"></a>docker<span class="w"> </span>compose<span class="w"> </span>-f<span class="w"> </span>docker/docker-compose.yml<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>postgres<span class="w"> </span>psql<span class="w"> </span>-U<span class="w"> </span>shortener<span class="w"> </span>-d<span class="w"> </span>shortener
