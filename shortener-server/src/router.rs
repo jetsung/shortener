@@ -68,6 +68,7 @@ pub fn create_router(state: AppState) -> Router {
 
     // Create health check route
     let health_routes = Router::new()
+        .route("/", get(root))
         .route("/ping", get(ping));
 
     // Combine all routes
@@ -90,6 +91,17 @@ pub fn create_router(state: AppState) -> Router {
 async fn ping() -> axum::Json<serde_json::Value> {
     axum::Json(serde_json::json!({
         "message": "pong"
+    }))
+}
+
+/// Root handler - service information
+///
+/// GET /
+async fn root() -> axum::Json<serde_json::Value> {
+    axum::Json(serde_json::json!({
+        "service": "URL Shortener API",
+        "version": env!("CARGO_PKG_VERSION"),
+        "status": "running"
     }))
 }
 

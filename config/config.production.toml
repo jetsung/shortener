@@ -3,7 +3,7 @@
 # Use environment variables for sensitive data
 
 [server]
-address = ":8080"
+address = "0.0.0.0:8080"
 trusted-platform = "X-Forwarded-For"
 site_url = "https://short.example.com"
 # Use environment variable: SHORTENER__SERVER__API_KEY

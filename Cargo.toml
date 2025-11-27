@@ -3,7 +3,7 @@ members = ["shortener-server", "shortener-cli", "shortener-common"]
 resolver = "2"
 
 [workspace.package]
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 authors = ["Jetsung Chan <i@jetsung.com>"]
 license = "Apache-2.0"

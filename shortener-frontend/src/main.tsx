@@ -1,6 +1,6 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
+import { HashRouter } from 'react-router-dom';
 import { LocaleProvider } from '@douyinfe/semi-ui';
 import zh_CN from '@douyinfe/semi-ui/lib/es/locale/source/zh_CN';
 import App from './App';
@@ -27,11 +27,11 @@ const root = createRoot(container);
 
 root.render(
   <React.StrictMode>
-    <BrowserRouter>
+    <HashRouter>
       <LocaleProvider locale={zh_CN}>
         <App />
       </LocaleProvider>
-    </BrowserRouter>
+    </HashRouter>
   </React.StrictMode>,
 );
 

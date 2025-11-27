@@ -6,8 +6,8 @@
 # Server Configuration
 # ============================================================================
 [server]
-# Server listen address
-address = ":8080"
+# Server listen address (use 0.0.0.0 for Docker/production to accept external connections)
+address = "0.0.0.0:8080"
 
 # Trusted platform header for getting real client IP (optional)
 trusted-platform = ""

@@ -135,13 +135,18 @@ async fn main() {
         .address
         .parse::<std::net::SocketAddr>()
         .unwrap_or_else(|_| {
-            // 如果解析失败，尝试添加默认 IP
-            format!("0.0.0.0{}", config.server.address)
-                .parse()
-                .unwrap_or_else(|_| {
-                    error!("✗ Invalid server address: {}", config.server.address);
-                    std::process::exit(1);
-                })
+            // 如果解析失败，检查是否只是端口号（如 ":8080"）
+            if config.server.address.starts_with(':') {
+                format!("0.0.0.0{}", config.server.address)
+                    .parse()
+                    .unwrap_or_else(|_| {
+                        error!("✗ Invalid server address: {}", config.server.address);
+                        std::process::exit(1);
+                    })
+            } else {
+                error!("✗ Invalid server address: {}", config.server.address);
+                std::process::exit(1);
+            }
         });
 
     // 创建 TCP listener

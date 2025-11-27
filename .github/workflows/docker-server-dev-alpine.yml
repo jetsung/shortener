@@ -9,7 +9,7 @@ on:
       - ".github/workflows/docker-server-dev-alpine.yml"
       - "docker-bake.hcl"
       - "shortener-server/Cargo.toml"
-      - "shortener-server/src"
+      - "shortener-server/src/**"
       
 env:
   package_name: shortener-server
