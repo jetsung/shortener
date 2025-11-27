@@ -3,7 +3,7 @@
 # Uses environment variables for all configurable values
 
 [server]
-address = ":8080"
+address = "0.0.0.0:8080"
 trusted-platform = "${TRUSTED_PLATFORM:-}"
 site_url = "${SITE_URL:-http://localhost:8080}"
 api_key = "${API_KEY}"
