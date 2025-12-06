@@ -1,8 +1,8 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { HashRouter } from 'react-router-dom';
-import { LocaleProvider } from '@douyinfe/semi-ui';
-import zh_CN from '@douyinfe/semi-ui/lib/es/locale/source/zh_CN';
+import { LocaleProvider } from '@douyinfe/semi-ui-19';
+import zh_CN from '@douyinfe/semi-ui-19/lib/es/locale/source/zh_CN';
 import App from './App';
 import { applyThemeTokens } from '../config/theme';
 import { initWebVitals, PerformanceMonitor } from './utils/performance';

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Empty } from '@douyinfe/semi-ui';
+import { Button, Empty } from '@douyinfe/semi-ui-19';
 
 const NotFoundPage: React.FC = () => {
   const navigate = useNavigate();

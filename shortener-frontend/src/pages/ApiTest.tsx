@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, Card, Typography, Space, Toast } from '@douyinfe/semi-ui';
+import { Button, Card, Typography, Space, Toast } from '@douyinfe/semi-ui-19';
 import { login } from '@/services/shortener/account';
 
 const { Title, Text } = Typography;

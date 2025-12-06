@@ -20,7 +20,7 @@ vi.mock('../../services/shortener', () => ({
 }));
 
 // Mock Semi UI components
-vi.mock('@douyinfe/semi-ui', () => ({
+vi.mock('@douyinfe/semi-ui-19', () => ({
   Card: ({ children, title }: any) => (
     <div data-testid="card">
       {title && <div data-testid="card-title">{title}</div>}

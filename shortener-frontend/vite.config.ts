@@ -53,7 +53,7 @@ export default defineConfig(({ mode }) => {
       output: {
         manualChunks: (id) => {
           // Semi Design 组件单独打包
-          if (id.includes('@douyinfe/semi-ui')) {
+          if (id.includes('@douyinfe/semi-ui-19')) {
             return 'semi-ui';
           }
           if (id.includes('@douyinfe/semi-icons')) {
@@ -106,7 +106,7 @@ export default defineConfig(({ mode }) => {
   },
   optimizeDeps: {
     include: [
-      '@douyinfe/semi-ui',
+      '@douyinfe/semi-ui-19',
       '@douyinfe/semi-icons',
       'react',
       'react-dom',

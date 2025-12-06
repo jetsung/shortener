@@ -1,6 +1,6 @@
 import React, { forwardRef, useImperativeHandle } from 'react';
-import { Form } from '@douyinfe/semi-ui';
-import type { FormApi } from '@douyinfe/semi-ui/lib/es/form/interface';
+import { Form } from '@douyinfe/semi-ui-19';
+import type { FormApi } from '@douyinfe/semi-ui-19/lib/es/form/interface';
 
 export interface SemiFormProps {
   onFinish?: (values: any) => Promise<boolean> | boolean;

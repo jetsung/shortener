@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Form } from '@douyinfe/semi-ui';
+import { Form } from '@douyinfe/semi-ui-19';
 import { SemiModalForm } from '@/components';
 import type { SemiFormRef } from '@/components/SemiForm/types';
 

@@ -1,6 +1,6 @@
 import React, { Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { Spin } from '@douyinfe/semi-ui';
+import { Spin } from '@douyinfe/semi-ui-19';
 import MainLayout from './layouts/MainLayout';
 
 // 懒加载页面组件以实现代码分割

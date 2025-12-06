@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Card, Button, Typography, Space, Divider } from '@douyinfe/semi-ui';
+import { Card, Button, Typography, Space, Divider } from '@douyinfe/semi-ui-19';
 import { Toast } from '@/utils/notification';
 import axios, { AxiosError } from 'axios';
 

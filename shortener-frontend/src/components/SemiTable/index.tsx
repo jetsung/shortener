@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { Table, Button, Form, Card, Space, Toast, Typography, Spin } from '@douyinfe/semi-ui';
+import { Table, Button, Form, Card, Space, Toast, Typography, Spin } from '@douyinfe/semi-ui-19';
 import { IconSearch, IconRefresh } from '@douyinfe/semi-icons';
-import type { ColumnProps } from '@douyinfe/semi-ui/lib/es/table';
+import type { ColumnProps } from '@douyinfe/semi-ui-19/lib/es/table';
 
 const { Text } = Typography;
 

@@ -2,7 +2,7 @@
  * API 工具函数
  */
 
-import { Toast } from '@douyinfe/semi-ui';
+import { Toast } from '@douyinfe/semi-ui-19';
 
 /**
  * 处理 API 响应

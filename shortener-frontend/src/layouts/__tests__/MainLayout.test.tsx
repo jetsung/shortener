@@ -19,7 +19,7 @@ vi.mock('react-router-dom', async () => {
 });
 
 // Mock Semi UI components
-vi.mock('@douyinfe/semi-ui', () => ({
+vi.mock('@douyinfe/semi-ui-19', () => ({
   Layout: {
     Header: ({ children, style }: any) => (
       <header style={style} data-testid="header">

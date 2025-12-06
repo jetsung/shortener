@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, Typography } from '@douyinfe/semi-ui';
+import { Card, Typography } from '@douyinfe/semi-ui-19';
 
 const { Title, Text } = Typography;
 

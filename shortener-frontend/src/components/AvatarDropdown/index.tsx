@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Avatar, Dropdown } from '@douyinfe/semi-ui';
+import { Avatar, Dropdown } from '@douyinfe/semi-ui-19';
 import { Toast } from '@/utils/notification';
 import { IconUser, IconSetting, IconExit } from '@douyinfe/semi-icons';
 

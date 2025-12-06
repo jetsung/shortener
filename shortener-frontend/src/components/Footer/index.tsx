@@ -1,5 +1,5 @@
 import React from 'react';
-import { Typography } from '@douyinfe/semi-ui';
+import { Typography } from '@douyinfe/semi-ui-19';
 import { IconGithubLogo, IconGitlabLogo, IconHome } from '@douyinfe/semi-icons';
 
 const { Text } = Typography;

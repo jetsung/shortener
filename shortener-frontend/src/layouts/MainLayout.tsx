@@ -1,6 +1,6 @@
 import React, { useState, useEffect, memo } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { Nav, Button, Typography, Spin, SideSheet } from '@douyinfe/semi-ui';
+import { Nav, Button, Typography, Spin, SideSheet } from '@douyinfe/semi-ui-19';
 import { IconHome, IconLink, IconHistogram, IconMenu } from '@douyinfe/semi-icons';
 import { AvatarDropdown, Footer } from '../components';
 import { useAuth } from '../hooks/useAuth';

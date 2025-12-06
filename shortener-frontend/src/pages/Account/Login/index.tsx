@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, Form, Button, Typography } from '@douyinfe/semi-ui';
+import { Card, Form, Button, Typography } from '@douyinfe/semi-ui-19';
 import { login } from '@/services/shortener/account';
 import type { LoginForm } from '@/types';
 import { Toast } from '@/utils/notification';

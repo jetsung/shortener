@@ -5,7 +5,7 @@ import SemiTable from '../index';
 import type { SemiTableColumn } from '../index';
 
 // Mock Semi UI components
-vi.mock('@douyinfe/semi-ui', () => ({
+vi.mock('@douyinfe/semi-ui-19', () => ({
   Table: ({ dataSource, columns, loading, pagination, onChange }: any) => (
     <div data-testid="semi-table">
       {loading && <div data-testid="loading">Loading...</div>}

@@ -1,5 +1,5 @@
 import { forwardRef, useRef, useImperativeHandle, useState } from 'react';
-import { Modal } from '@douyinfe/semi-ui';
+import { Modal } from '@douyinfe/semi-ui-19';
 import SemiForm from './index';
 import type { SemiFormRef, SemiModalFormProps } from './types';
 

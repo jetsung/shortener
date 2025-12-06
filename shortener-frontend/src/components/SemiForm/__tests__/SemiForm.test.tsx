@@ -5,7 +5,7 @@ import SemiForm from '../index';
 import type { SemiFormRef } from '../index';
 
 // Mock Semi UI Form component
-vi.mock('@douyinfe/semi-ui', () => ({
+vi.mock('@douyinfe/semi-ui-19', () => ({
   Form: vi.fn().mockImplementation(({ children, onSubmit, getFormApi, ...props }: any) => {
     const mockFormRef = {
       validate: vi.fn().mockResolvedValue({ test: 'value' }),

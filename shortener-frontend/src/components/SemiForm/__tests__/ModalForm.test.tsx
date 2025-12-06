@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import SemiModalForm from '../ModalForm';
 
 // Mock Semi UI components
-vi.mock('@douyinfe/semi-ui', () => ({
+vi.mock('@douyinfe/semi-ui-19', () => ({
   Modal: ({ title, visible, onOk, onCancel, children, okText, cancelText }: any) =>
     visible ? (
       <div data-testid="modal">

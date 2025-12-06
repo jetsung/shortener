@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { Button, Typography, Modal } from '@douyinfe/semi-ui';
+import { Button, Typography, Modal } from '@douyinfe/semi-ui-19';
 import { Toast } from '@/utils/notification';
 import { SemiTable } from '@/components';
 import type { SemiTableActionRef, SemiTableColumn } from '@/components/SemiTable';

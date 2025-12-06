@@ -10,7 +10,7 @@ import History from '../pages/History';
 import MainLayout from '../layouts/MainLayout';
 
 // Mock Semi UI components for consistent rendering
-vi.mock('@douyinfe/semi-ui', () => ({
+vi.mock('@douyinfe/semi-ui-19', () => ({
   Card: ({ children, title, extra }: any) => (
     <div className="semi-card" data-testid="card">
       {title && <div className="semi-card-title">{title}</div>}
