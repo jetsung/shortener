@@ -5,17 +5,13 @@ repos:
     - id: check-merge-conflict
     - id: trailing-whitespace
     - id: check-yaml
+      exclude: ^mkdocs\.yml$
     - id: check-added-large-files
     - id: check-case-conflict
     - id: check-docstring-first
 
 - repo: local
   hooks:
-    - id: just-tidy
-      name: Run just go-mod-tidy
-      entry: bash -c "just go-mod-tidy"
-      language: system
-      args: []
     - id: just-fmt
       name: Run just fmt
       entry: bash -c "just fmt"
@@ -26,3 +22,21 @@ repos:
       entry: bash -c "just lint"
       language: system
       args: []
+    - id: frontend-prettier
+      name: Frontend Prettier Format
+      entry: bash -c "cd shortener-frontend && pnpm prettier"
+      language: system
+      files: ^shortener-frontend/src/.*\.(js|jsx|ts|tsx|json|css|md)$
+      pass_filenames: false
+    - id: frontend-eslint
+      name: Frontend ESLint Fix
+      entry: bash -c "cd shortener-frontend && pnpm lint:fix"
+      language: system
+      files: ^shortener-frontend/src/.*\.(js|jsx|ts|tsx)$
+      pass_filenames: false
+    - id: frontend-type-check
+      name: Frontend TypeScript Type Check
+      entry: bash -c "cd shortener-frontend && pnpm type-check"
+      language: system
+      files: ^shortener-frontend/.*\.(ts|tsx)$
+      pass_filenames: false

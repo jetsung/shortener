@@ -132,6 +132,9 @@ fmt-check-frontend:
 clippy:
     cargo clippy --all-targets --all-features -- -D warnings
 
+# Lint all code (backend + frontend)
+lint: clippy lint-frontend
+
 # Lint frontend code
 lint-frontend:
     cd shortener-frontend && pnpm lint

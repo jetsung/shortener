@@ -1,6 +1,6 @@
 {
   "name": "shortener-frontend",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A modern URL shortener service frontend built with Semi Design and React 19",
   "private": true,
   "type": "module",
@@ -25,14 +25,14 @@
     "deploy:build": "pnpm ci && pnpm build"
   },
   "dependencies": {
-    "@douyinfe/semi-icons": "^2.88.3",
-    "@douyinfe/semi-ui-19": "^2.88.3",
+    "@douyinfe/semi-icons": "^2.89.0",
+    "@douyinfe/semi-ui-19": "^2.89.0",
     "axios": "^1.13.1",
     "classnames": "^2.5.1",
     "dayjs": "^1.11.19",
-    "react": "^19.2.0",
-    "react-dom": "^19.2.0",
-    "react-router-dom": "^7.10.0"
+    "react": "^19.2.1",
+    "react-dom": "^19.2.1",
+    "react-router-dom": "^7.10.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

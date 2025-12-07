@@ -257,17 +257,20 @@ function SemiTable<T extends Record<string, any> = any, P = any>(props: SemiTabl
   };
 
   // 处理分页变化
-  const handlePageChange = useCallback((page: number, size?: number) => {
-    console.log('Page change from pagination:', { page, size });
-    if (size !== undefined && size !== pageSize) {
-      // 如果页面大小改变，先更新页面大小，这会触发重新加载
-      setPageSize(size);
-      setCurrentPage(1); // 改变页面大小时，重置到第一页
-    } else {
-      // 只改变页码
-      setCurrentPage(page);
-    }
-  }, [pageSize]);
+  const handlePageChange = useCallback(
+    (page: number, size?: number) => {
+      console.log('Page change from pagination:', { page, size });
+      if (size !== undefined && size !== pageSize) {
+        // 如果页面大小改变，先更新页面大小，这会触发重新加载
+        setPageSize(size);
+        setCurrentPage(1); // 改变页面大小时，重置到第一页
+      } else {
+        // 只改变页码
+        setCurrentPage(page);
+      }
+    },
+    [pageSize],
+  );
 
   // 处理页面大小变化
   const handlePageSizeChange = useCallback((size: number) => {
@@ -294,6 +297,7 @@ function SemiTable<T extends Record<string, any> = any, P = any>(props: SemiTabl
 
     // 如果传入的是对象，合并配置，但确保关键属性不被覆盖
     if (typeof pagination === 'object') {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { onChange, onPageSizeChange, currentPage: _, ...restPagination } = pagination as any;
       return {
         ...restPagination,

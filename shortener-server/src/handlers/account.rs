@@ -144,14 +144,14 @@ pub fn generate_token(username: &str) -> Result<String, AppError> {
         .duration_since(UNIX_EPOCH)
         .unwrap()
         .as_nanos();
-    
+
     // Create a simple pseudo-random generator
     let mut seed = timestamp as u64;
     seed ^= username.len() as u64;
     for byte in username.bytes() {
         seed = seed.wrapping_mul(31).wrapping_add(byte as u64);
     }
-    
+
     let token: String = (0..TOKEN_LENGTH)
         .map(|i| {
             seed = seed.wrapping_mul(1103515245).wrapping_add(12345);
@@ -168,7 +168,10 @@ pub fn generate_token(username: &str) -> Result<String, AppError> {
         + 86400; // 24 hours
 
     // Store in global token store
-    get_token_store().lock().unwrap().insert(token.clone(), (username.to_string(), expiration));
+    get_token_store()
+        .lock()
+        .unwrap()
+        .insert(token.clone(), (username.to_string(), expiration));
 
     Ok(token)
 }
@@ -178,31 +181,32 @@ pub fn verify_token(token: &str) -> Result<String, AppError> {
     use std::time::{SystemTime, UNIX_EPOCH};
 
     let mut store = get_token_store().lock().unwrap();
-    
+
     if let Some((username, expiration)) = store.get(token) {
         // Check if token is expired
         let current_time = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .unwrap()
             .as_secs();
-        
+
         if current_time > *expiration {
             // Token expired, remove it
             store.remove(token);
             return Err(AppError::Unauthorized("Token expired".to_string()));
         }
-        
+
         return Ok(username.clone());
     }
-    
+
     Err(AppError::Unauthorized("Invalid token".to_string()))
 }
 
 /// Get the global token store
-fn get_token_store() -> &'static std::sync::Mutex<std::collections::HashMap<String, (String, u64)>> {
+fn get_token_store() -> &'static std::sync::Mutex<std::collections::HashMap<String, (String, u64)>>
+{
     use std::collections::HashMap;
     use std::sync::{Mutex, OnceLock};
-    
+
     static TOKEN_STORE: OnceLock<Mutex<HashMap<String, (String, u64)>>> = OnceLock::new();
     TOKEN_STORE.get_or_init(|| Mutex::new(HashMap::new()))
 }

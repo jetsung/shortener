@@ -32,12 +32,12 @@ jobs:
           version: "0.14.1"
       - name: Check zig version
         run: |
-          zig version            
+          zig version
       - name: Install target for Linux
         run: |
           for arch in x86_64 aarch64 loongarch64; do
             rustup target add $arch-unknown-linux-musl
-          done    
+          done
       - name: Install dependencies
         run: |
           sudo apt update
@@ -64,14 +64,14 @@ jobs:
           for arch in x86_64 aarch64 loongarch64; do
             tar -cJf "${{ env.RELEASE_DIR }}/shortener-server-${{ github.event.release.tag_name }}-$arch-unknown-linux-musl.tar.xz" -C target/$arch-unknown-linux-musl/release shortener-server
             tar -cJf "${{ env.RELEASE_DIR }}/shortener-cli-${{ github.event.release.tag_name }}-$arch-unknown-linux-musl.tar.xz" -C target/$arch-unknown-linux-musl/release shortener-cli
-          done    
+          done
       - name: Upload release assets
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.event.release.tag_name }}
           files: ${{ env.RELEASE_DIR }}/*.tar.xz
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}                       
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build-macos:
     runs-on: macos-15
@@ -87,7 +87,7 @@ jobs:
         run: |
           for arch in x86_64 aarch64; do
             rustup target add $arch-apple-darwin
-          done       
+          done
       - name: Update submodules
         run: git submodule update --init --recursive
       - name: Build server and cli for MacOS
@@ -109,7 +109,7 @@ jobs:
           tag_name: ${{ github.event.release.tag_name }}
           files: ${{ env.RELEASE_DIR }}/*.tar.xz
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}          
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build-windows:
     runs-on: windows-2025
@@ -123,13 +123,13 @@ jobs:
           rustc --version
       - name: Install zip utility
         run: choco install zip -y
-        shell: powershell          
+        shell: powershell
       - name: Install target for Windows
         shell: bash
         run: |
           for arch in x86_64 aarch64; do
             rustup target add $arch-pc-windows-msvc
-          done       
+          done
       - name: Update submodules
         run: git submodule update --init --recursive
       - name: Build server and cli for Windows
@@ -145,11 +145,11 @@ jobs:
           for arch in x86_64 aarch64; do
             zip -j "${{ env.RELEASE_DIR }}/shortener-server-${{ github.event.release.tag_name }}-$arch-pc-windows-msvc.zip" target/$arch-pc-windows-msvc/release/shortener-server.exe
             zip -j "${{ env.RELEASE_DIR }}/shortener-cli-${{ github.event.release.tag_name }}-$arch-pc-windows-msvc.zip" target/$arch-pc-windows-msvc/release/shortener-cli.exe
-          done      
+          done
       - name: Upload release assets
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.event.release.tag_name }}
           files: ${{ env.RELEASE_DIR }}/*.zip
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}      
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

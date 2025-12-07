@@ -10,7 +10,7 @@ on:
       - "docker-bake.hcl"
       - "shortener-server/Cargo.toml"
       - "shortener-server/src/**"
-      
+
 env:
   package_name: shortener-server
   GHCR_SLUG: ghcr.io/${{ github.repository }}-server

@@ -6,7 +6,7 @@ use crate::services::{
 use axum::{
     Json,
     extract::{Path, Query, State},
-    http::{StatusCode, HeaderMap},
+    http::{HeaderMap, StatusCode},
     response::Redirect,
 };
 use serde::Deserialize;
@@ -128,20 +128,16 @@ pub async fn redirect_to_url(
 
     // Get the short URL info
     let shorten_response = state.shorten_service.get_shorten(&short_code).await?;
-    
+
     // Check if the URL is disabled
     if shorten_response.status != 0 {
         return Err(AppError::NotFound("Short URL is disabled".to_string()));
     }
 
     // Extract client information for history logging
-    let user_agent = headers
-        .get("user-agent")
-        .and_then(|h| h.to_str().ok());
-    
-    let referer = headers
-        .get("referer")
-        .and_then(|h| h.to_str().ok());
+    let user_agent = headers.get("user-agent").and_then(|h| h.to_str().ok());
+
+    let referer = headers.get("referer").and_then(|h| h.to_str().ok());
 
     // Extract IP address from headers
     // Try to get real IP from common proxy headers
@@ -149,11 +145,7 @@ pub async fn redirect_to_url(
         .get("x-forwarded-for")
         .and_then(|h| h.to_str().ok())
         .and_then(|s| s.split(',').next())
-        .or_else(|| {
-            headers
-                .get("x-real-ip")
-                .and_then(|h| h.to_str().ok())
-        })
+        .or_else(|| headers.get("x-real-ip").and_then(|h| h.to_str().ok()))
         .unwrap_or("unknown");
 
     // Record access history asynchronously (don't block the redirect)
@@ -163,16 +155,10 @@ pub async fn redirect_to_url(
     let ip = ip_address.to_string();
     let ua = user_agent.map(|s| s.to_string());
     let ref_url = referer.map(|s| s.to_string());
-    
+
     tokio::spawn(async move {
         if let Err(e) = history_service
-            .record_access(
-                url_id,
-                &code,
-                &ip,
-                ua.as_deref(),
-                ref_url.as_deref(),
-            )
+            .record_access(url_id, &code, &ip, ua.as_deref(), ref_url.as_deref())
             .await
         {
             tracing::error!("Failed to record access history: {:?}", e);

@@ -52,7 +52,7 @@ docker run -d \
 - **镜像大小**: 约 10MB（极小）
 - **构建方式**: 多阶段构建
 - **运行用户**: 非 root 用户
-- **特性**: 
+- **特性**:
   - 原生支持 Gzip 和 Brotli 压缩
   - 自动缓存控制
   - SPA 路由支持
@@ -226,7 +226,7 @@ docker build \
 ```caddy
 short.example.com {
     reverse_proxy shortener-frontend:8080
-    
+
     # 安全头
     header {
         X-Frame-Options "SAMEORIGIN"
@@ -234,10 +234,10 @@ short.example.com {
         X-Content-Type-Options "nosniff"
         Referrer-Policy "strict-origin-when-cross-origin"
     }
-    
+
     # 启用压缩
     encode gzip zstd
-    
+
     # 日志
     log {
         output file /var/log/caddy/shortener.log
@@ -362,7 +362,7 @@ docker compose -f docker/docker-compose.frontend.yml logs -f
 environment:
   # 生产环境：只记录错误
   - SERVER_LOG_LEVEL=error
-  
+
   # 开发环境：记录详细信息
   - SERVER_LOG_LEVEL=debug
 ```

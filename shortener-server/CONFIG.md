@@ -230,7 +230,7 @@ match Config::load() {
     Err(e) => {
         // 处理错误
         eprintln!("加载配置失败: {}", e);
-        
+
         // 常见错误：
         // - 文件未找到
         // - 无效的 TOML 语法

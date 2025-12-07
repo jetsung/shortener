@@ -65,9 +65,9 @@ check_cross() {
 build_target() {
     local target=$1
     local package=$2
-    
+
     print_info "Building ${package} for ${target}..."
-    
+
     if cross build --release --target ${target} -p ${package}; then
         print_success "Built ${package} for ${target}"
         return 0
@@ -82,28 +82,28 @@ package_binary() {
     local target=$1
     local package=$2
     local binary_name=$3
-    
+
     local target_dir="target/${target}/release"
     local output_dir="${BUILD_DIR}/${target}"
-    
+
     # Create output directory
     mkdir -p ${output_dir}
-    
+
     # Determine binary extension
     local ext=""
     if [[ ${target} == *"windows"* ]]; then
         ext=".exe"
     fi
-    
+
     local binary="${target_dir}/${binary_name}${ext}"
-    
+
     if [ -f "${binary}" ]; then
         # Copy binary
         cp ${binary} ${output_dir}/
-        
+
         # Create archive
         local archive_name="${package}-${VERSION}-${target}"
-        
+
         if [[ ${target} == *"windows"* ]]; then
             # Create zip for Windows
             (cd ${output_dir} && zip -q ${archive_name}.zip ${binary_name}${ext})
@@ -113,7 +113,7 @@ package_binary() {
             (cd ${output_dir} && tar czf ${archive_name}.tar.gz ${binary_name}${ext})
             print_success "Created ${archive_name}.tar.gz"
         fi
-        
+
         # Calculate checksum
         if command -v sha256sum &> /dev/null; then
             (cd ${output_dir} && sha256sum ${archive_name}.* > ${archive_name}.sha256)
@@ -127,13 +127,13 @@ package_binary() {
 build_all() {
     local package=$1
     local binary_name=$2
-    
+
     print_info "Building ${package} for all targets..."
     echo ""
-    
+
     local success_count=0
     local fail_count=0
-    
+
     for target in "${TARGETS[@]}"; do
         if build_target ${target} ${package}; then
             package_binary ${target} ${package} ${binary_name}
@@ -143,7 +143,7 @@ build_all() {
         fi
         echo ""
     done
-    
+
     print_info "Build summary for ${package}:"
     print_success "Successful: ${success_count}"
     if [ ${fail_count} -gt 0 ]; then
@@ -192,7 +192,7 @@ main() {
     local target=""
     local package=""
     local build_all_flag=false
-    
+
     # Parse arguments
     while [[ $# -gt 0 ]]; do
         case $1 in
@@ -231,18 +231,18 @@ main() {
                 ;;
         esac
     done
-    
+
     # Check if cross is installed
     check_cross
-    
+
     # Create build directory
     mkdir -p ${BUILD_DIR}
-    
+
     echo ""
     print_info "Starting cross-compilation build"
     print_info "Version: ${VERSION}"
     echo ""
-    
+
     # Build based on options
     if [ "${build_all_flag}" = true ]; then
         build_all "shortener-server" "shortener-server"
@@ -272,7 +272,7 @@ main() {
         show_usage
         exit 1
     fi
-    
+
     echo ""
     print_success "Build complete!"
     print_info "Binaries are in: ${BUILD_DIR}"

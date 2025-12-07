@@ -409,10 +409,7 @@ async fn handle_list(
 
         println!(
             "Page {}/{} (showing {} of {} total)",
-            response.meta.page,
-            response.meta.total_pages,
-            response.meta.count,
-            response.meta.total
+            response.meta.page, response.meta.total_pages, response.meta.count, response.meta.total
         );
         println!();
         print_shorten_table_with_format(&response.data, options.format.as_ref());
@@ -584,10 +581,10 @@ fn print_shorten_list(shortens: &[ShortenResponse]) {
         println!("   Short URL: {}", s.short_url);
         println!("   Original:  {}", s.original_url);
 
-        if let Some(desc) = &s.describe {
-            if !desc.is_empty() {
-                println!("   Desc:      {}", desc);
-            }
+        if let Some(desc) = &s.describe
+            && !desc.is_empty()
+        {
+            println!("   Desc:      {}", desc);
         }
 
         println!("   Created:   {}", format_datetime(&s.created_at));
@@ -665,15 +662,15 @@ fn truncate_url_smart(url: &str, max_len: usize) -> String {
 fn format_datetime(dt: &str) -> String {
     // Input format: "2024-01-15T10:30:45Z" (RFC 3339 / ISO 8601)
     // Output format: "2024-01-15 10:30 +08:00" (local time with timezone)
-    
+
     use chrono::{DateTime, Local};
-    
+
     // Try to parse as RFC 3339
     if let Ok(utc_time) = DateTime::parse_from_rfc3339(dt) {
         let local_time: DateTime<Local> = utc_time.with_timezone(&Local);
         return local_time.format("%Y-%m-%d %H:%M %:z").to_string();
     }
-    
+
     // Fallback: simple string manipulation if parsing fails
     if let Some(t_pos) = dt.find('T') {
         let date = &dt[..t_pos];
@@ -683,7 +680,7 @@ fn format_datetime(dt: &str) -> String {
             return format!("{} {}", date, time);
         }
     }
-    
+
     dt.to_string()
 }
 
@@ -714,11 +711,11 @@ mod tests {
         let result = format_datetime("2024-01-15T10:30:45Z");
         assert!(result.contains("2024-01-15"));
         assert!(result.contains(":"));
-        
+
         // Test with milliseconds
         let result2 = format_datetime("2024-01-15T10:30:45.123Z");
         assert!(result2.contains("2024-01-15"));
-        
+
         // Test invalid format (fallback)
         assert_eq!(format_datetime("invalid"), "invalid");
     }

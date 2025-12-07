@@ -247,9 +247,9 @@ mod tests {
         let accessed_at = chrono::Utc::now();
         let create_dto = CreateHistoryDto {
             url_id: url_id as i32,
-            short_short_code: "test123".to_string(),
+            short_code: "test123".to_string(),
             ip_address: "192.168.1.1".to_string(),
-            user_agent: Some("Mozilla/5.0".to_string()),
+            user_agent: "Mozilla/5.0".to_string(),
             referer: Some("https://google.com".to_string()),
             country: Some("US".to_string()),
             region: Some("California".to_string()),
@@ -283,9 +283,9 @@ mod tests {
             let accessed_at = chrono::Utc::now();
             let create_dto = CreateHistoryDto {
                 url_id: url_id as i32,
-                short_short_code: "test123".to_string(),
+                short_code: "test123".to_string(),
                 ip_address: format!("192.168.1.{}", i),
-                user_agent: Some(format!("Browser {}", i)),
+                user_agent: format!("Browser {}", i),
                 referer: None,
                 country: Some("US".to_string()),
                 region: None,
@@ -342,9 +342,9 @@ mod tests {
         let accessed_at = chrono::Utc::now();
         let create_dto = CreateHistoryDto {
             url_id: url_id as i32,
-            short_short_code: "test123".to_string(),
+            short_code: "test123".to_string(),
             ip_address: "192.168.1.1".to_string(),
-            user_agent: None,
+            user_agent: "".to_string(),
             referer: None,
             country: None,
             region: None,
@@ -393,9 +393,9 @@ mod tests {
             let accessed_at = chrono::Utc::now();
             let create_dto = CreateHistoryDto {
                 url_id: url_id as i32,
-                short_short_code: "test123".to_string(),
+                short_code: "test123".to_string(),
                 ip_address: format!("192.168.1.{}", i),
-                user_agent: None,
+                user_agent: "".to_string(),
                 referer: None,
                 country: None,
                 region: None,
@@ -435,9 +435,9 @@ mod tests {
             let accessed_at = chrono::Utc::now();
             let create_dto = CreateHistoryDto {
                 url_id: url_id as i32,
-                short_short_code: "test123".to_string(),
+                short_code: "test123".to_string(),
                 ip_address: format!("192.168.1.{}", i),
-                user_agent: None,
+                user_agent: "".to_string(),
                 referer: None,
                 country: None,
                 region: None,
@@ -487,9 +487,9 @@ mod tests {
             let accessed_at = chrono::Utc::now() - chrono::Duration::hours(i);
             let create_dto = CreateHistoryDto {
                 url_id: url_id as i32,
-                short_short_code: "test123".to_string(),
+                short_code: "test123".to_string(),
                 ip_address: format!("192.168.1.{}", i),
-                user_agent: None,
+                user_agent: "".to_string(),
                 referer: None,
                 country: None,
                 region: None,

@@ -45,7 +45,7 @@ check_rust() {
     # 检查 Rust 版本
     local rust_version=$(rustc --version | cut -d' ' -f2)
     local required_version="1.90.0"
-    
+
     if ! printf '%s\n%s\n' "$required_version" "$rust_version" | sort -V -C; then
         print_warning "Rust 版本 $rust_version 可能过低，推荐版本 >= $required_version"
         print_info "更新 Rust: rustup update stable"
@@ -56,9 +56,9 @@ check_rust() {
 install_shortener() {
     local component=$1
     local repo_url="https://github.com/jetsung/shortener.git"
-    
+
     print_info "正在安装 $component..."
-    
+
     if cargo install --git "$repo_url" "$component"; then
         print_success "$component 安装成功!"
     else
@@ -70,7 +70,7 @@ install_shortener() {
 # 验证安装
 verify_installation() {
     local component=$1
-    
+
     if command_exists "$component"; then
         local version=$($component --version 2>/dev/null || echo "unknown")
         print_success "$component 已安装: $version"
@@ -87,11 +87,11 @@ main() {
     echo "    Shortener 一键安装脚本"
     echo "========================================"
     echo
-    
+
     # 检查系统要求
     print_info "检查系统要求..."
     check_rust
-    
+
     # 询问用户要安装什么
     echo
     print_info "请选择要安装的组件:"
@@ -100,9 +100,9 @@ main() {
     echo "3) 全部安装 (推荐)"
     echo "4) 退出"
     echo
-    
+
     read -p "请输入选择 [1-4]: " choice
-    
+
     case $choice in
         1)
             install_shortener "shortener-server"
@@ -127,22 +127,22 @@ main() {
             exit 1
             ;;
     esac
-    
+
     echo
     print_success "安装完成!"
     echo
     print_info "下一步:"
-    
+
     if command_exists shortener-server; then
         echo "  启动服务器: shortener-server"
         echo "  查看帮助: shortener-server --help"
     fi
-    
+
     if command_exists shortener-cli; then
         echo "  初始化 CLI: shortener-cli init"
         echo "  查看帮助: shortener-cli --help"
     fi
-    
+
     echo
     print_info "文档: https://github.com/jetsung/shortener"
     print_info "问题反馈: https://github.com/jetsung/shortener/issues"

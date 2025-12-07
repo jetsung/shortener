@@ -1,6 +1,6 @@
-use axum::{extract::Request, http::HeaderMap, middleware::Next, response::Response};
 use crate::errors::AppError;
 use crate::handlers::account::{User, verify_token};
+use axum::{extract::Request, http::HeaderMap, middleware::Next, response::Response};
 
 /// JWT 认证中间件
 pub struct JwtAuth;
@@ -21,7 +21,9 @@ impl JwtAuth {
         // 检查是否有 Bearer token
         if !auth_header.starts_with("Bearer ") {
             tracing::warn!("Missing or invalid Authorization header");
-            return Err(AppError::Unauthorized("Bearer token is required".to_string()));
+            return Err(AppError::Unauthorized(
+                "Bearer token is required".to_string(),
+            ));
         }
 
         // 提取 token
@@ -45,12 +47,11 @@ mod tests {
     use super::*;
     use crate::handlers::account::generate_token;
     use axum::{
-        Router,
+        Extension, Router,
         body::Body,
         http::{Request, StatusCode},
         middleware,
         routing::get,
-        Extension,
     };
     use tower::ServiceExt;
 

@@ -65,15 +65,15 @@ for doc_file in "${docs_files[@]}"; do
         print_warning "文件不存在: $doc_file"
         continue
     fi
-    
+
     print_info "检查文件: $doc_file"
-    
+
     # 提取所有 .md 文件的链接
     while IFS= read -r line; do
         if [[ -n "$line" ]]; then
             # 提取文件名
             filename=$(echo "$line" | sed 's/.*](\([^)]*\.md\)).*/\1/')
-            
+
             # 检查是否是相对路径的 .md 文件
             if [[ "$filename" == *.md ]] && [[ "$filename" != http* ]] && [[ "$filename" != https* ]]; then
                 # 检查文件是否存在

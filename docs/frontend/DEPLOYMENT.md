@@ -425,9 +425,9 @@ docker ps -a | grep shortener-frontend
    - 禁用不安全的 SSL/TLS 版本
 
 2. **安全头设置**
-   
+
    使用反向代理添加安全头：
-   
+
    ```nginx
    # Caddy 示例
    header {

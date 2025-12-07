@@ -118,7 +118,7 @@ async fn record_access(
 ) -> Result<(), ServiceError> {
     // 使用 lookup_or_empty 确保 GeoIP 失败不会影响记录访问历史
     let geo_info = geoip.lookup_or_empty(ip).await;
-    
+
     // 创建历史记录，即使 geo_info 为空也能正常工作
     let history = History {
         ip_address: ip.to_string(),
@@ -129,10 +129,10 @@ async fn record_access(
         isp: geo_info.isp,
         // ... 其他字段
     };
-    
+
     // 保存历史记录
     save_history(history).await?;
-    
+
     Ok(())
 }
 ```

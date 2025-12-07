@@ -170,8 +170,8 @@ const History: React.FC = () => {
               query.order = orderBy[1] === 'ascend' ? 'asc' : 'desc';
             }
             const res = await getHistories(query);
-            data = (res.data || []) as HistoryResponse[];
-            total = res.meta?.total || 0;
+            data = ((res as any).data || []) as HistoryResponse[];
+            total = (res as any).meta?.total || 0;
             success = true;
           } catch (error: unknown) {
             const err = error as { response?: { data?: { errinfo?: string }; status?: number } };
@@ -180,7 +180,7 @@ const History: React.FC = () => {
 
             const status = err?.response?.status;
             if (status === 401) {
-              navigate('/account/login');
+              navigate('/#/account/login');
             }
           }
           return {

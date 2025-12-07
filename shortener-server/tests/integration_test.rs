@@ -59,9 +59,9 @@ async fn test_database_migration_and_crud() {
 
     // Test URL CRUD operations
     let url_model = url::ActiveModel {
-        code: Set("test123".to_string()),
+        short_code: Set("test123".to_string()),
         original_url: Set("https://example.com".to_string()),
-        describe: Set(Some("Test URL".to_string())),
+        description: Set(Some("Test URL".to_string())),
         status: Set(1),
         created_at: Set(chrono::Utc::now()),
         updated_at: Set(chrono::Utc::now()),
@@ -80,16 +80,16 @@ async fn test_database_migration_and_crud() {
         .expect("Failed to find URL")
         .expect("URL not found");
 
-    assert_eq!(found_url.code, "test123");
+    assert_eq!(found_url.short_code, "test123");
     assert_eq!(found_url.original_url, "https://example.com");
-    assert_eq!(found_url.describe, Some("Test URL".to_string()));
+    assert_eq!(found_url.description, Some("Test URL".to_string()));
 
     // Test History CRUD operations
     let history_model = history::ActiveModel {
         url_id: Set(inserted_url.last_insert_id as i32),
         short_code: Set("test123".to_string()),
         ip_address: Set("127.0.0.1".to_string()),
-        user_agent: Set(Some("Test Agent".to_string())),
+        user_agent: Set("Test Agent".to_string()),
         referer: Set(None),
         country: Set(Some("US".to_string())),
         region: Set(None),

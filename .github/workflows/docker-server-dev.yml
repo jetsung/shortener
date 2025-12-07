@@ -65,6 +65,7 @@ jobs:
       #       cwd://${{ steps.meta.outputs.bake-file }}
       #     targets: ${{ matrix.tag }}
       #     push: ${{ github.event_name != 'pull_request' }}
+      #     provenance: false
 
       - name: Build and push
         uses: docker/build-push-action@v6

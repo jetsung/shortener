@@ -57,7 +57,7 @@ jobs:
             org.opencontainers.image.title=Shortener Frontend
             org.opencontainers.image.description=Modern URL shortener service frontend
             org.opencontainers.image.vendor=Jetsung Chan
-          tags: 
+          tags:
             latest
 
       - name: Build Frontend with Bake
@@ -68,6 +68,7 @@ jobs:
             cwd://${{ steps.meta.outputs.bake-file }}
           targets: frontend-release
           push: false
+          provenance: false
           set: |
             *.output=type=oci,dest=./image.tar
 
@@ -109,7 +110,7 @@ jobs:
       uses: actions/download-artifact@v5
       with:
         name: docker-image
-        path: .  
+        path: .
     - name: Sync to Docker Hub
       if: steps.check_dockerhub.outputs.skip != 'true'
       env:
@@ -139,7 +140,7 @@ jobs:
       uses: actions/download-artifact@v5
       with:
         name: docker-image
-        path: .        
+        path: .
     - name: Sync to GitHub Container Registry (ghcr.io)
       env:
         SRC_IMAGE: oci-archive:./image.tar
@@ -187,7 +188,7 @@ jobs:
       uses: actions/download-artifact@v5
       with:
         name: docker-image
-        path: .        
+        path: .
     - name: Sync to Aliyun
       if: steps.check_aliyun.outputs.skip != 'true'
       env:
@@ -229,7 +230,7 @@ jobs:
       uses: actions/download-artifact@v5
       with:
         name: docker-image
-        path: .         
+        path: .
     - name: Sync to Tencent
       if: steps.check_tencent.outputs.skip != 'true'
       env:

@@ -1,7 +1,7 @@
-use axum::{extract::Request, http::HeaderMap, middleware::Next, response::Response};
-use std::sync::Arc;
 use crate::errors::AppError;
 use crate::handlers::account::{User, verify_token};
+use axum::{extract::Request, http::HeaderMap, middleware::Next, response::Response};
+use std::sync::Arc;
 
 /// 混合认证中间件 - 同时支持API Key和JWT Token
 pub struct HybridAuth;
@@ -16,25 +16,22 @@ impl HybridAuth {
         next: Next,
     ) -> Result<Response, AppError> {
         // 首先尝试JWT Token认证
-        if let Some(auth_header) = headers.get("Authorization") {
-            if let Ok(auth_str) = auth_header.to_str() {
-                if auth_str.starts_with("Bearer ") {
-                    let token = &auth_str[7..]; // 去掉 "Bearer " 前缀
-                    
-                    // 尝试验证JWT Token
-                    match verify_token(token) {
-                        Ok(username) => {
-                            // JWT Token验证成功，添加用户信息到请求扩展
-                            let user = User { username };
-                            request.extensions_mut().insert(user);
-                            tracing::debug!("JWT token validated successfully");
-                            return Ok(next.run(request).await);
-                        }
-                        Err(_) => {
-                            // JWT Token无效，继续尝试API Key
-                            tracing::debug!("JWT token invalid, trying API Key");
-                        }
-                    }
+        if let Some(auth_header) = headers.get("Authorization")
+            && let Ok(auth_str) = auth_header.to_str()
+            && let Some(token) = auth_str.strip_prefix("Bearer ")
+        {
+            // 尝试验证JWT Token
+            match verify_token(token) {
+                Ok(username) => {
+                    // JWT Token验证成功，添加用户信息到请求扩展
+                    let user = User { username };
+                    request.extensions_mut().insert(user);
+                    tracing::debug!("JWT token validated successfully");
+                    return Ok(next.run(request).await);
+                }
+                Err(_) => {
+                    // JWT Token无效，继续尝试API Key
+                    tracing::debug!("JWT token invalid, trying API Key");
                 }
             }
         }
@@ -48,7 +45,9 @@ impl HybridAuth {
         // 验证 API Key
         if provided_key.is_empty() {
             tracing::warn!("Neither valid JWT token nor API Key provided");
-            return Err(AppError::Unauthorized("Authentication required: provide either Bearer token or X-API-KEY".to_string()));
+            return Err(AppError::Unauthorized(
+                "Authentication required: provide either Bearer token or X-API-KEY".to_string(),
+            ));
         }
 
         if provided_key != api_key.as_str() {
@@ -67,12 +66,11 @@ mod tests {
     use super::*;
     use crate::handlers::account::generate_token;
     use axum::{
-        Router,
+        Extension, Router,
         body::Body,
         http::{Request, StatusCode},
         middleware,
         routing::get,
-        Extension,
     };
     use tower::ServiceExt;
 
@@ -150,9 +148,11 @@ mod tests {
 
         let response = app.oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        
+
         // 应该使用JWT认证，因为它有更高优先级
-        let body = axum::body::to_bytes(response.into_body(), usize::MAX).await.unwrap();
+        let body = axum::body::to_bytes(response.into_body(), usize::MAX)
+            .await
+            .unwrap();
         let body_str = String::from_utf8(body.to_vec()).unwrap();
         assert_eq!(body_str, "Hello, testuser");
     }

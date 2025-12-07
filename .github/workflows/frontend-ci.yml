@@ -24,7 +24,7 @@ jobs:
   lint-and-test:
     name: Lint and Test
     runs-on: ubuntu-24.04
-    
+
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v4
@@ -61,7 +61,7 @@ jobs:
     name: Build
     runs-on: ubuntu-24.04
     needs: lint-and-test
-    
+
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v4

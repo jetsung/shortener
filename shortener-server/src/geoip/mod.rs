@@ -42,12 +42,7 @@ pub struct GeoIpInfo {
 
 impl GeoIpInfo {
     /// 创建新的 GeoIpInfo 实例
-    pub fn new(
-        country: String,
-        province: String,
-        city: String,
-        isp: String,
-    ) -> Self {
+    pub fn new(country: String, province: String, city: String, isp: String) -> Self {
         Self {
             country,
             province,
