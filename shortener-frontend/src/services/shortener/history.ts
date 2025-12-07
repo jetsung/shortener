@@ -12,10 +12,10 @@ export async function getHistories(
     params: {
       // page has a default value: 1
       page: '1',
-      // page_size has a default value: 10
-      page_size: '10',
-      // sort_by has a default value: created_at
-      sort_by: 'created_at',
+      // per_page has a default value: 10
+      per_page: '10',
+      // sort_by has a default value: accessed_at
+      sort_by: 'accessed_at',
       // order has a default value: desc
       order: 'desc',
       ...params,

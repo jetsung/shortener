@@ -32,26 +32,32 @@ export interface GetHistoriesParams {
   /** 页码 */
   page?: number;
   /** 每页条数 */
-  page_size?: number;
+  per_page?: number;
   /** 排序字段 */
   sort_by?: string;
   /** 排序方向 */
   order?: 'asc' | 'desc';
-  /** 状态 */
-  status?: 0 | 1 | 2;
+  /** 短码搜索 */
+  short_code?: string;
+  /** IP地址搜索 */
+  ip_address?: string;
 }
 
 export interface GetShortensParams {
   /** 页码 */
   page?: number;
   /** 每页条数 */
-  page_size?: number;
+  per_page?: number;
   /** 排序字段 */
   sort_by?: string;
   /** 排序方向 */
   order?: 'asc' | 'desc';
   /** 状态 */
   status?: 0 | 1 | 2;
+  /** 短码搜索 */
+  short_code?: string;
+  /** 原始URL搜索（模糊匹配） */
+  original_url?: string;
 }
 
 export interface HistoryResponse {
@@ -130,7 +136,7 @@ export interface PageParams {
   /** 页码 */
   page?: number;
   /** 每页数量 */
-  page_size?: number;
+  per_page?: number;
   /** 排序字段 */
   sort_by?: string;
   /** 排序方式 */

@@ -246,7 +246,7 @@ const Shortener: React.FC = () => {
           let success = false;
 
           try {
-            const { current: page, pageSize: page_size, ...rest } = params;
+            const { current: page, pageSize: per_page, ...rest } = params;
 
             // 过滤掉空值参数，特别是 status 为空字符串时
             const filteredRest = Object.fromEntries(
@@ -257,7 +257,7 @@ const Shortener: React.FC = () => {
 
             const query: GetShortensParams = {
               page: page || 1,
-              page_size: page_size || 10,
+              per_page: per_page || 10,
               ...filteredRest,
             };
             const orderBy = Object.entries(sorter)[0];

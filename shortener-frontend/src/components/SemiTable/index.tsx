@@ -168,12 +168,7 @@ function SemiTable<T extends Record<string, any> = any, P = any>(props: SemiTabl
     if (request) {
       loadData();
     }
-  }, [loadData, currentPage, pageSize, sorter, searchParams]);
-
-  // 初始化和数据变化时加载数据
-  useEffect(() => {
-    loadData();
-  }, [currentPage, pageSize]);
+  }, [loadData]);
 
   // 暴露方法给 actionRef
   useEffect(() => {
@@ -261,30 +256,53 @@ function SemiTable<T extends Record<string, any> = any, P = any>(props: SemiTabl
     );
   };
 
-  const paginationConfig = useMemo(
-    () =>
-      pagination === false
-        ? false
-        : {
-            current: currentPage,
-            pageSize: pageSize,
-            total: total,
-            showSizeChanger: true,
-            showQuickJumper: true,
-            pageSizeOpts: [10, 20, 50, 100],
-            onChange: (page: number) => {
-              console.log('Page change from pagination:', { page });
-              setCurrentPage(page);
-            },
-            onPageSizeChange: (size: number) => {
-              console.log('Size change from pagination:', { size });
-              setPageSize(size);
-              setCurrentPage(1); // 改变页面大小时，重置到第一页
-            },
-            ...(typeof pagination === 'object' ? pagination : {}),
-          },
-    [currentPage, pageSize, total, pagination],
-  );
+  // 处理分页变化
+  const handlePageChange = useCallback((page: number, size?: number) => {
+    console.log('Page change from pagination:', { page, size });
+    if (size !== undefined && size !== pageSize) {
+      // 如果页面大小改变，先更新页面大小，这会触发重新加载
+      setPageSize(size);
+      setCurrentPage(1); // 改变页面大小时，重置到第一页
+    } else {
+      // 只改变页码
+      setCurrentPage(page);
+    }
+  }, [pageSize]);
+
+  // 处理页面大小变化
+  const handlePageSizeChange = useCallback((size: number) => {
+    console.log('Size change from pagination:', { size });
+    setPageSize(size);
+    setCurrentPage(1); // 改变页面大小时，重置到第一页
+  }, []);
+
+  const paginationConfig = useMemo(() => {
+    if (pagination === false) {
+      return false;
+    }
+
+    const baseConfig = {
+      currentPage: currentPage,
+      pageSize: pageSize,
+      total: total,
+      showSizeChanger: true,
+      showQuickJumper: true,
+      pageSizeOpts: [10, 20, 50, 100],
+      onChange: handlePageChange,
+      onPageSizeChange: handlePageSizeChange,
+    };
+
+    // 如果传入的是对象，合并配置，但确保关键属性不被覆盖
+    if (typeof pagination === 'object') {
+      const { onChange, onPageSizeChange, currentPage: _, ...restPagination } = pagination as any;
+      return {
+        ...restPagination,
+        ...baseConfig,
+      };
+    }
+
+    return baseConfig;
+  }, [currentPage, pageSize, total, pagination, handlePageChange, handlePageSizeChange]);
 
   // 添加调试日志
   console.log('Pagination config:', paginationConfig);
@@ -344,7 +362,6 @@ function SemiTable<T extends Record<string, any> = any, P = any>(props: SemiTabl
               CurrentPage: {currentPage}, PageSize: {pageSize}
             </div>
             <Table
-              key={`table-${currentPage}-${pageSize}`}
               className="compact-table"
               dataSource={dataSource}
               columns={processedColumns}

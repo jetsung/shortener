@@ -27,8 +27,9 @@ interface HistoryResponse {
 
 interface GetHistoriesParams {
   page?: number;
-  page_size?: number;
+  per_page?: number;
   short_code?: string;
+  ip_address?: string;
   sort_by?: string;
   order?: 'asc' | 'desc';
 }
@@ -157,10 +158,10 @@ const History: React.FC = () => {
           let success = false;
 
           try {
-            const { current: page, pageSize: page_size, ...rest } = params;
+            const { current: page, pageSize: per_page, ...rest } = params;
             const query: GetHistoriesParams = {
               page: page || 1,
-              page_size: page_size || 10,
+              per_page: per_page || 10,
               ...rest,
             };
             const orderBy = Object.entries(sorter)[0];
@@ -170,7 +171,7 @@ const History: React.FC = () => {
             }
             const res = await getHistories(query);
             data = (res.data || []) as HistoryResponse[];
-            total = (res as { meta?: { total_items?: number } }).meta?.total_items || 0;
+            total = res.meta?.total || 0;
             success = true;
           } catch (error: unknown) {
             const err = error as { response?: { data?: { errinfo?: string }; status?: number } };

@@ -94,9 +94,9 @@ cargo test
 
 Apache-2.0 License - 详见 [LICENSE](LICENSE)
 
-## 👤 作者
+## 仓库镜像
 
-**Jetsung Chan** <i@jetsung.com>
-
-- GitHub: [@jetsung](https://github.com/jetsung)
-- Website: [jetsung.com](https://jetsung.com)
+- [MyCode](https://git.jetsung.com/jetsung/shortener)
+- [Framagit](https://framagit.org/jetsung/shortener)
+- [GitCode](https://gitcode.com/jetsung/shortener)
+- [GitHub](https://github.com/jetsung/shortener)
