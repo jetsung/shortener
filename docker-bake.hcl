@@ -37,22 +37,8 @@ target "_common" {
     dockerfile = "./docker/Dockerfile"
     platforms = ["linux/amd64"]
     args = {
-        RUST_VERSION = "1.90"
+        RUST_VERSION = "1.93"
     }
-}
-
-## Demo configuration for testing (fast build)
-target "_demo" {
-    labels = {
-        "org.opencontainers.image.title" = "Shortener Server Demo"
-        "org.opencontainers.image.description" = "Demo image for testing CI/CD pipeline"
-        "org.opencontainers.image.source" = "https://github.com/jetsung/shortener"
-        "org.opencontainers.image.authors" = "Jetsung Chan <i@jetsung.com>"
-        "org.opencontainers.image.licenses" = "Apache-2.0"
-    }
-    context = "."
-    dockerfile = "./docker/Dockerfile.demo"
-    platforms = ["linux/amd64"]
 }
 
 ## Alpine-based configuration
@@ -62,16 +48,6 @@ target "_alpine" {
     labels = {
         "org.opencontainers.image.title" = "Shortener Server (Alpine)"
         "org.opencontainers.image.description" = "High-performance URL shortener service written in Rust (Alpine Linux)"
-    }
-}
-
-## Demo Alpine configuration for testing (fast build)
-target "_demo-alpine" {
-    inherits = ["_demo"]
-    dockerfile = "docker/Dockerfile.demo-alpine"
-    labels = {
-        "org.opencontainers.image.title" = "Shortener Server Demo (Alpine)"
-        "org.opencontainers.image.description" = "Demo Alpine image for testing CI/CD pipeline"
     }
 }
 
@@ -166,7 +142,7 @@ target "dev-alpine-arm64" {
 }
 
 ## Release builds group (for CI/CD - builds both debian and alpine)
-group "release" {
+group "release-all" {
     targets = ["release-debian", "release-alpine"]
 }
 
@@ -241,23 +217,6 @@ target "release-alpine-arm64" {
 ## All builds group (for CI/CD)
 group "all" {
     targets = ["release-debian", "release-alpine"]
-}
-
-## Demo release targets (for testing CI/CD)
-target "release-demo" {
-    inherits = ["_demo", "_image"]
-    platforms = ["linux/amd64", "linux/arm64"]
-    tags = [
-        "${REGISTRY}/${IMAGE_NAME}:latest"
-    ]
-}
-
-target "release-demo-alpine" {
-    inherits = ["_demo-alpine", "_image"]
-    platforms = ["linux/amd64", "linux/arm64"]
-    tags = [
-        "${REGISTRY}/${IMAGE_NAME}:alpine"
-    ]
 }
 
 ## ============================================================================

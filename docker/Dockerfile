@@ -1,6 +1,7 @@
 # Multi-stage build for shortener-server (Distroless-based for minimal image size)
 # Stage 1: Build the application
-FROM rust:1.93-slim AS builder
+ARG RUST_VERSION=1.93
+FROM rust:$RUST_VERSION-slim AS builder
 
 # Install build dependencies
 RUN apt-get update && apt-get install -y \
