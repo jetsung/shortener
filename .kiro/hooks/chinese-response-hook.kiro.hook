@@ -1,0 +1,15 @@
+{
+  "enabled": true,
+  "name": "简体中文回复",
+  "description": "确保AI助手在所有交互中都使用简体中文回复用户",
+  "version": "1",
+  "when": {
+    "type": "promptSubmit"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "请注意：无论用户使用什么语言提问，你都必须使用简体中文回复。这是一个重要的要求，请在回复中始终遵守这个规则。"
+  },
+  "workspaceFolderName": "shortener",
+  "shortName": "chinese-response-hook"
+}

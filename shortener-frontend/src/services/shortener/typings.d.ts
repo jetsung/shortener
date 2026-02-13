@@ -4,14 +4,9 @@ declare namespace API {
     name?: string;
   };
 
-  type deleteHistoriesParams = {
-    /** id 列表，多个id用逗号分隔 */
-    ids: string;
-  };
-
-  type deleteShortenParams = {
-    /** id 列表，多个id用逗号分隔 */
-    ids: string;
+  type BatchDeleteRequest = {
+    /** ID 列表 */
+    ids: number[];
   };
 
   type Error = {

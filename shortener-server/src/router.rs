@@ -28,7 +28,7 @@ pub fn create_router(state: AppState) -> Router {
     let shortener_api = Router::new()
         .route("/api/shortens", post(create_shorten))
         .route("/api/shortens", get(list_shortens))
-        .route("/api/shortens", delete(delete_batch))
+        .route("/api/shortens/batch-delete", post(delete_batch))
         .route("/api/shortens/{short_code}", get(get_shorten))
         .route("/api/shortens/{short_code}", put(update_shorten))
         .route("/api/shortens/{short_code}", delete(delete_shorten))
@@ -37,7 +37,7 @@ pub fn create_router(state: AppState) -> Router {
     // Create history API routes (protected)
     let history_api = Router::new()
         .route("/api/histories", get(list_histories))
-        .route("/api/histories", delete(delete_histories))
+        .route("/api/histories/batch-delete", post(delete_histories))
         .with_state(state.history_service.clone());
 
     // Create account API routes (protected)

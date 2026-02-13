@@ -23,6 +23,7 @@ const Shortener: React.FC = () => {
   const actionRef = useRef<SemiTableActionRef>(undefined);
   const [currentRow, setCurrentRow] = useState<ShortenResponse>();
   const [selectedRowsState, setSelectedRows] = useState<ShortenResponse[]>([]);
+  const [showConfirm, setShowConfirm] = useState(false);
   const addFormRef = useRef<any>(null);
   const navigate = useNavigate();
 
@@ -76,16 +77,13 @@ const Shortener: React.FC = () => {
    * 删除节点
    */
   const handleRemove = async (selectedRows: ShortenResponse[]) => {
-    Toast.info('正在删除');
-    if (!selectedRows) return true;
+    if (!selectedRows) return false;
     try {
       await deleteShorten({
-        ids: selectedRows.map((row) => row.id).join(','),
+        ids: selectedRows.map((row) => row.id as number),
       });
-      Toast.update('删除成功，即将刷新', 'success');
       return true;
     } catch {
-      Toast.update('删除失败，请重试', 'error');
       return false;
     }
   };
@@ -95,39 +93,52 @@ const Shortener: React.FC = () => {
       title: 'ID',
       dataIndex: 'id',
       hideInSearch: true,
-      width: 50,
       sorter: true,
+      width: 50,
+      mobileWidth: 50,
     },
     {
       title: '短码',
       dataIndex: 'short_code',
-      width: 120,
+      width: 180,
+      mobileWidth: 200,
       render: (_, entity) => {
         return (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0px' }}>
-            <a
-              href={entity.short_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={(e: React.MouseEvent) => e.stopPropagation()}
-              style={{ marginRight: '4px' }}
-            >
-              {entity.short_code}
-            </a>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '2px', flexWrap: 'wrap' }}>
             <Button
               theme="borderless"
               size="small"
               icon={<IconCopy />}
               title="复制短码"
-              onClick={() => copyToClipboard(entity.short_code as string, '短码复制成功')}
+              onClick={(e) => {
+                e.stopPropagation();
+                copyToClipboard(
+                  entity.short_code as string,
+                  `短码复制成功 (<span style="color: var(--semi-color-primary); font-weight: 600;">${entity.short_code}</span>)`,
+                );
+              }}
             />
             <Button
               theme="borderless"
               size="small"
               icon={<IconCopy />}
               title="复制短链"
-              onClick={() => copyToClipboard(entity.short_url as string, '短链复制成功')}
+              onClick={(e) => {
+                e.stopPropagation();
+                copyToClipboard(
+                  entity.short_url as string,
+                  `短链复制成功 (<span style="color: var(--semi-color-primary); font-weight: 600;">${entity.short_code}</span>)`,
+                );
+              }}
             />
+            <a
+              href={entity.short_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e: React.MouseEvent) => e.stopPropagation()}
+            >
+              {entity.short_code}
+            </a>
           </div>
         );
       },
@@ -135,33 +146,37 @@ const Shortener: React.FC = () => {
     {
       title: '源地址',
       dataIndex: 'original_url',
-      copyable: true,
-      width: 450,
+      hideInMobile: true,
+      render: (text, record) => (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <Button
+            theme="borderless"
+            size="small"
+            icon={<IconCopy />}
+            title={`复制源地址 (${record.short_code})`}
+            onClick={() =>
+              copyToClipboard(
+                text as string,
+                `源地址复制成功 (<span style="color: var(--semi-color-primary); font-weight: 600;">${record.short_code}</span>)`,
+              )
+            }
+          />
+          <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>{text}</span>
+        </div>
+      ),
     },
     {
       title: '描述',
       dataIndex: 'description',
       valueType: 'textarea',
       hideInSearch: true,
-      width: 200,
-      render: (text) => (
-        <div
-          style={{
-            maxWidth: '180px',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-          }}
-          title={text}
-        >
-          {text || '-'}
-        </div>
-      ),
+      hideInMobile: true,
     },
     {
       title: '状态',
       dataIndex: 'status',
       hideInForm: true,
+      hideInMobile: true,
       width: 80,
       valueEnum: {
         '': {
@@ -186,7 +201,8 @@ const Shortener: React.FC = () => {
       dataIndex: 'updated_at',
       valueType: 'dateTime',
       hideInSearch: true,
-      width: 150,
+      hideInMobile: true,
+      width: 160,
       sorter: true,
     },
     {
@@ -194,7 +210,8 @@ const Shortener: React.FC = () => {
       dataIndex: 'created_at',
       valueType: 'dateTime',
       hideInSearch: true,
-      width: 150,
+      hideInMobile: true,
+      width: 160,
       sorter: true,
     },
     {
@@ -202,6 +219,7 @@ const Shortener: React.FC = () => {
       dataIndex: 'option',
       valueType: 'option',
       hideInSearch: true,
+      hideInMobile: true,
       width: 80,
       render: (_, record) => [
         <Button
@@ -290,6 +308,61 @@ const Shortener: React.FC = () => {
             setSelectedRows(selectedRows);
           },
         }}
+        expandable={{
+          expandedRowRender: (record) => (
+            <div style={{ padding: '12px', fontSize: '12px' }}>
+              <div style={{ marginBottom: '8px' }}>
+                <Text strong>短码：</Text>
+                <Text>{record.short_code}</Text>
+              </div>
+              <div style={{ marginBottom: '8px' }}>
+                <Text strong>源地址：</Text>
+                <div style={{ wordBreak: 'break-all', whiteSpace: 'normal' }}>
+                  {record.original_url}
+                </div>
+              </div>
+              <div style={{ marginBottom: '8px' }}>
+                <Text strong>描述：</Text>
+                <div style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                  {record.description || '-'}
+                </div>
+              </div>
+              <div style={{ marginBottom: '8px' }}>
+                <Text strong>状态：</Text>
+                <Text
+                  type={
+                    record.status === 0 ? 'success' : record.status === 1 ? 'danger' : 'warning'
+                  }
+                >
+                  {record.status === 0 ? '启用' : record.status === 1 ? '禁用' : '未知'}
+                </Text>
+              </div>
+              <div style={{ marginBottom: '8px' }}>
+                <Text strong>创建时间：</Text>
+                <Text>
+                  {record.created_at ? new Date(record.created_at).toLocaleString('zh-CN') : '-'}
+                </Text>
+              </div>
+              <div style={{ marginBottom: '8px' }}>
+                <Text strong>更新时间：</Text>
+                <Text>
+                  {record.updated_at ? new Date(record.updated_at).toLocaleString('zh-CN') : '-'}
+                </Text>
+              </div>
+              <div>
+                <Button
+                  size="small"
+                  onClick={() => {
+                    setUpdateModalOpen(true);
+                    setCurrentRow(record);
+                  }}
+                >
+                  更新
+                </Button>
+              </div>
+            </div>
+          ),
+        }}
       />
 
       {/* 批量删除工具栏 */}
@@ -312,30 +385,30 @@ const Shortener: React.FC = () => {
           <Text>
             已选择 <Text strong>{selectedRowsState.length}</Text> 项
           </Text>
-          <Button
-            type="danger"
-            onClick={() => {
-              let modalInstance: any = null;
-              modalInstance = Modal.confirm({
-                title: '确认删除',
-                content: `确定要删除选中的 ${selectedRowsState.length} 个短链吗？此操作不可撤销。`,
-                onOk: async () => {
-                  const success = await handleRemove(selectedRowsState);
-                  if (success) {
-                    setSelectedRows([]);
-                    actionRef.current?.reloadAndRest?.();
-                    // 手动关闭当前弹窗
-                    modalInstance?.destroy?.();
-                  }
-                  return success;
-                },
-              });
-            }}
-          >
+          <Button type="danger" onClick={() => setShowConfirm(true)}>
             批量删除
           </Button>
         </div>
       )}
+
+      <Modal
+        visible={showConfirm}
+        title="确认删除"
+        onCancel={() => setShowConfirm(false)}
+        onOk={async () => {
+          const success = await handleRemove(selectedRowsState);
+          setShowConfirm(false);
+          if (success) {
+            setSelectedRows([]);
+            actionRef.current?.reload();
+            Toast.success('删除成功');
+          } else {
+            Toast.error('删除失败，请重试');
+          }
+        }}
+      >
+        确定要删除选中的 {selectedRowsState.length} 个短链吗？此操作不可撤销。
+      </Modal>
 
       {/* 新建短链模态框 */}
       <SemiModalForm

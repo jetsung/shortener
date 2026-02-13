@@ -87,31 +87,26 @@ pub async fn delete_shorten(
     Ok(StatusCode::NO_CONTENT)
 }
 
-/// Query parameters for batch delete
+/// Request body for batch delete
 #[derive(Debug, Deserialize)]
-pub struct DeleteBatchParams {
-    pub ids: String, // Comma-separated list of IDs
+pub struct BatchDeleteShortensRequest {
+    pub ids: Vec<i64>,
 }
 
 /// Delete multiple short URLs
 ///
-/// DELETE /api/shortens?ids=1,2,3
+/// POST /api/shortens/batch-delete
 pub async fn delete_batch(
     State(service): State<Arc<ShortenService>>,
-    Query(params): Query<DeleteBatchParams>,
+    Json(req): Json<BatchDeleteShortensRequest>,
 ) -> Result<StatusCode, AppError> {
-    // Parse comma-separated IDs
-    let ids: Result<Vec<i64>, _> = params
-        .ids
-        .split(',')
-        .map(|s| s.trim().parse::<i64>())
-        .collect();
+    if req.ids.is_empty() {
+        return Err(AppError::BadRequest("ids cannot be empty".to_string()));
+    }
 
-    let ids = ids.map_err(|_| AppError::BadRequest("Invalid ID format".to_string()))?;
+    info!("Batch deleting {} short URLs", req.ids.len());
 
-    info!("Batch deleting {} short URLs", ids.len());
-
-    service.delete_batch(ids).await?;
+    service.delete_batch(req.ids).await?;
 
     Ok(StatusCode::NO_CONTENT)
 }
@@ -141,10 +136,16 @@ pub async fn redirect_to_url(
 
     // Extract IP address from headers
     // Try to get real IP from common proxy headers
+    // Priority: CF-Connecting-IP (Cloudflare) > X-Forwarded-For > X-Real-IP
     let ip_address = headers
-        .get("x-forwarded-for")
+        .get("cf-connecting-ip")
         .and_then(|h| h.to_str().ok())
-        .and_then(|s| s.split(',').next())
+        .or_else(|| {
+            headers
+                .get("x-forwarded-for")
+                .and_then(|h| h.to_str().ok())
+                .and_then(|s| s.split(',').next().map(|ip| ip.trim()))
+        })
         .or_else(|| headers.get("x-real-ip").and_then(|h| h.to_str().ok()))
         .unwrap_or("unknown");
 
@@ -245,7 +246,10 @@ mod tests {
         Router::new()
             .route("/api/shortens", axum::routing::post(create_shorten))
             .route("/api/shortens", axum::routing::get(list_shortens))
-            .route("/api/shortens", axum::routing::delete(delete_batch))
+            .route(
+                "/api/shortens/batch-delete",
+                axum::routing::post(delete_batch),
+            )
             .route("/api/shortens/{code}", axum::routing::get(get_shorten))
             .route("/api/shortens/{code}", axum::routing::put(update_shorten))
             .route(
@@ -573,24 +577,47 @@ mod tests {
             ids.push(response_json["id"].as_i64().unwrap());
         }
 
-        // Delete batch
-        let ids_str = ids
-            .iter()
-            .map(|id| id.to_string())
-            .collect::<Vec<_>>()
-            .join(",");
+        // Delete batch using POST with JSON body
+        let delete_body = json!({
+            "ids": ids
+        });
 
         let response = app
             .oneshot(
                 Request::builder()
-                    .method("DELETE")
-                    .uri(format!("/api/shortens?ids={}", ids_str))
-                    .body(Body::empty())
+                    .method("POST")
+                    .uri("/api/shortens/batch-delete")
+                    .header("content-type", "application/json")
+                    .body(Body::from(serde_json::to_string(&delete_body).unwrap()))
                     .unwrap(),
             )
             .await
             .unwrap();
 
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
+    }
+
+    #[tokio::test]
+    async fn test_delete_batch_empty_ids() {
+        let app = setup_test_app().await;
+
+        // Try to delete with empty ids array
+        let delete_body = json!({
+            "ids": []
+        });
+
+        let response = app
+            .oneshot(
+                Request::builder()
+                    .method("POST")
+                    .uri("/api/shortens/batch-delete")
+                    .header("content-type", "application/json")
+                    .body(Body::from(serde_json::to_string(&delete_body).unwrap()))
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(response.status(), StatusCode::BAD_REQUEST);
     }
 }

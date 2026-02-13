@@ -237,20 +237,19 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-    delete:
+  /api/shortens/batch-delete:
+    post:
       tags:
         - shorten
-      summary: "删除短网址列表"
+      summary: "批量删除短网址"
       description: "批量删除短网址"
       operationId: "deleteShortenBatch"
-      parameters:
-        - name: ids
-          in: query
-          description: "ID 列表，多个 ID 用逗号分隔"
-          required: true
-          schema:
-            type: string
-            pattern: ^\d+(,\d+)*$
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BatchDeleteRequest"
       responses:
         "204":
           description: "操作成功"
@@ -458,20 +457,19 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-    delete:
+  /api/histories/batch-delete:
+    post:
       tags:
         - history
-      summary: "删除访问日志"
+      summary: "批量删除访问日志"
       description: "批量删除访问日志"
       operationId: "deleteHistories"
-      parameters:
-        - name: ids
-          in: query
-          description: "ID 列表，多个 ID 用逗号分隔"
-          required: true
-          schema:
-            type: string
-            pattern: ^\d+(,\d+)*$
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BatchDeleteRequest"
       responses:
         "204":
           description: "操作成功"
@@ -651,6 +649,19 @@ components:
           format: date-time
           description: "更新时间 (ISO 8601 格式)"
           example: "2024-01-15T08:30:00Z"
+
+    BatchDeleteRequest:
+      type: object
+      required:
+        - ids
+      properties:
+        ids:
+          type: array
+          items:
+            type: integer
+            format: int64
+          description: "要删除的 ID 列表"
+          example: [1, 2, 3, 4, 5]
 
     HistoryResponse:
       type: object

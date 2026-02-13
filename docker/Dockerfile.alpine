@@ -1,6 +1,6 @@
 # Multi-stage build for shortener-server (Alpine-based for smaller image size)
 # Stage 1: Build the application
-FROM rust:1.90-alpine as builder
+FROM rust:1.93-alpine AS builder
 
 # Install build dependencies
 RUN apk add --no-cache \

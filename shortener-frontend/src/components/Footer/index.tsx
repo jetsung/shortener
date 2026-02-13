@@ -1,6 +1,6 @@
 import React from 'react';
 import { Typography } from '@douyinfe/semi-ui-19';
-import { IconGithubLogo, IconGitlabLogo, IconHome } from '@douyinfe/semi-icons';
+import { IconGithubLogo, IconHome, IconGit } from '@douyinfe/semi-icons';
 
 const { Text } = Typography;
 
@@ -44,7 +44,7 @@ const Footer: React.FC = () => {
           alignItems: 'center',
         }}
       >
-        <IconGitlabLogo style={{ marginRight: 4 }} />
+        <IconGit style={{ marginRight: 4 }} />
         Shortener Code
       </a>
       <a
@@ -62,7 +62,7 @@ const Footer: React.FC = () => {
         Shortener GitHub
       </a>
       <Text type="tertiary" size="small">
-        © 2025 Shortener
+        © 2026 Shortener
       </Text>
     </div>
   );

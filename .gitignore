@@ -52,6 +52,8 @@ site/
 /**/yarn.lock
 /**/dist/
 
+.env.cloud
+
 # act
 .actrc
 .actenv

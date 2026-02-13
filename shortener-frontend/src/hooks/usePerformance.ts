@@ -18,10 +18,8 @@ export function usePerformance(componentName: string) {
     return () => {
       // 组件卸载时结束计时
       if (mountTime.current) {
-        const mountDuration = performance.now() - mountTime.current;
-        if (import.meta.env.DEV) {
-          console.log(`Component ${componentName} was mounted for ${mountDuration.toFixed(2)}ms`);
-        }
+        void (performance.now() - mountTime.current);
+        // Component mounted
       }
       performanceMonitor.current.endMeasure(`${componentName}-mount`);
     };
@@ -62,7 +60,7 @@ export function usePerformance(componentName: string) {
  * 组件渲染优化 Hook
  * 用于检测不必要的重新渲染
  */
-export function useRenderOptimization(componentName: string, props: Record<string, any>) {
+export function useRenderOptimization(_componentName: string, props: Record<string, any>) {
   const prevProps = useRef<Record<string, any> | undefined>(undefined);
   const renderCount = useRef(0);
 
@@ -80,16 +78,7 @@ export function useRenderOptimization(componentName: string, props: Record<strin
         }
       });
 
-      if (changedProps.length > 0) {
-        console.log(
-          `${componentName} re-rendered (${renderCount.current}) due to props change:`,
-          changedProps,
-        );
-      } else if (renderCount.current > 1 && renderCount.current % 100 === 0) {
-        console.warn(
-          `${componentName} re-rendered (${renderCount.current}) without props change - possible infinite loop!`,
-        );
-      }
+      // Track re-renders and changed props
     }
 
     prevProps.current = { ...props };
@@ -105,12 +94,8 @@ export function useRenderOptimization(componentName: string, props: Record<strin
 export function useMemoryMonitor(componentName: string) {
   const checkMemory = useCallback(() => {
     if ('memory' in performance && import.meta.env.DEV) {
-      const memory = (performance as any).memory;
-      console.log(`${componentName} Memory Usage:`, {
-        used: `${(memory.usedJSHeapSize / 1024 / 1024).toFixed(2)} MB`,
-        total: `${(memory.totalJSHeapSize / 1024 / 1024).toFixed(2)} MB`,
-        limit: `${(memory.jsHeapSizeLimit / 1024 / 1024).toFixed(2)} MB`,
-      });
+      void (performance as any).memory;
+      // Memory usage tracking
     }
   }, [componentName]);
 

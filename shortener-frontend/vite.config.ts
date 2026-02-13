@@ -23,24 +23,18 @@ export default defineConfig(({ mode }) => {
     port: 8000,
     proxy: {
       '/api': {
-        // target: 'https://dwz.asfd.cn',
         target: 'http://localhost:8080',
         changeOrigin: true,
         secure: false, // 修改为 false，因为目标是 http
         rewrite: (path) => path.replace(/^\/api/, '/api'),
         configure: (proxy, _options) => {
           proxy.on('error', (err, _req, _res) => {
-            console.log('proxy error', err);
+            console.error('proxy error', err);
           });
-          proxy.on('proxyReq', (proxyReq, req, _res) => {
-            console.log('Sending Request to the Target:', req.method, req.url);
+          proxy.on('proxyReq', (proxyReq, _req, _res) => {
             // 确保正确设置请求头
             proxyReq.setHeader('Accept', 'application/json');
             proxyReq.setHeader('Content-Type', 'application/json');
-          });
-          proxy.on('proxyRes', (proxyRes, req, _res) => {
-            console.log('Received Response from the Target:', proxyRes.statusCode, req.url);
-            console.log('Response Headers:', proxyRes.headers);
           });
         },
       },

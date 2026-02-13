@@ -27,31 +27,26 @@ pub async fn list_histories(
     Ok(Json(response))
 }
 
-/// Query parameters for batch delete histories
+/// Request body for batch delete histories
 #[derive(Debug, Deserialize)]
-pub struct DeleteHistoriesParams {
-    pub ids: String, // Comma-separated list of IDs
+pub struct BatchDeleteHistoriesRequest {
+    pub ids: Vec<i64>,
 }
 
 /// Delete multiple history records
 ///
-/// DELETE /api/histories?ids=1,2,3
+/// POST /api/histories/batch-delete
 pub async fn delete_histories(
     State(service): State<Arc<HistoryService>>,
-    Query(params): Query<DeleteHistoriesParams>,
+    Json(req): Json<BatchDeleteHistoriesRequest>,
 ) -> Result<StatusCode, AppError> {
-    // Parse comma-separated IDs
-    let ids: Result<Vec<i64>, _> = params
-        .ids
-        .split(',')
-        .map(|s| s.trim().parse::<i64>())
-        .collect();
+    if req.ids.is_empty() {
+        return Err(AppError::BadRequest("ids cannot be empty".to_string()));
+    }
 
-    let ids = ids.map_err(|_| AppError::BadRequest("Invalid ID format".to_string()))?;
+    info!("Batch deleting {} history records", req.ids.len());
 
-    info!("Batch deleting {} history records", ids.len());
-
-    service.delete_batch(ids).await?;
+    service.delete_batch(req.ids).await?;
 
     Ok(StatusCode::NO_CONTENT)
 }
@@ -122,7 +117,10 @@ mod tests {
 
         let app = Router::new()
             .route("/api/histories", axum::routing::get(list_histories))
-            .route("/api/histories", axum::routing::delete(delete_histories))
+            .route(
+                "/api/histories/batch-delete",
+                axum::routing::post(delete_histories),
+            )
             .with_state(service);
 
         (app, url_repo)
@@ -159,13 +157,18 @@ mod tests {
     async fn test_delete_histories_handler() {
         let (app, _) = setup_test_app().await;
 
-        // Test with empty IDs (should succeed but delete nothing)
+        // Test with valid IDs
+        let delete_body = serde_json::json!({
+            "ids": [999]
+        });
+
         let response = app
             .oneshot(
                 Request::builder()
-                    .method("DELETE")
-                    .uri("/api/histories?ids=999")
-                    .body(Body::empty())
+                    .method("POST")
+                    .uri("/api/histories/batch-delete")
+                    .header("content-type", "application/json")
+                    .body(Body::from(serde_json::to_string(&delete_body).unwrap()))
                     .unwrap(),
             )
             .await
@@ -175,15 +178,21 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_delete_histories_invalid_ids() {
+    async fn test_delete_histories_empty_ids() {
         let (app, _) = setup_test_app().await;
+
+        // Test with empty IDs array
+        let delete_body = serde_json::json!({
+            "ids": []
+        });
 
         let response = app
             .oneshot(
                 Request::builder()
-                    .method("DELETE")
-                    .uri("/api/histories?ids=invalid,ids")
-                    .body(Body::empty())
+                    .method("POST")
+                    .uri("/api/histories/batch-delete")
+                    .header("content-type", "application/json")
+                    .body(Body::from(serde_json::to_string(&delete_body).unwrap()))
                     .unwrap(),
             )
             .await

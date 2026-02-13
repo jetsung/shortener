@@ -75,6 +75,7 @@ jobs:
           platforms: linux/${{ matrix.arch }}
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ env.GHCR_SLUG }}:${{ matrix.tag }}
+          provenance: false
 
   manifest:
     needs: build

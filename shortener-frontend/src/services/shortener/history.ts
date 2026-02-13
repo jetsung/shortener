@@ -24,17 +24,17 @@ export async function getHistories(
   });
 }
 
-/** 删除日志列表 删除日志列表 返回值: 未知错误 DELETE /histories */
+/** 删除日志列表 删除日志列表 返回值: 未知错误 POST /histories/batch-delete */
 export async function deleteHistories(
-  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
-  params: API.deleteHistoriesParams,
+  body: API.BatchDeleteRequest,
   options?: { [key: string]: any },
 ) {
-  return request<API.Error>('/histories', {
-    method: 'DELETE',
-    params: {
-      ...params,
+  return request<API.Error>('/histories/batch-delete', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
     },
+    data: body,
     ...(options || {}),
   });
 }

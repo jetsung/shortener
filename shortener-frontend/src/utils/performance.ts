@@ -49,11 +49,6 @@ export class PerformanceMonitor {
     const duration = performance.now() - startTime;
     this.metrics.delete(name);
 
-    // 在开发环境下输出性能信息
-    if (import.meta.env.DEV) {
-      console.log(`Performance: ${name} took ${duration.toFixed(2)}ms`);
-    }
-
     return duration;
   }
 
@@ -117,8 +112,8 @@ export function initWebVitals(): void {
   try {
     const observer = new PerformanceObserver((list) => {
       const entries = list.getEntries();
-      const lastEntry = entries[entries.length - 1];
-      console.log('LCP:', lastEntry.startTime);
+      void entries[entries.length - 1];
+      // LCP tracking
     });
     observer.observe({ entryTypes: ['largest-contentful-paint'] });
   } catch {
@@ -132,7 +127,7 @@ export function initWebVitals(): void {
       entries.forEach((entry) => {
         const fidEntry = entry as PerformanceEventTiming;
         if (fidEntry.processingStart) {
-          console.log('FID:', fidEntry.processingStart - entry.startTime);
+          // FID: fidEntry.processingStart - entry.startTime
         }
       });
     });

@@ -14,10 +14,10 @@ const MainLayout: React.FC = memo(() => {
   const [mobileDrawerVisible, setMobileDrawerVisible] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { currentUser, loading, logout: handleLogout } = useAuth();
+  const { currentUser, loading, isAuth, logout: handleLogout } = useAuth();
   usePerformance('MainLayout');
 
-  // 检测屏幕尺寸
+  // 检测屏幕尺寸的 useEffect（必须在条件渲染之前）
   useEffect(() => {
     const checkScreenSize = () => {
       const mobile = window.innerWidth < 768;
@@ -31,6 +31,22 @@ const MainLayout: React.FC = memo(() => {
     window.addEventListener('resize', checkScreenSize);
     return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
+
+  // 未登录或加载中，显示加载状态
+  if (loading || !isAuth) {
+    return (
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '100vh',
+        }}
+      >
+        <Spin size="large" />
+      </div>
+    );
+  }
 
   // 导航菜单项
   const navItems = [
@@ -66,22 +82,6 @@ const MainLayout: React.FC = memo(() => {
       setCollapsed(!collapsed);
     }
   };
-
-  // 如果正在加载，显示加载状态
-  if (loading) {
-    return (
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          height: '100vh',
-        }}
-      >
-        <Spin size="large" />
-      </div>
-    );
-  }
 
   // 渲染侧边栏内容
   const renderSidebarContent = (isInDrawer = false) => (

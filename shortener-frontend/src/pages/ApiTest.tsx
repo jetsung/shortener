@@ -15,15 +15,10 @@ const ApiTest: React.FC = () => {
     setError(null);
 
     try {
-      console.log('开始测试登录API...');
-
       const result = await login({
         username: 'admin', // 使用更常见的测试用户名
         password: 'admin123',
       });
-
-      console.log('登录API响应:', result);
-      console.log('响应数据类型:', typeof result);
 
       // 检查可能的token字段
       const resultData = result as any;
@@ -33,8 +28,6 @@ const ApiTest: React.FC = () => {
         accessToken: resultData?.accessToken,
         data_token: resultData?.data?.token,
       };
-
-      console.log('可能的token字段:', possibleTokens);
 
       setResponse({
         originalResponse: result,
@@ -59,8 +52,6 @@ const ApiTest: React.FC = () => {
     setError(null);
 
     try {
-      console.log('开始测试直接fetch...');
-
       const response = await fetch('/api/account/login', {
         method: 'POST',
         headers: {
@@ -72,11 +63,7 @@ const ApiTest: React.FC = () => {
         }),
       });
 
-      console.log('Fetch响应状态:', response.status);
-      console.log('Fetch响应头:', response.headers);
-
       const data = await response.text();
-      console.log('Fetch响应数据:', data);
 
       setResponse({
         status: response.status,
@@ -101,10 +88,7 @@ const ApiTest: React.FC = () => {
     setError(null);
 
     try {
-      console.log('开始测试获取当前用户API...');
-
       const token = localStorage.getItem('token');
-      console.log('当前localStorage中的token:', token);
 
       const response = await fetch('/api/users/current', {
         method: 'GET',
@@ -114,11 +98,7 @@ const ApiTest: React.FC = () => {
         },
       });
 
-      console.log('获取用户信息响应状态:', response.status);
-      console.log('获取用户信息响应头:', response.headers);
-
       const data = await response.text();
-      console.log('获取用户信息响应数据:', data);
 
       setResponse({
         status: response.status,

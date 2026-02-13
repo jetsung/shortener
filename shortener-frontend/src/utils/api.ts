@@ -72,5 +72,5 @@ export const clearAuth = (): void => {
  */
 export const redirectToLogin = (): void => {
   clearAuth();
-  window.location.href = '/account/login';
+  window.location.href = '/#/account/login';
 };

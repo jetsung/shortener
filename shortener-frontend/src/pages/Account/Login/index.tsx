@@ -14,16 +14,10 @@ const Login: React.FC = () => {
   const handleSubmit = async (values: LoginForm) => {
     setLoading(true);
     try {
-      console.log('开始登录，用户名:', values.username);
-
       const response = await login({
         username: values.username,
         password: values.password,
       });
-
-      console.log('登录API完整响应:', response);
-      console.log('响应数据类型:', typeof response);
-      console.log('响应数据结构:', JSON.stringify(response, null, 2));
 
       // 处理不同可能的响应数据结构
       let token: string | undefined;
@@ -34,23 +28,18 @@ const Login: React.FC = () => {
         const responseData = response as any;
         token = responseData.token || responseData.access_token || responseData.accessToken;
         errorMessage = responseData.errinfo || responseData.error || responseData.message;
-
-        console.log('提取的token:', token);
-        console.log('提取的错误信息:', errorMessage);
       }
 
       if (token) {
-        console.log('保存token到localStorage:', token);
         localStorage.setItem('token', token);
 
         // 验证token是否成功保存
-        const savedToken = localStorage.getItem('token');
-        console.log('验证localStorage中的token:', savedToken);
+        const _savedToken = localStorage.getItem('token');
+        void _savedToken; // 标记为已使用
 
         Toast.success('登录成功');
         navigate('/dashboard');
       } else {
-        console.log('未找到token，登录失败');
         Toast.error(errorMessage || '登录失败：未返回有效的token');
       }
     } catch (error: unknown) {
@@ -63,59 +52,73 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        minHeight: '100vh',
-        background: 'var(--semi-color-fill-0)',
-      }}
-    >
-      <Card
+    <>
+      <style>{`
+        .login-form-field .semi-form-field-main {
+          margin-bottom: 24px;
+        }
+        .login-form-field .semi-form-field-error-message {
+          position: absolute;
+        }
+      `}</style>
+      <div
         style={{
-          width: 400,
-          padding: 24,
-          boxShadow: 'var(--semi-shadow-elevated)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'flex-start',
+          minHeight: '100vh',
+          paddingTop: '20vh',
+          background: 'var(--semi-color-fill-0)',
+          paddingLeft: '16px',
+          paddingRight: '16px',
         }}
       >
-        <Title
-          heading={2}
+        <Card
           style={{
-            textAlign: 'center',
-            marginBottom: 32,
-            color: 'var(--semi-color-primary)',
+            width: '100%',
+            maxWidth: 400,
+            padding: 24,
+            boxShadow: 'var(--semi-shadow-elevated)',
           }}
         >
-          Shortener
-        </Title>
+          <Title
+            heading={2}
+            style={{
+              textAlign: 'center',
+              marginBottom: 32,
+              color: 'var(--semi-color-primary)',
+            }}
+          >
+            Shortener
+          </Title>
 
-        <Form onSubmit={handleSubmit}>
-          <Form.Input
-            field="username"
-            label="用户名"
-            placeholder="请输入用户名"
-            rules={[{ required: true, message: '请输入用户名' }]}
-            style={{ marginBottom: 16 }}
-            autoComplete="username"
-          />
+          <Form onSubmit={handleSubmit} style={{ marginBottom: 40 }}>
+            <Form.Input
+              field="username"
+              label="用户名"
+              placeholder="请输入用户名"
+              rules={[{ required: true, message: '请输入用户名' }]}
+              fieldClassName="login-form-field"
+              autoComplete="username"
+            />
 
-          <Form.Input
-            field="password"
-            label="密码"
-            type="password"
-            placeholder="请输入密码"
-            rules={[{ required: true, message: '请输入密码' }]}
-            style={{ marginBottom: 24 }}
-            autoComplete="current-password"
-          />
+            <Form.Input
+              field="password"
+              label="密码"
+              type="password"
+              placeholder="请输入密码"
+              rules={[{ required: true, message: '请输入密码' }]}
+              fieldClassName="login-form-field"
+              autoComplete="current-password"
+            />
 
-          <Button type="primary" htmlType="submit" loading={loading} block size="large">
-            登录
-          </Button>
-        </Form>
-      </Card>
-    </div>
+            <Button type="primary" htmlType="submit" loading={loading} block size="large">
+              登录
+            </Button>
+          </Form>
+        </Card>
+      </div>
+    </>
   );
 };
 

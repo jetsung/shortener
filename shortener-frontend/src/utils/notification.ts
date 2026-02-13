@@ -182,6 +182,12 @@ class NotificationManager {
       this.createNotification({ message, type });
     }
   }
+
+  public destroyAll(): void {
+    this.notifications.forEach((_, id) => {
+      this.removeNotification(id);
+    });
+  }
 }
 
 // 创建单例实例
@@ -195,6 +201,7 @@ export const Toast = {
   info: (message: string, duration?: number) => notificationManager.info(message, duration),
   update: (message: string, type: NotificationType) =>
     notificationManager.updateLast(message, type),
+  destroyAll: () => notificationManager.destroyAll(),
 };
 
 export default Toast;

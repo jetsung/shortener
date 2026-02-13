@@ -2,6 +2,8 @@ use crate::config::{Config, DatabaseType};
 use crate::migration::Migrator;
 use sea_orm::{ConnectOptions, Database, DatabaseConnection, DbErr};
 use sea_orm_migration::MigratorTrait;
+use std::fs;
+use std::path::Path;
 use std::time::Duration;
 use tracing::{info, warn};
 
@@ -12,6 +14,20 @@ impl DbFactory {
     /// Create a database connection from configuration
     pub async fn create_connection(config: &Config) -> Result<DatabaseConnection, DbErr> {
         let database_url = config.get_database_url();
+
+        // For SQLite, ensure the parent directory exists
+        if config.database.db_type == DatabaseType::Sqlite
+            && let Some(path) = config.database.sqlite.as_ref().map(|s| &s.path)
+            && path != ":memory:"
+            && let Some(parent) = Path::new(path).parent()
+            && !parent.exists()
+        {
+            if let Err(e) = fs::create_dir_all(parent) {
+                warn!("Failed to create database directory: {}", e);
+            } else {
+                info!("Created database directory: {:?}", parent);
+            }
+        }
 
         info!(
             "Connecting to {} database...",
@@ -141,14 +157,14 @@ mod tests {
 
     #[tokio::test]
     async fn test_invalid_connection() {
+        // Test with an invalid file path (not a valid SQLite database)
         let mut config = create_test_config();
         config.database.sqlite = Some(SqliteConfig {
-            path: "/invalid/path/that/does/not/exist/test.db".to_string(),
+            path: "/dev/null/test.db".to_string(),
         });
 
+        // This should fail because /dev/null is not a valid SQLite database location
         let result = DbFactory::create_connection(&config).await;
-
-        // This should fail because the path doesn't exist
         assert!(result.is_err());
     }
 

@@ -14,20 +14,13 @@ const request = axios.create({
 // 请求拦截器
 request.interceptors.request.use(
   (config) => {
-    console.log('Request config:', config.method?.toUpperCase(), config.url, config.data);
-
     // 添加 token 等认证信息
     const token = localStorage.getItem('token');
-    console.log('从localStorage获取的token:', token);
 
     if (token && token !== '' && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
-      console.log('设置Authorization头:', `Bearer ${token}`);
-    } else {
-      console.log('未设置Authorization头，token为空或不存在');
     }
 
-    console.log('最终请求头:', config.headers);
     return config;
   },
   (error) => {
@@ -38,7 +31,6 @@ request.interceptors.request.use(
 // 响应拦截器
 request.interceptors.response.use(
   (response: AxiosResponse) => {
-    console.log('Response received:', response.status, response.data);
     const { data } = response;
 
     // 直接返回响应数据，让业务层处理
@@ -50,13 +42,15 @@ request.interceptors.response.use(
       const { status, data } = error.response;
 
       switch (status) {
-        case 401:
+        case 401: {
           Toast.error('未授权，请重新登录');
           // 如果当前不在登录页面，才进行重定向
-          if (!window.location.pathname.includes('/account/login')) {
+          const currentPath = window.location.hash || window.location.pathname;
+          if (!currentPath.includes('/account/login')) {
             redirectToLogin();
           }
           break;
+        }
         case 403:
           Toast.error('权限不足');
           break;

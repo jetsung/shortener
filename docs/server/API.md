@@ -279,15 +279,22 @@ curl -X DELETE http://localhost:8080/api/shortens/mylink \
 一次删除多个短链接。
 
 ```http
-DELETE /api/shortens?ids=1,2,3
+POST /api/shortens/batch-delete
 X-API-KEY: your-api-key
+Content-Type: application/json
+
+{
+  "ids": [1, 2, 3]
+}
 ```
 
 示例：
 
 ```bash
-curl -X DELETE "http://localhost:8080/api/shortens?ids=1,2,3" \
-  -H "X-API-KEY: your-api-key"
+curl -X POST "http://localhost:8080/api/shortens/batch-delete" \
+  -H "X-API-KEY: your-api-key" \
+  -H "Content-Type: application/json" \
+  -d '{"ids": [1, 2, 3]}'
 ```
 
 ### 访问历史
@@ -332,15 +339,22 @@ curl "http://localhost:8080/api/histories?short_code=abc123" \
 一次删除多个历史记录。
 
 ```http
-DELETE /api/histories?ids=1,2,3
+POST /api/histories/batch-delete
 X-API-KEY: your-api-key
+Content-Type: application/json
+
+{
+  "ids": [1, 2, 3]
+}
 ```
 
 示例：
 
 ```bash
-curl -X DELETE "http://localhost:8080/api/histories?ids=1,2,3" \
-  -H "X-API-KEY: your-api-key"
+curl -X POST "http://localhost:8080/api/histories/batch-delete" \
+  -H "X-API-KEY: your-api-key" \
+  -H "Content-Type: application/json" \
+  -d '{"ids": [1, 2, 3]}'
 ```
 
 ## 错误代码

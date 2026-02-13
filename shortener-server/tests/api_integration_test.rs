@@ -548,20 +548,19 @@ async fn test_delete_batch_shortens() {
         ids.push(body["id"].as_i64().unwrap());
     }
 
-    // Delete batch
-    let ids_str = ids
-        .iter()
-        .map(|id| id.to_string())
-        .collect::<Vec<_>>()
-        .join(",");
+    // Delete batch using POST with JSON body
+    let delete_body = json!({
+        "ids": ids
+    });
 
     let response = app
         .oneshot(
             Request::builder()
-                .method("DELETE")
-                .uri(format!("/api/shortens?ids={}", ids_str))
+                .method("POST")
+                .uri("/api/shortens/batch-delete")
+                .header("content-type", "application/json")
                 .header("X-API-KEY", "test-api-key-12345")
-                .body(Body::empty())
+                .body(Body::from(serde_json::to_string(&delete_body).unwrap()))
                 .unwrap(),
         )
         .await
@@ -843,25 +842,28 @@ async fn test_method_not_allowed() {
 }
 
 #[tokio::test]
-async fn test_batch_delete_invalid_id_format() {
+async fn test_batch_delete_empty_ids() {
     let app = setup_test_app().await;
+
+    // Test with empty ids array
+    let delete_body = json!({
+        "ids": []
+    });
 
     let response = app
         .oneshot(
             Request::builder()
-                .method("DELETE")
-                .uri("/api/shortens?ids=abc,def")
+                .method("POST")
+                .uri("/api/shortens/batch-delete")
+                .header("content-type", "application/json")
                 .header("X-API-KEY", "test-api-key-12345")
-                .body(Body::empty())
+                .body(Body::from(serde_json::to_string(&delete_body).unwrap()))
                 .unwrap(),
         )
         .await
         .unwrap();
 
     assert_eq!(response.status(), StatusCode::BAD_REQUEST);
-
-    let body = parse_json_body(response.into_body()).await;
-    assert_eq!(body["errcode"], "10003");
 }
 
 // ============================================================================
@@ -897,13 +899,18 @@ async fn test_delete_histories_batch() {
     let app = setup_test_app().await;
 
     // Test with non-existent IDs (should succeed but delete nothing)
+    let delete_body = json!({
+        "ids": [999, 1000]
+    });
+
     let response = app
         .oneshot(
             Request::builder()
-                .method("DELETE")
-                .uri("/api/histories?ids=999,1000")
+                .method("POST")
+                .uri("/api/histories/batch-delete")
+                .header("content-type", "application/json")
                 .header("X-API-KEY", "test-api-key-12345")
-                .body(Body::empty())
+                .body(Body::from(serde_json::to_string(&delete_body).unwrap()))
                 .unwrap(),
         )
         .await
@@ -913,16 +920,22 @@ async fn test_delete_histories_batch() {
 }
 
 #[tokio::test]
-async fn test_delete_histories_invalid_ids() {
+async fn test_delete_histories_empty_ids() {
     let app = setup_test_app().await;
+
+    // Test with empty ids array
+    let delete_body = json!({
+        "ids": []
+    });
 
     let response = app
         .oneshot(
             Request::builder()
-                .method("DELETE")
-                .uri("/api/histories?ids=invalid,ids")
+                .method("POST")
+                .uri("/api/histories/batch-delete")
+                .header("content-type", "application/json")
                 .header("X-API-KEY", "test-api-key-12345")
-                .body(Body::empty())
+                .body(Body::from(serde_json::to_string(&delete_body).unwrap()))
                 .unwrap(),
         )
         .await

@@ -96,7 +96,4 @@ Apache-2.0 License - 详见 [LICENSE](LICENSE)
 
 ## 仓库镜像
 
-- [MyCode](https://git.jetsung.com/jetsung/shortener)
-- [Framagit](https://framagit.org/jetsung/shortener)
-- [GitCode](https://gitcode.com/jetsung/shortener)
-- [GitHub](https://github.com/jetsung/shortener)
+[MyCode](https://git.jetsung.com/jetsung/shortener) ● [GitCode](https://gitcode.com/jetsung/shortener) ● [GitHub](https://github.com/jetsung/shortener)

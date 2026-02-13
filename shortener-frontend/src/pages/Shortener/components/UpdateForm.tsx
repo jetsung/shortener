@@ -77,7 +77,7 @@ const UpdateForm: React.FC<UpdateFormProps> = (props) => {
         }
       }}
       onCancel={() => onCancel(false)}
-      width={400}
+      width={600}
       okText="确定"
       cancelText="取消"
     >

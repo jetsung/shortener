@@ -100,9 +100,13 @@ X-API-KEY: {{apiKey}}
 ### 批量删除短网址
 # 响应: 204 No Content
 
-DELETE {{schema}}://{{api_host}}/shortens?ids=1,2,3
+POST {{schema}}://{{api_host}}/shortens/batch-delete
 Content-Type: {{contentType}}
 X-API-KEY: {{apiKey}}
+
+{
+  "ids": [1, 2, 3]
+}
 
 ### 更新短网址（随机）
 # 响应: { "id": 1, "short_code": "abc123", "short_url": "http://...", "original_url": "...", "description": "...", "status": 0, "created_at": "2024-01-15T08:30:00Z", "updated_at": "2024-01-15T08:30:00Z" }
@@ -181,6 +185,10 @@ Authorization: Bearer {{apiToken}}
 ### 批量删除访问历史记录
 # 响应: 204 No Content
 
-DELETE {{schema}}://{{api_host}}/histories?ids=1,2,3
+POST {{schema}}://{{api_host}}/histories/batch-delete
 Content-Type: {{contentType}}
 Authorization: Bearer {{apiToken}}
+
+{
+  "ids": [1, 2, 3]
+}

@@ -1,5 +1,5 @@
 # Demo Dockerfile for testing CI/CD pipeline
-FROM alpine:3.19
+FROM alpine:3.23
 
 # Add metadata
 LABEL org.opencontainers.image.title="Shortener Server Demo"
