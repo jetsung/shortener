@@ -31,7 +31,7 @@ const Footer: React.FC = () => {
         }}
       >
         <IconHome style={{ marginRight: 4 }} />
-        iDEV Forum
+        Forum
       </a>
       <a
         href="https://git.jetsung.com/jetsung/shortener"
@@ -45,10 +45,10 @@ const Footer: React.FC = () => {
         }}
       >
         <IconGit style={{ marginRight: 4 }} />
-        Shortener Code
+        Code
       </a>
       <a
-        href="https://github.com/idev-sig/shortener-server"
+        href="https://github.com/jetsung/shortener"
         target="_blank"
         rel="noopener noreferrer"
         style={{
@@ -59,7 +59,7 @@ const Footer: React.FC = () => {
         }}
       >
         <IconGithubLogo style={{ marginRight: 4 }} />
-        Shortener GitHub
+        GitHub
       </a>
       <Text type="tertiary" size="small">
         © 2026 Shortener

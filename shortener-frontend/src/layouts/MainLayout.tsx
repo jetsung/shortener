@@ -103,7 +103,9 @@ const MainLayout: React.FC = memo(() => {
           padding: collapsed && !isInDrawer ? 0 : '0 24px',
           borderBottom: '1px solid var(--semi-color-border)',
           flexShrink: 0,
+          cursor: 'pointer',
         }}
+        onClick={() => navigate('/')}
       >
         {(!collapsed || isInDrawer) && (
           <Title heading={4} style={{ margin: 0, color: 'var(--semi-color-primary)' }}>

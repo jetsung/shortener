@@ -1,4 +1,4 @@
-.PHONY: help build build-alpine run run-dev stop clean logs test docker-push cross-build cross-build-server cross-build-cli docs docs-serve docs-build
+.PHONY: help build build-alpine run run-dev stop clean logs test docker-push cross-build cross-build-server cross-build-cli docs docs-serve docs-build tag-server tag-frontend
 
 # Default target
 help:
@@ -26,6 +26,10 @@ help:
 	@echo "  docs           - Install docs dependencies and serve locally"
 	@echo "  docs-serve     - Serve documentation locally"
 	@echo "  docs-build     - Build documentation to site/"
+	@echo ""
+	@echo "Git targets:"
+	@echo "  tag-server     - Create signed git tag for server (usage: make tag-server VERSION=0.1.2)"
+	@echo "  tag-frontend   - Create signed git tag for frontend (usage: make tag-frontend VERSION=0.1.2)"
 
 # Build Docker image (Debian-based)
 build:
@@ -104,3 +108,26 @@ docs-build:
 	@echo "Building documentation..."
 	@mkdocs build
 	@echo "Documentation built to site/"
+
+# Git tag targets
+VERSION ?= 0.1.0
+
+tag-server:
+	@if [ -z "$(VERSION)" ]; then \
+		echo "Error: VERSION is required. Usage: make tag-server VERSION=0.1.2"; \
+		exit 1; \
+	fi
+	@TAG_NAME="shortener-server-v$(VERSION)"; \
+	echo "Creating signed tag: $$TAG_NAME"; \
+	git tag -s $$TAG_NAME -m "Release $$TAG_NAME"; \
+	echo "Tag created successfully. Push with: git push origin $$TAG_NAME"
+
+tag-frontend:
+	@if [ -z "$(VERSION)" ]; then \
+		echo "Error: VERSION is required. Usage: make tag-frontend VERSION=0.1.2"; \
+		exit 1; \
+	fi
+	@TAG_NAME="shortener-frontend-v$(VERSION)"; \
+	echo "Creating signed tag: $$TAG_NAME"; \
+	git tag -s $$TAG_NAME -m "Release $$TAG_NAME"; \
+	echo "Tag created successfully. Push with: git push origin $$TAG_NAME"

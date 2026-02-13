@@ -43,4 +43,7 @@ jobs:
 
       - run: pip install -r docs/requirements.txt
 
+      - name: 创建 CNAME 文件
+        run: echo "shortener.ooos.top" > docs/CNAME
+
       - run: mkdocs gh-deploy --force
