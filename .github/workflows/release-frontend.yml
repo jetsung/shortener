@@ -23,7 +23,11 @@ jobs:
 
       - name: Extract tag name
         id: tag
-        run: echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          VERSION="${TAG#shortener-frontend-}"
+          echo "TAG_NAME=$TAG" >> $GITHUB_OUTPUT
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -60,7 +64,7 @@ jobs:
       - name: Create release tarball
         run: |
           mkdir -p ${{ env.RELEASE_DIR }}
-          tar -cJf "${{ env.RELEASE_DIR }}/shortener-frontend-${{ steps.tag.outputs.TAG_NAME }}.tar.xz" -C shortener-frontend/dist .
+          tar -cJf "${{ env.RELEASE_DIR }}/shortener-frontend-${{ steps.tag.outputs.VERSION }}.tar.xz" -C shortener-frontend/dist .
 
       - name: Upload release assets
         uses: softprops/action-gh-release@v2
