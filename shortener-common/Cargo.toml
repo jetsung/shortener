@@ -4,6 +4,10 @@ version.workspace = true
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
+description = "Common types and utilities for shortener"
+repository = "https://github.com/jetsung/shortener"
+homepage = "https://github.com/jetsung/shortener"
+readme = "README.md"
 
 [dependencies]
 # Workspace dependencies

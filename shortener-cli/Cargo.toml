@@ -4,6 +4,10 @@ version.workspace = true
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
+description = "Command-line management tool for the shortener service"
+repository = "https://github.com/jetsung/shortener"
+homepage = "https://github.com/jetsung/shortener"
+readme = "README.md"
 
 [[bin]]
 name = "shortener-cli"
@@ -26,4 +30,4 @@ crossterm = { workspace = true }
 chrono = { workspace = true }
 
 # Local dependencies
-shortener-common = { path = "../shortener-common" }
+shortener-common = { path = "../shortener-common", version = "0.1.3" }

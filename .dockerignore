@@ -57,5 +57,10 @@ Thumbs.db
 # Go implementation (not needed for Rust build)
 shortener-go/
 
+# Frontend
+**/node_modules/
+shortener-frontend/dist/
+shortener-frontend/.pnpm-store/
+
 # Data files (will be mounted as volumes)
 data/*.db

@@ -17,11 +17,13 @@ COPY Cargo.toml Cargo.lock ./
 COPY shortener-server/Cargo.toml ./shortener-server/
 COPY shortener-cli/Cargo.toml ./shortener-cli/
 COPY shortener-common/Cargo.toml ./shortener-common/
+COPY ip2region/Cargo.toml ./ip2region/
 
 # Copy source code
 COPY shortener-server/src ./shortener-server/src
 COPY shortener-cli/src ./shortener-cli/src
 COPY shortener-common/src ./shortener-common/src
+COPY ip2region/src ./ip2region/src
 
 # Copy configuration file (needed at build time for include_str! macro)
 RUN mkdir -p ./config
@@ -29,6 +31,7 @@ COPY config/config.toml ./config/config.toml
 
 # Copy benches (required for Cargo.toml validation, but won't be compiled)
 COPY shortener-server/benches ./shortener-server/benches
+COPY ip2region/benches ./ip2region/benches
 
 # Build for release (skip benches and tests)
 RUN cargo build --release -p shortener-server --bins

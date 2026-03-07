@@ -3,8 +3,8 @@ version: '3.8'
 services:
   shortener-frontend:
     build:
-      context: ../shortener-frontend
-      dockerfile: ../docker/Dockerfile.frontend
+      context: ..
+      dockerfile: docker/Dockerfile.frontend
     container_name: shortener-frontend
     ports:
       - "80:8080"
