@@ -2,7 +2,7 @@ use std::borrow::Cow;
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 use std::str::FromStr;
 
-use crate::error::{Ip2RegionError, Result};
+use crate::geoip::ip2region_core::error::{Ip2RegionError, Result};
 
 pub trait IpValueExt {
     fn to_ipaddr(self) -> Result<IpAddr>;

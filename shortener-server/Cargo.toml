@@ -33,7 +33,6 @@ argon2 = { workspace = true }
 jsonwebtoken = { workspace = true }
 async-trait = { workspace = true }
 futures-util = { workspace = true }
-ip2region = { workspace = true }
 
 # Local dependencies
 shortener-common = { path = "../shortener-common", version = "0.1.3" }

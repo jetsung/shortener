@@ -6,14 +6,13 @@ use std::net::IpAddr;
 use std::path::Path;
 use std::sync::OnceLock;
 
-// Always use the constants from the maker module internal logic
-// but we don't need the full maker feature for searching
 mod maker_consts {
     pub const HEADER_INFO_LENGTH: usize = 256;
     pub const VECTOR_INDEX_COLS: usize = 256;
     pub const VECTOR_INDEX_ROWS: usize = 256;
     pub const VECTOR_INDEX_SIZE: usize = 8;
-    pub const VECTOR_INDEX_LENGTH: usize = VECTOR_INDEX_COLS * VECTOR_INDEX_ROWS * VECTOR_INDEX_SIZE;
+    pub const VECTOR_INDEX_LENGTH: usize =
+        VECTOR_INDEX_COLS * VECTOR_INDEX_ROWS * VECTOR_INDEX_SIZE;
 
     #[derive(Debug, Copy, Clone, PartialEq)]
     #[repr(u16)]
@@ -71,8 +70,8 @@ mod maker_consts {
 use maker_consts::*;
 use tracing::{debug, trace};
 
-use crate::error::{Ip2RegionError, Result};
-use crate::ip_value::{CompareExt, IpValueExt};
+use crate::geoip::ip2region_core::error::{Ip2RegionError, Result};
+use crate::geoip::ip2region_core::ip_value::{CompareExt, IpValueExt};
 
 pub struct Searcher {
     pub filepath: String,
@@ -127,13 +126,10 @@ impl Searcher {
         let end_ptr =
             u32::from_le_bytes(vector_index[start_point + 4..start_point + 8].try_into()?) as usize;
 
-        // @Note: ptr validate, zero ptr means source data missing
-        // so we could just stop here and return an empty string.
         if start_ptr == 0 || end_ptr == 0 {
-            return Ok(String::new())
+            return Ok(String::new());
         }
 
-        // Binary search the segment index to get the region
         let segment_index_size = self.header.segment_index_size();
         let ip_bytes_len = self.header.ip_bytes_len();
         let ip_end_offset = ip_bytes_len * 2;
@@ -146,9 +142,7 @@ impl Searcher {
             let offset = start_ptr + mid * segment_index_size;
             let buffer_ip_value = self.read_buf(offset, segment_index_size)?;
             if ip.ip_lt(Cow::Borrowed(&buffer_ip_value[0..ip_bytes_len])) {
-                let Some(m) = mid.checked_sub(1) else {
-                    break
-                };
+                let Some(m) = mid.checked_sub(1) else { break };
                 right = m;
             } else if ip.ip_gt(Cow::Borrowed(&buffer_ip_value[ip_bytes_len..ip_end_offset])) {
                 left = mid + 1;
@@ -181,9 +175,7 @@ impl Searcher {
                 let data = self
                     .read_buf(HEADER_INFO_LENGTH, VECTOR_INDEX_LENGTH)?
                     .to_vec();
-                let _ = self
-                    .vector_cache
-                    .set(data);
+                let _ = self.vector_cache.set(data);
 
                 let cache = self.vector_cache.get().unwrap();
                 Ok(Cow::Borrowed(cache))
@@ -210,9 +202,7 @@ impl Searcher {
                 let mut file = File::open(&self.filepath)?;
                 let mut buf = Vec::new();
                 file.read_to_end(&mut buf)?;
-                let _ = self
-                    .full_cache
-                    .set(buf);
+                let _ = self.full_cache.set(buf);
 
                 let cache = self.full_cache.get().unwrap();
                 Ok(Cow::from(&cache[offset..offset + size]))
@@ -223,9 +213,4 @@ impl Searcher {
             }
         }
     }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
 }

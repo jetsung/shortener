@@ -1,9 +1,9 @@
 [workspace]
-members = ["shortener-server", "shortener-cli", "shortener-common", "ip2region"]
+members = ["shortener-server", "shortener-cli", "shortener-common"]
 resolver = "2"
 
 [workspace.package]
-version = "0.1.3"
+version = "0.2.0"
 edition = "2024"
 authors = ["Jetsung Chan <i@jetsung.com>"]
 license = "Apache-2.0"
@@ -93,6 +93,3 @@ futures-util = "0.3"
 
 # Local dependencies
 shortener-common = { path = "shortener-common", version = "0.1.3" }
-
-# GeoIP
-ip2region = { path = "ip2region", version = "0.2.1" }

@@ -2,11 +2,11 @@ use async_trait::async_trait;
 use thiserror::Error;
 use tracing::warn;
 
+mod ip2region_core;
 mod ip2region;
 
 pub use ip2region::Ip2RegionGeoIp;
-// Re-export CachePolicy from ip2region crate for convenience
-pub use ip2region::CachePolicy;
+pub use ip2region_core::CachePolicy;
 
 /// GeoIP 错误类型
 #[derive(Error, Debug)]

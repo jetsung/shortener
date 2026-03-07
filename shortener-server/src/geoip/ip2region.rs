@@ -1,13 +1,11 @@
 use super::{GeoIp, GeoIpError, GeoIpInfo};
 use async_trait::async_trait;
-use ip2region::Searcher;
 use std::path::Path;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 use tracing::{debug, warn};
 
-// Re-export CachePolicy for convenience
-pub use ip2region::CachePolicy;
+use crate::geoip::ip2region_core::{CachePolicy, Searcher};
 
 /// Ip2Region GeoIP 实现
 /// 使用 ip2region-rs crate 支持 ip2region 数据库

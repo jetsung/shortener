@@ -1,4 +1,5 @@
 #[derive(Debug, thiserror::Error)]
+#[allow(dead_code)]
 pub enum Ip2RegionError {
     #[error("Io error: {0}")]
     IoError(#[from] std::io::Error),
@@ -23,10 +24,6 @@ pub enum Ip2RegionError {
 
     #[error("Try from slice failed")]
     TryFromSliceFailed(#[from] std::array::TryFromSliceError),
-
-    #[cfg(feature = "maker")]
-    #[error("Maker crate error: {0}")]
-    MakerError(#[from] crate::maker::MakerError),
 }
 
 pub type Result<T> = std::result::Result<T, Ip2RegionError>;
