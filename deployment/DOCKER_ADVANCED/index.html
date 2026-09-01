@@ -29,7 +29,7 @@
     
     
       
-        <title>Docker 部署指南 - Shortener</title>
+        <title>Docker 高级部署指南 - Shortener</title>
       
     
     
@@ -87,7 +87,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#docker-部署指南" class="md-skip">
+        <a href="#docker-高级部署指南" class="md-skip">
           跳转至
         </a>
       
@@ -121,7 +121,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Docker 部署指南
+              Docker 高级部署指南
             
           </span>
         </div>
@@ -1293,33 +1293,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#快速开始" class="md-nav__link">
+  <a href="#多平台镜像构建" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        快速开始
+        多平台镜像构建
       </span>
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#docker-compose-部署" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        Docker Compose 部署
-      </span>
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Docker Compose 部署">
+    <nav class="md-nav" aria-label="多平台镜像构建">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#完整服务栈推荐" class="md-nav__link">
+  <a href="#使用-cross-交叉编译" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        完整服务栈（推荐）
+        使用 Cross 交叉编译
       </span>
     </span>
   </a>
@@ -1327,32 +1316,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#使用-sqlite轻量级部署" class="md-nav__link">
+  <a href="#使用-docker-buildx" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        使用 SQLite（轻量级部署）
-      </span>
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#使用-mysql" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        使用 MySQL
-      </span>
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#开发环境" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        开发环境
+        使用 Docker Buildx
       </span>
     </span>
   </a>
@@ -1365,22 +1332,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#单独使用-docker" class="md-nav__link">
+  <a href="#docker-bake-高级用法" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        单独使用 Docker
+        Docker Bake 高级用法
       </span>
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="单独使用 Docker">
+    <nav class="md-nav" aria-label="Docker Bake 高级用法">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#构建镜像" class="md-nav__link">
+  <a href="#本地构建" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        构建镜像
+        本地构建
       </span>
     </span>
   </a>
@@ -1388,10 +1355,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#运行容器" class="md-nav__link">
+  <a href="#自定义构建" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        运行容器
+        自定义构建
       </span>
     </span>
   </a>
@@ -1404,44 +1371,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#数据库配置" class="md-nav__link">
+  <a href="#镜像体积优化" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        数据库配置
+        镜像体积优化
       </span>
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="数据库配置">
+    <nav class="md-nav" aria-label="镜像体积优化">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#postgresql推荐用于生产环境" class="md-nav__link">
+  <a href="#标准镜像" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        PostgreSQL（推荐用于生产环境）
-      </span>
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#mysql" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        MySQL
-      </span>
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#sqlite适合小规模部署" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        SQLite（适合小规模部署）
+        标准镜像
       </span>
     </span>
   </a>
@@ -1454,22 +1399,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#环境变量" class="md-nav__link">
+  <a href="#性能优化" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        环境变量
+        性能优化
       </span>
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="环境变量">
+    <nav class="md-nav" aria-label="性能优化">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#服务器配置" class="md-nav__link">
+  <a href="#资源限制" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        服务器配置
+        资源限制
       </span>
     </span>
   </a>
@@ -1477,10 +1422,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#数据库配置_1" class="md-nav__link">
+  <a href="#缓存与压缩" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        数据库配置
+        缓存与压缩
       </span>
     </span>
   </a>
@@ -1488,72 +1433,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#缓存配置" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        缓存配置
-      </span>
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#geoip-配置" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        GeoIP 配置
-      </span>
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#数据持久化" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        数据持久化
-      </span>
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="数据持久化">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#备份数据" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        备份数据
-      </span>
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#恢复数据" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        恢复数据
-      </span>
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#健康检查" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -1563,17 +1442,83 @@
   </a>
   
 </li>
+        
+      </ul>
+    </nav>
+  
+</li>
       
         <li class="md-nav__item">
-  <a href="#故障排查" class="md-nav__link">
+  <a href="#安全加固" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        故障排查
+        安全加固
       </span>
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="故障排查">
+    <nav class="md-nav" aria-label="安全加固">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#非-root-用户" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        非 root 用户
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#密钥管理" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        密钥管理
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#网络隔离" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        网络隔离
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#多服务编排" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        多服务编排
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#高级排障" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        高级排障
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="高级排障">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1588,10 +1533,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#常见问题" class="md-nav__link">
+  <a href="#检查容器状态" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        常见问题
+        检查容器状态
       </span>
     </span>
   </a>
@@ -1599,10 +1544,32 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#重置服务" class="md-nav__link">
+  <a href="#在容器中执行命令" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        重置服务
+        在容器中执行命令
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#重新构建" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        重新构建
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#清理" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        清理
       </span>
     </span>
   </a>
@@ -1615,38 +1582,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#生产环境建议" class="md-nav__link">
+  <a href="#参考" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        生产环境建议
-      </span>
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="生产环境建议">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#资源限制示例" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        资源限制示例
-      </span>
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#相关文档" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        相关文档
+        参考
       </span>
     </span>
   </a>
@@ -2013,372 +1952,189 @@
   
 
 
-<h1 id="docker-部署指南">Docker 部署指南<a class="headerlink" href="#docker-部署指南" title="Permanent link">&para;</a></h1>
-<p>本文档介绍如何使用 Docker 和 Docker Compose 部署 Shortener URL 短链接服务。</p>
+<h1 id="docker-高级部署指南">Docker 高级部署指南<a class="headerlink" href="#docker-高级部署指南" title="Permanent link">&para;</a></h1>
+<p>本文档介绍 Shortener 服务的 Docker 高级部署主题，包括多平台镜像构建、性能调优、安全加固与高级排障。</p>
+<blockquote>
+<p>基础 Docker 部署（快速开始、Compose 编排、环境变量）请参阅 <a href="../DOCKER/">Docker 部署指南</a>；
+端到端完整部署（后端 + 前端 + 数据库 + 反向代理）请参阅 <a href="../DOCKER_FULL/">Docker 完整指南</a>。</p>
+</blockquote>
 <h2 id="目录">目录<a class="headerlink" href="#目录" title="Permanent link">&para;</a></h2>
 <ul>
-<li><a href="#快速开始">快速开始</a></li>
-<li><a href="#docker-compose-部署">Docker Compose 部署</a></li>
-<li><a href="#单独使用-docker">单独使用 Docker</a></li>
-<li><a href="#数据库配置">数据库配置</a></li>
-<li><a href="#环境变量">环境变量</a></li>
-<li><a href="#数据持久化">数据持久化</a></li>
-<li><a href="#健康检查">健康检查</a></li>
-<li><a href="#故障排查">故障排查</a></li>
+<li><a href="#多平台镜像构建">多平台镜像构建</a></li>
+<li><a href="#docker-bake-高级用法">Docker Bake 高级用法</a></li>
+<li><a href="#镜像体积优化">镜像体积优化</a></li>
+<li><a href="#性能优化">性能优化</a></li>
+<li><a href="#安全加固">安全加固</a></li>
+<li><a href="#多服务编排">多服务编排</a></li>
+<li><a href="#高级排障">高级排障</a></li>
 </ul>
-<h2 id="快速开始">快速开始<a class="headerlink" href="#快速开始" title="Permanent link">&para;</a></h2>
-<p>使用 Docker Compose 快速启动完整的服务栈（包括 PostgreSQL 和 Redis）：</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># 克隆仓库</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/jetsung/shortener.git
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="nb">cd</span><span class="w"> </span>shortener
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="c1"># 使用 Docker Compose 启动服务</span>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>docker<span class="w"> </span>compose<span class="w"> </span>-f<span class="w"> </span>docker/docker-compose.yml<span class="w"> </span>up<span class="w"> </span>-d
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="c1"># 查看日志</span>
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>docker<span class="w"> </span>compose<span class="w"> </span>-f<span class="w"> </span>docker/docker-compose.yml<span class="w"> </span>logs<span class="w"> </span>-f<span class="w"> </span>shortener-server
-</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>
-</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="c1"># 停止服务</span>
-</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>docker<span class="w"> </span>compose<span class="w"> </span>-f<span class="w"> </span>docker/docker-compose.yml<span class="w"> </span>down
+<h2 id="多平台镜像构建">多平台镜像构建<a class="headerlink" href="#多平台镜像构建" title="Permanent link">&para;</a></h2>
+<h3 id="使用-cross-交叉编译">使用 Cross 交叉编译<a class="headerlink" href="#使用-cross-交叉编译" title="Permanent link">&para;</a></h3>
+<p>项目使用 <a href="https://github.com/cross-rs/cross">Cross</a> 通过 Docker 交叉编译多平台二进制：</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># 安装 Cross</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>cargo<span class="w"> </span>install<span class="w"> </span>cross<span class="w"> </span>--git<span class="w"> </span>https://github.com/cross-rs/cross
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="c1"># 为 Linux x86_64（musl）构建服务器</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>cross<span class="w"> </span>build<span class="w"> </span>--release<span class="w"> </span>--target<span class="w"> </span>x86_64-unknown-linux-musl<span class="w"> </span>-p<span class="w"> </span>shortener-server
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="c1"># 为 ARM64 构建</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>cross<span class="w"> </span>build<span class="w"> </span>--release<span class="w"> </span>--target<span class="w"> </span>aarch64-unknown-linux-musl<span class="w"> </span>-p<span class="w"> </span>shortener-server
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="c1"># 为 Windows 构建</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>cross<span class="w"> </span>build<span class="w"> </span>--release<span class="w"> </span>--target<span class="w"> </span>x86_64-pc-windows-gnu<span class="w"> </span>-p<span class="w"> </span>shortener-server
 </span></code></pre></div>
-<p>服务启动后，访问 <a href="http://localhost:8080">http://localhost:8080</a> 即可使用。</p>
-<h2 id="docker-compose-部署">Docker Compose 部署<a class="headerlink" href="#docker-compose-部署" title="Permanent link">&para;</a></h2>
-<h3 id="完整服务栈推荐">完整服务栈（推荐）<a class="headerlink" href="#完整服务栈推荐" title="Permanent link">&para;</a></h3>
-<p>使用 <a href="../docker-compose.yml"><code>docker-compose.yml</code></a> 部署包含 PostgreSQL 和 Redis 的完整服务：</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>docker<span class="w"> </span>compose<span class="w"> </span>-f<span class="w"> </span>docker/docker-compose.yml<span class="w"> </span>up<span class="w"> </span>-d
+<p>跨平台目标的完整说明见 <a href="../CROSS_COMPILE/">交叉编译指南</a>。</p>
+<h3 id="使用-docker-buildx">使用 Docker Buildx<a class="headerlink" href="#使用-docker-buildx" title="Permanent link">&para;</a></h3>
+<p>使用 Docker Buildx 构建多平台镜像（在一个命令中产出 linux/amd64 和 linux/arm64）：</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># 创建构建器</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>docker<span class="w"> </span>buildx<span class="w"> </span>create<span class="w"> </span>--use
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="c1"># 构建并推送多平台镜像</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>docker<span class="w"> </span>buildx<span class="w"> </span>build<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">  </span>--platform<span class="w"> </span>linux/amd64,linux/arm64<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">  </span>-t<span class="w"> </span>jetsung/shortener-server:latest<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">  </span>--push<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">  </span>-f<span class="w"> </span>docker/Dockerfile.server<span class="w"> </span>.
 </span></code></pre></div>
-<p>该配置包含：
-- <strong>shortener-server</strong>: URL 短链接服务（端口 8080）
-- <strong>postgres</strong>: PostgreSQL 数据库（端口 5432）
-- <strong>redis</strong>: Redis 缓存（端口 6379）</p>
-<h3 id="使用-sqlite轻量级部署">使用 SQLite（轻量级部署）<a class="headerlink" href="#使用-sqlite轻量级部署" title="Permanent link">&para;</a></h3>
-<p>如果不需要 PostgreSQL，可以使用 SQLite：</p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nt">services</span><span class="p">:</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="nt">shortener-server</span><span class="p">:</span>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">jetsung/shortener-server:latest</span>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">    </span><span class="nt">container_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">shortener-server</span>
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">    </span><span class="nt">restart</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">unless-stopped</span>
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">    </span><span class="nt">ports</span><span class="p">:</span>
-</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"8080:8080"</span>
-</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">    </span><span class="nt">environment</span><span class="p">:</span>
-</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">RUST_LOG=info</span>
-</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">DATABASE_URL=sqlite:///var/lib/shortener/shortener.db?mode=rwc</span>
-</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CACHE_ENABLED=false</span>
-</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">GEOIP_ENABLED=true</span>
-</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="w">    </span><span class="nt">volumes</span><span class="p">:</span>
-</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./config.toml:/etc/shortener/config.toml:ro</span>
-</span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./data:/var/lib/shortener</span>
-</span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">shortener-logs:/var/log/shortener</span>
-</span><span id="__span-2-17"><a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>
-</span><span id="__span-2-18"><a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a><span class="nt">volumes</span><span class="p">:</span>
-</span><span id="__span-2-19"><a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a><span class="w">  </span><span class="nt">shortener-logs</span><span class="p">:</span>
+<h2 id="docker-bake-高级用法">Docker Bake 高级用法<a class="headerlink" href="#docker-bake-高级用法" title="Permanent link">&para;</a></h2>
+<p>项目使用 Docker Bake（<code>docker/docker-bake.hcl</code>）进行批量构建。</p>
+<h3 id="本地构建">本地构建<a class="headerlink" href="#本地构建" title="Permanent link">&para;</a></h3>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># 构建默认镜像</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>docker<span class="w"> </span>buildx<span class="w"> </span>bake<span class="w"> </span>-f<span class="w"> </span>docker/docker-bake.hcl
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="c1"># 构建开发镜像（amd64 / arm64）</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>docker<span class="w"> </span>buildx<span class="w"> </span>bake<span class="w"> </span>-f<span class="w"> </span>docker/docker-bake.hcl<span class="w"> </span>dev-amd64
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>docker<span class="w"> </span>buildx<span class="w"> </span>bake<span class="w"> </span>-f<span class="w"> </span>docker/docker-bake.hcl<span class="w"> </span>dev-arm64
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>docker<span class="w"> </span>buildx<span class="w"> </span>bake<span class="w"> </span>-f<span class="w"> </span>docker/docker-bake.hcl<span class="w"> </span>dev
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="c1"># 构建多平台发布镜像</span>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>docker<span class="w"> </span>buildx<span class="w"> </span>bake<span class="w"> </span>-f<span class="w"> </span>docker/docker-bake.hcl<span class="w"> </span>release
 </span></code></pre></div>
-<h3 id="使用-mysql">使用 MySQL<a class="headerlink" href="#使用-mysql" title="Permanent link">&para;</a></h3>
-<p>如果需要使用 MySQL 而不是 PostgreSQL：</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># 启动 MySQL 配置</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>docker<span class="w"> </span>compose<span class="w"> </span>-f<span class="w"> </span>docker/docker-compose.yml<span class="w"> </span>--profile<span class="w"> </span>mysql<span class="w"> </span>up<span class="w"> </span>-d
+<h3 id="自定义构建">自定义构建<a class="headerlink" href="#自定义构建" title="Permanent link">&para;</a></h3>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># 使用自定义标签</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>docker<span class="w"> </span>buildx<span class="w"> </span>bake<span class="w"> </span>-f<span class="w"> </span>docker/docker-bake.hcl<span class="w"> </span>--set<span class="w"> </span><span class="s2">"*.tags=myregistry/shortener:&lt;version&gt;"</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="c1"># 推送到仓库</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>docker<span class="w"> </span>buildx<span class="w"> </span>bake<span class="w"> </span>-f<span class="w"> </span>docker/docker-bake.hcl<span class="w"> </span>--push<span class="w"> </span>release
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="c1"># 设置平台</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>docker<span class="w"> </span>buildx<span class="w"> </span>bake<span class="w"> </span>-f<span class="w"> </span>docker/docker-bake.hcl<span class="w"> </span>--set<span class="w"> </span><span class="s2">"*.platform=linux/amd64,linux/arm64"</span>
 </span></code></pre></div>
-<p>或修改 <code>docker-compose.yml</code> 中的环境变量：</p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nt">environment</span><span class="p">:</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">DATABASE_URL=mysql://shortener:shortener_password@mysql:3306/shortener</span>
+<h2 id="镜像体积优化">镜像体积优化<a class="headerlink" href="#镜像体积优化" title="Permanent link">&para;</a></h2>
+<p>项目提供基于 Debian 的标准镜像。</p>
+<h3 id="标准镜像">标准镜像<a class="headerlink" href="#标准镜像" title="Permanent link">&para;</a></h3>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>docker<span class="w"> </span>build<span class="w"> </span>-f<span class="w"> </span>docker/Dockerfile.server<span class="w"> </span>-t<span class="w"> </span>shortener-server:latest<span class="w"> </span>.
 </span></code></pre></div>
-<h3 id="开发环境">开发环境<a class="headerlink" href="#开发环境" title="Permanent link">&para;</a></h3>
-<p>使用 <a href="../docker-compose.dev.yml"><code>docker-compose.dev.yml</code></a> 进行开发：</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>docker<span class="w"> </span>compose<span class="w"> </span>-f<span class="w"> </span>docker/docker-compose.dev.yml<span class="w"> </span>up<span class="w"> </span>-d
-</span></code></pre></div>
-<p>开发环境配置包含：
-- 热重载支持
-- 详细的日志输出
-- 开发工具集成</p>
-<h2 id="单独使用-docker">单独使用 Docker<a class="headerlink" href="#单独使用-docker" title="Permanent link">&para;</a></h2>
-<h3 id="构建镜像">构建镜像<a class="headerlink" href="#构建镜像" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># 从项目根目录构建</span>
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>docker<span class="w"> </span>build<span class="w"> </span>-f<span class="w"> </span>docker/Dockerfile<span class="w"> </span>-t<span class="w"> </span>shortener-server:latest<span class="w"> </span>.
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>
-</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="c1"># 使用 Alpine 基础镜像（更小的镜像体积）</span>
-</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>docker<span class="w"> </span>build<span class="w"> </span>-f<span class="w"> </span>docker/Dockerfile.alpine<span class="w"> </span>-t<span class="w"> </span>shortener-server:alpine<span class="w"> </span>.
-</span></code></pre></div>
-<h3 id="运行容器">运行容器<a class="headerlink" href="#运行容器" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># 使用 SQLite（最简单）</span>
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>docker<span class="w"> </span>run<span class="w"> </span>-d<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">  </span>--name<span class="w"> </span>shortener-server<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">  </span>-p<span class="w"> </span><span class="m">8080</span>:8080<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">  </span>-v<span class="w"> </span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span>/config.toml:/etc/shortener/config.toml:ro<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="w">  </span>-v<span class="w"> </span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span>/data:/var/lib/shortener<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="w">  </span>-e<span class="w"> </span><span class="nv">RUST_LOG</span><span class="o">=</span>info<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="w">  </span>-e<span class="w"> </span><span class="nv">DATABASE_URL</span><span class="o">=</span>sqlite:///var/lib/shortener/shortener.db?mode<span class="o">=</span>rwc<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="w">  </span>shortener-server:latest
-</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>
-</span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span class="c1"># 连接到外部 PostgreSQL</span>
-</span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a>docker<span class="w"> </span>run<span class="w"> </span>-d<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-7-13"><a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a><span class="w">  </span>--name<span class="w"> </span>shortener-server<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-7-14"><a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a><span class="w">  </span>-p<span class="w"> </span><span class="m">8080</span>:8080<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-7-15"><a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a><span class="w">  </span>-v<span class="w"> </span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span>/config.toml:/etc/shortener/config.toml:ro<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-7-16"><a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a><span class="w">  </span>-e<span class="w"> </span><span class="nv">RUST_LOG</span><span class="o">=</span>info<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-7-17"><a id="__codelineno-7-17" name="__codelineno-7-17" href="#__codelineno-7-17"></a><span class="w">  </span>-e<span class="w"> </span><span class="nv">DATABASE_URL</span><span class="o">=</span>postgres://shortener:your-password@your-postgres-host:5432/shortener<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-7-18"><a id="__codelineno-7-18" name="__codelineno-7-18" href="#__codelineno-7-18"></a><span class="w">  </span>shortener-server:latest
-</span></code></pre></div>
-<h2 id="数据库配置">数据库配置<a class="headerlink" href="#数据库配置" title="Permanent link">&para;</a></h2>
-<h3 id="postgresql推荐用于生产环境">PostgreSQL（推荐用于生产环境）<a class="headerlink" href="#postgresql推荐用于生产环境" title="Permanent link">&para;</a></h3>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="nt">services</span><span class="p">:</span>
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">  </span><span class="nt">shortener-server</span><span class="p">:</span>
-</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">    </span><span class="nt">environment</span><span class="p">:</span>
-</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">DATABASE_URL=postgres://shortener:shortener_password@postgres:5432/shortener</span>
-</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="w">    </span><span class="nt">depends_on</span><span class="p">:</span>
-</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="w">      </span><span class="nt">postgres</span><span class="p">:</span>
-</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="w">        </span><span class="nt">condition</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">service_healthy</span>
-</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>
-</span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a><span class="w">  </span><span class="nt">postgres</span><span class="p">:</span>
-</span><span id="__span-8-10"><a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a><span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">postgres:16-alpine</span>
-</span><span id="__span-8-11"><a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a><span class="w">    </span><span class="nt">environment</span><span class="p">:</span>
-</span><span id="__span-8-12"><a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">POSTGRES_DB=shortener</span>
-</span><span id="__span-8-13"><a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">POSTGRES_USER=shortener</span>
-</span><span id="__span-8-14"><a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">POSTGRES_PASSWORD=shortener_password</span>
-</span><span id="__span-8-15"><a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a><span class="w">    </span><span class="nt">volumes</span><span class="p">:</span>
-</span><span id="__span-8-16"><a id="__codelineno-8-16" name="__codelineno-8-16" href="#__codelineno-8-16"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">postgres-data:/var/lib/postgresql/data</span>
-</span><span id="__span-8-17"><a id="__codelineno-8-17" name="__codelineno-8-17" href="#__codelineno-8-17"></a><span class="w">    </span><span class="nt">healthcheck</span><span class="p">:</span>
-</span><span id="__span-8-18"><a id="__codelineno-8-18" name="__codelineno-8-18" href="#__codelineno-8-18"></a><span class="w">      </span><span class="nt">test</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">"CMD-SHELL"</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">"pg_isready</span><span class="nv"> </span><span class="s">-U</span><span class="nv"> </span><span class="s">shortener"</span><span class="p p-Indicator">]</span>
-</span><span id="__span-8-19"><a id="__codelineno-8-19" name="__codelineno-8-19" href="#__codelineno-8-19"></a><span class="w">      </span><span class="nt">interval</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10s</span>
-</span><span id="__span-8-20"><a id="__codelineno-8-20" name="__codelineno-8-20" href="#__codelineno-8-20"></a><span class="w">      </span><span class="nt">timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5s</span>
-</span><span id="__span-8-21"><a id="__codelineno-8-21" name="__codelineno-8-21" href="#__codelineno-8-21"></a><span class="w">      </span><span class="nt">retries</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
-</span></code></pre></div>
-<h3 id="mysql">MySQL<a class="headerlink" href="#mysql" title="Permanent link">&para;</a></h3>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="nt">services</span><span class="p">:</span>
-</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">  </span><span class="nt">shortener-server</span><span class="p">:</span>
-</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">    </span><span class="nt">environment</span><span class="p">:</span>
-</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">DATABASE_URL=mysql://shortener:shortener_password@mysql:3306/shortener</span>
-</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="w">    </span><span class="nt">depends_on</span><span class="p">:</span>
-</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="w">      </span><span class="nt">mysql</span><span class="p">:</span>
-</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="w">        </span><span class="nt">condition</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">service_healthy</span>
-</span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>
-</span><span id="__span-9-9"><a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a><span class="w">  </span><span class="nt">mysql</span><span class="p">:</span>
-</span><span id="__span-9-10"><a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a><span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mysql:8.0</span>
-</span><span id="__span-9-11"><a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a><span class="w">    </span><span class="nt">environment</span><span class="p">:</span>
-</span><span id="__span-9-12"><a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MYSQL_ROOT_PASSWORD=root_password</span>
-</span><span id="__span-9-13"><a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MYSQL_DATABASE=shortener</span>
-</span><span id="__span-9-14"><a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MYSQL_USER=shortener</span>
-</span><span id="__span-9-15"><a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MYSQL_PASSWORD=shortener_password</span>
-</span><span id="__span-9-16"><a id="__codelineno-9-16" name="__codelineno-9-16" href="#__codelineno-9-16"></a><span class="w">    </span><span class="nt">volumes</span><span class="p">:</span>
-</span><span id="__span-9-17"><a id="__codelineno-9-17" name="__codelineno-9-17" href="#__codelineno-9-17"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mysql-data:/var/lib/mysql</span>
-</span><span id="__span-9-18"><a id="__codelineno-9-18" name="__codelineno-9-18" href="#__codelineno-9-18"></a><span class="w">    </span><span class="nt">healthcheck</span><span class="p">:</span>
-</span><span id="__span-9-19"><a id="__codelineno-9-19" name="__codelineno-9-19" href="#__codelineno-9-19"></a><span class="w">      </span><span class="nt">test</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">"CMD"</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">"mysqladmin"</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">"ping"</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">"-h"</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">"localhost"</span><span class="p p-Indicator">]</span>
-</span><span id="__span-9-20"><a id="__codelineno-9-20" name="__codelineno-9-20" href="#__codelineno-9-20"></a><span class="w">      </span><span class="nt">interval</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10s</span>
-</span><span id="__span-9-21"><a id="__codelineno-9-21" name="__codelineno-9-21" href="#__codelineno-9-21"></a><span class="w">      </span><span class="nt">timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5s</span>
-</span><span id="__span-9-22"><a id="__codelineno-9-22" name="__codelineno-9-22" href="#__codelineno-9-22"></a><span class="w">      </span><span class="nt">retries</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
-</span></code></pre></div>
-<h3 id="sqlite适合小规模部署">SQLite（适合小规模部署）<a class="headerlink" href="#sqlite适合小规模部署" title="Permanent link">&para;</a></h3>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="nt">services</span><span class="p">:</span>
-</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">  </span><span class="nt">shortener-server</span><span class="p">:</span>
-</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">    </span><span class="nt">environment</span><span class="p">:</span>
-</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">DATABASE_URL=sqlite:///var/lib/shortener/shortener.db?mode=rwc</span>
-</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="w">    </span><span class="nt">volumes</span><span class="p">:</span>
-</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./data:/var/lib/shortener</span>
-</span></code></pre></div>
-<h2 id="环境变量">环境变量<a class="headerlink" href="#环境变量" title="Permanent link">&para;</a></h2>
-<h3 id="服务器配置">服务器配置<a class="headerlink" href="#服务器配置" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>变量名</th>
-<th>说明</th>
-<th>默认值</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>RUST_LOG</code></td>
-<td>日志级别</td>
-<td><code>info</code></td>
-</tr>
-<tr>
-<td><code>CONFIG_PATH</code></td>
-<td>配置文件路径</td>
-<td><code>/etc/shortener/config.toml</code></td>
-</tr>
-<tr>
-<td><code>SERVER_ADDRESS</code></td>
-<td>监听地址</td>
-<td><code>0.0.0.0:8080</code></td>
-</tr>
-<tr>
-<td><code>SITE_URL</code></td>
-<td>站点 URL</td>
-<td><code>http://localhost:8080</code></td>
-</tr>
-</tbody>
-</table>
-<h3 id="数据库配置_1">数据库配置<a class="headerlink" href="#数据库配置_1" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>变量名</th>
-<th>说明</th>
-<th>默认值</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>DATABASE_URL</code></td>
-<td>数据库连接字符串（sqlite://…、postgres://…、mysql://…）</td>
-<td><code>sqlite:///var/lib/shortener/shortener.db</code></td>
-</tr>
-</tbody>
-</table>
-<h3 id="缓存配置">缓存配置<a class="headerlink" href="#缓存配置" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>变量名</th>
-<th>说明</th>
-<th>默认值</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>CACHE_ENABLED</code></td>
-<td>是否启用缓存</td>
-<td><code>true</code></td>
-</tr>
-<tr>
-<td><code>CACHE_URL</code></td>
-<td>缓存连接字符串（redis://…、valkey://…）</td>
-<td><code>redis://localhost:6379/0</code></td>
-</tr>
-<tr>
-<td><code>CACHE_EXPIRE</code></td>
-<td>缓存过期时间（秒）</td>
-<td><code>3600</code></td>
-</tr>
-</tbody>
-</table>
-<h3 id="geoip-配置">GeoIP 配置<a class="headerlink" href="#geoip-配置" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>变量名</th>
-<th>说明</th>
-<th>默认值</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>GEOIP_ENABLED</code></td>
-<td>是否启用 GeoIP</td>
-<td><code>true</code></td>
-</tr>
-<tr>
-<td><code>GEOIP_DB_PATH</code></td>
-<td>GeoIP 数据库路径</td>
-<td><code>/var/lib/shortener/ip2region.xdb</code></td>
-</tr>
-</tbody>
-</table>
-<h2 id="数据持久化">数据持久化<a class="headerlink" href="#数据持久化" title="Permanent link">&para;</a></h2>
-<p>Docker Compose 配置使用以下卷来持久化数据：</p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="nt">volumes</span><span class="p">:</span>
-</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">  </span><span class="nt">postgres-data</span><span class="p">:</span><span class="w">      </span><span class="c1"># PostgreSQL 数据</span>
-</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">  </span><span class="nt">mysql-data</span><span class="p">:</span><span class="w">         </span><span class="c1"># MySQL 数据</span>
-</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="w">  </span><span class="nt">redis-data</span><span class="p">:</span><span class="w">         </span><span class="c1"># Redis 数据</span>
-</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="w">  </span><span class="nt">shortener-logs</span><span class="p">:</span><span class="w">     </span><span class="c1"># 应用日志</span>
-</span></code></pre></div>
-<h3 id="备份数据">备份数据<a class="headerlink" href="#备份数据" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="c1"># 备份 PostgreSQL</span>
-</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>shortener-postgres<span class="w"> </span>pg_dump<span class="w"> </span>-U<span class="w"> </span>shortener<span class="w"> </span>shortener<span class="w"> </span>&gt;<span class="w"> </span>backup.sql
-</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>
-</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="c1"># 备份 SQLite</span>
-</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>docker<span class="w"> </span>cp<span class="w"> </span>shortener-server:/var/lib/shortener/shortener.db<span class="w"> </span>./backup.db
-</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>
-</span><span id="__span-12-7"><a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="c1"># 备份配置</span>
-</span><span id="__span-12-8"><a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>cp<span class="w"> </span>config.toml<span class="w"> </span>config.toml.backup
-</span></code></pre></div>
-<h3 id="恢复数据">恢复数据<a class="headerlink" href="#恢复数据" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="c1"># 恢复 PostgreSQL</span>
-</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>-i<span class="w"> </span>shortener-postgres<span class="w"> </span>psql<span class="w"> </span>-U<span class="w"> </span>shortener<span class="w"> </span>shortener<span class="w"> </span>&lt;<span class="w"> </span>backup.sql
-</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>
-</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="c1"># 恢复 SQLite</span>
-</span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>docker<span class="w"> </span>cp<span class="w"> </span>./backup.db<span class="w"> </span>shortener-server:/var/lib/shortener/shortener.db
-</span></code></pre></div>
-<h2 id="健康检查">健康检查<a class="headerlink" href="#健康检查" title="Permanent link">&para;</a></h2>
-<p>服务包含健康检查端点：</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="c1"># 检查服务健康状态</span>
-</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>curl<span class="w"> </span>http://localhost:8080/health
-</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>
-</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="c1"># 查看 Docker 健康状态</span>
-</span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a>docker<span class="w"> </span>ps
-</span><span id="__span-14-6"><a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a>docker<span class="w"> </span>inspect<span class="w"> </span>shortener-server<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-A<span class="w"> </span><span class="m">10</span><span class="w"> </span>Health
-</span></code></pre></div>
-<h2 id="故障排查">故障排查<a class="headerlink" href="#故障排查" title="Permanent link">&para;</a></h2>
-<h3 id="查看日志">查看日志<a class="headerlink" href="#查看日志" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="c1"># 查看所有服务日志</span>
-</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>docker<span class="w"> </span>compose<span class="w"> </span>-f<span class="w"> </span>docker/docker-compose.yml<span class="w"> </span>logs
-</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>
-</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="c1"># 查看特定服务日志</span>
-</span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>docker<span class="w"> </span>compose<span class="w"> </span>-f<span class="w"> </span>docker/docker-compose.yml<span class="w"> </span>logs<span class="w"> </span>shortener-server
-</span><span id="__span-15-6"><a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a>docker<span class="w"> </span>compose<span class="w"> </span>-f<span class="w"> </span>docker/docker-compose.yml<span class="w"> </span>logs<span class="w"> </span>postgres
-</span><span id="__span-15-7"><a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a>docker<span class="w"> </span>compose<span class="w"> </span>-f<span class="w"> </span>docker/docker-compose.yml<span class="w"> </span>logs<span class="w"> </span>redis
-</span><span id="__span-15-8"><a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a>
-</span><span id="__span-15-9"><a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a><span class="c1"># 实时跟踪日志</span>
-</span><span id="__span-15-10"><a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a>docker<span class="w"> </span>compose<span class="w"> </span>-f<span class="w"> </span>docker/docker-compose.yml<span class="w"> </span>logs<span class="w"> </span>-f<span class="w"> </span>shortener-server
-</span></code></pre></div>
-<h3 id="常见问题">常见问题<a class="headerlink" href="#常见问题" title="Permanent link">&para;</a></h3>
-<h4 id="1-数据库连接失败">1. 数据库连接失败<a class="headerlink" href="#1-数据库连接失败" title="Permanent link">&para;</a></h4>
-<p>检查数据库服务是否正常运行：</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="c1"># 检查 PostgreSQL</span>
-</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>shortener-postgres<span class="w"> </span>pg_isready<span class="w"> </span>-U<span class="w"> </span>shortener
-</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>
-</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="c1"># 检查 MySQL</span>
-</span><span id="__span-16-5"><a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a>docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>shortener-mysql<span class="w"> </span>mysqladmin<span class="w"> </span>ping<span class="w"> </span>-h<span class="w"> </span>localhost
-</span></code></pre></div>
-<h4 id="2-端口冲突">2. 端口冲突<a class="headerlink" href="#2-端口冲突" title="Permanent link">&para;</a></h4>
-<p>如果端口 8080 已被占用，修改 <code>docker-compose.yml</code> 中的端口映射：</p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="nt">ports</span><span class="p">:</span>
-</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"8081:8080"</span><span class="w">  </span><span class="c1"># 使用 8081 端口</span>
-</span></code></pre></div>
-<h4 id="3-权限问题">3. 权限问题<a class="headerlink" href="#3-权限问题" title="Permanent link">&para;</a></h4>
-<p>确保数据目录有正确的权限：</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>sudo<span class="w"> </span>chown<span class="w"> </span>-R<span class="w"> </span><span class="m">1000</span>:1000<span class="w"> </span>data/
-</span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>sudo<span class="w"> </span>chmod<span class="w"> </span>-R<span class="w"> </span><span class="m">755</span><span class="w"> </span>data/
-</span></code></pre></div>
-<h4 id="4-容器无法启动">4. 容器无法启动<a class="headerlink" href="#4-容器无法启动" title="Permanent link">&para;</a></h4>
-<p>检查容器日志和配置：</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>docker<span class="w"> </span>logs<span class="w"> </span>shortener-server
-</span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a>docker<span class="w"> </span>inspect<span class="w"> </span>shortener-server
-</span></code></pre></div>
-<h3 id="重置服务">重置服务<a class="headerlink" href="#重置服务" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="c1"># 停止并删除所有容器和卷</span>
-</span><span id="__span-20-2"><a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a>docker<span class="w"> </span>compose<span class="w"> </span>-f<span class="w"> </span>docker/docker-compose.yml<span class="w"> </span>down<span class="w"> </span>-v
-</span><span id="__span-20-3"><a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a>
-</span><span id="__span-20-4"><a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a><span class="c1"># 重新启动</span>
-</span><span id="__span-20-5"><a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a>docker<span class="w"> </span>compose<span class="w"> </span>-f<span class="w"> </span>docker/docker-compose.yml<span class="w"> </span>up<span class="w"> </span>-d
-</span></code></pre></div>
-<h2 id="生产环境建议">生产环境建议<a class="headerlink" href="#生产环境建议" title="Permanent link">&para;</a></h2>
-<ol>
-<li><strong>使用环境变量文件</strong>: 创建 <code>.env</code> 文件管理敏感信息</li>
-<li><strong>启用 HTTPS</strong>: 使用 Nginx 或 Traefik 作为反向代理</li>
-<li><strong>配置资源限制</strong>: 在 <code>docker-compose.yml</code> 中添加资源限制</li>
-<li><strong>定期备份</strong>: 设置自动备份任务</li>
-<li><strong>监控和日志</strong>: 集成 Prometheus、Grafana 等监控工具</li>
-<li><strong>使用 PostgreSQL</strong>: 生产环境推荐使用 PostgreSQL 而不是 SQLite</li>
-<li><strong>启用 Redis</strong>: 启用缓存以提升性能</li>
-</ol>
-<h3 id="资源限制示例">资源限制示例<a class="headerlink" href="#资源限制示例" title="Permanent link">&para;</a></h3>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="nt">services</span><span class="p">:</span>
-</span><span id="__span-21-2"><a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a><span class="w">  </span><span class="nt">shortener-server</span><span class="p">:</span>
-</span><span id="__span-21-3"><a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a><span class="w">    </span><span class="nt">deploy</span><span class="p">:</span>
-</span><span id="__span-21-4"><a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a><span class="w">      </span><span class="nt">resources</span><span class="p">:</span>
-</span><span id="__span-21-5"><a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a><span class="w">        </span><span class="nt">limits</span><span class="p">:</span>
-</span><span id="__span-21-6"><a id="__codelineno-21-6" name="__codelineno-21-6" href="#__codelineno-21-6"></a><span class="w">          </span><span class="nt">cpus</span><span class="p">:</span><span class="w"> </span><span class="s">'2'</span>
-</span><span id="__span-21-7"><a id="__codelineno-21-7" name="__codelineno-21-7" href="#__codelineno-21-7"></a><span class="w">          </span><span class="nt">memory</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1G</span>
-</span><span id="__span-21-8"><a id="__codelineno-21-8" name="__codelineno-21-8" href="#__codelineno-21-8"></a><span class="w">        </span><span class="nt">reservations</span><span class="p">:</span>
-</span><span id="__span-21-9"><a id="__codelineno-21-9" name="__codelineno-21-9" href="#__codelineno-21-9"></a><span class="w">          </span><span class="nt">cpus</span><span class="p">:</span><span class="w"> </span><span class="s">'0.5'</span>
-</span><span id="__span-21-10"><a id="__codelineno-21-10" name="__codelineno-21-10" href="#__codelineno-21-10"></a><span class="w">          </span><span class="nt">memory</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">512M</span>
-</span></code></pre></div>
-<h2 id="相关文档">相关文档<a class="headerlink" href="#相关文档" title="Permanent link">&para;</a></h2>
 <ul>
-<li><a href="../../">主文档</a></li>
-<li><a href="../../general/CONFIGURATION/">配置指南</a></li>
-<li><a href="../../server/API/">API 文档</a></li>
-<li><a href="../DEPLOYMENT/">部署指南</a></li>
+<li>基础镜像：<code>debian:trixie-slim</code></li>
+<li>大小：约 150MB</li>
+<li>适用于：通用场景，兼容性好</li>
+</ul>
+<h2 id="性能优化">性能优化<a class="headerlink" href="#性能优化" title="Permanent link">&para;</a></h2>
+<h3 id="资源限制">资源限制<a class="headerlink" href="#资源限制" title="Permanent link">&para;</a></h3>
+<p>为容器设置 CPU / 内存限额，防止资源耗尽：</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nt">services</span><span class="p">:</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">  </span><span class="nt">shortener-server</span><span class="p">:</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">    </span><span class="nt">deploy</span><span class="p">:</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">      </span><span class="nt">resources</span><span class="p">:</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">        </span><span class="nt">limits</span><span class="p">:</span>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">          </span><span class="nt">cpus</span><span class="p">:</span><span class="w"> </span><span class="s">'2'</span>
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="w">          </span><span class="nt">memory</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1G</span>
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="w">        </span><span class="nt">reservations</span><span class="p">:</span>
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="w">          </span><span class="nt">cpus</span><span class="p">:</span><span class="w"> </span><span class="s">'0.5'</span>
+</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="w">          </span><span class="nt">memory</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">512M</span>
+</span></code></pre></div>
+<h3 id="缓存与压缩">缓存与压缩<a class="headerlink" href="#缓存与压缩" title="Permanent link">&para;</a></h3>
+<ul>
+<li>后端启用 Redis/Valkey 缓存（<code>CACHE__ENABLED=true</code>、<code>CACHE__URL</code>）</li>
+<li>前端启用 Gzip 压缩与静态资源缓存（见 <code>docker/nginx-frontend.conf</code>）</li>
+</ul>
+<h3 id="健康检查">健康检查<a class="headerlink" href="#健康检查" title="Permanent link">&para;</a></h3>
+<p>服务健康检查端点为 <code>/ping</code>（不是 <code>/health</code>）：</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nt">healthcheck</span><span class="p">:</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">  </span><span class="nt">test</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">"CMD"</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">"curl"</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">"-f"</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">"http://localhost:8080/ping"</span><span class="p p-Indicator">]</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">  </span><span class="nt">interval</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30s</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">  </span><span class="nt">timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3s</span>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">  </span><span class="nt">retries</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="w">  </span><span class="nt">start_period</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10s</span>
+</span></code></pre></div>
+<h2 id="安全加固">安全加固<a class="headerlink" href="#安全加固" title="Permanent link">&para;</a></h2>
+<h3 id="非-root-用户">非 root 用户<a class="headerlink" href="#非-root-用户" title="Permanent link">&para;</a></h3>
+<p>镜像以非 root 用户运行（<code>shortener</code>，UID 1000）：</p>
+<div class="language-dockerfile highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="k">USER</span><span class="w"> </span><span class="s">shortener</span>
+</span></code></pre></div>
+<h3 id="密钥管理">密钥管理<a class="headerlink" href="#密钥管理" title="Permanent link">&para;</a></h3>
+<p>生产环境使用 Docker Secrets 或环境文件注入敏感信息，避免写进镜像或配置文件：</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c1"># 创建 .env 文件</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>cat<span class="w"> </span>&gt;<span class="w"> </span>.env<span class="w"> </span><span class="s">&lt;&lt; EOF</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="s">DATABASE__URL=postgres://shortener:your_secure_password@postgres:5432/shortener</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="s">CACHE__URL=redis://:your_redis_password@redis:6379/0</span>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="s">API_KEY=$(openssl rand -base64 32)</span>
+</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="s">OIDC__CLIENT_SECRET=$(openssl rand -base64 32)</span>
+</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="s">JWT_SECRET=$(openssl rand -base64 48)</span>
+</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="s">EOF</span>
+</span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>
+</span><span id="__span-8-10"><a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a><span class="c1"># 使用环境文件</span>
+</span><span id="__span-8-11"><a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a>docker<span class="w"> </span>compose<span class="w"> </span>--env-file<span class="w"> </span>.env<span class="w"> </span>up<span class="w"> </span>-d
+</span></code></pre></div>
+<p><code>JWT_SECRET</code> 若以文件形式挂载（Docker/K8s Secret），可用 <code>JWT_SECRET_FILE</code> 指向挂载路径。</p>
+<h3 id="网络隔离">网络隔离<a class="headerlink" href="#网络隔离" title="Permanent link">&para;</a></h3>
+<p>仅暴露必要端口：</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="nt">ports</span><span class="p">:</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"8080:8080"</span><span class="w">  </span><span class="c1"># 仅暴露服务器端口</span>
+</span></code></pre></div>
+<p>生产环境<strong>不应</strong>将数据库和缓存端口暴露到宿主机。</p>
+<h2 id="多服务编排">多服务编排<a class="headerlink" href="#多服务编排" title="Permanent link">&para;</a></h2>
+<p>结合后端、前端与反向代理的完整编排（如 Caddy / Traefik），详见 <a href="../DOCKER_FULL/">Docker 完整指南</a> 与 <a href="../DOCKER_FRONTEND/">前端 Docker 部署指南</a>。</p>
+<p>反向代理需正确转发 OIDC 回调路径：</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>https://&lt;域名&gt;/api/account/oidc/callback
+</span></code></pre></div>
+<h2 id="高级排障">高级排障<a class="headerlink" href="#高级排障" title="Permanent link">&para;</a></h2>
+<h3 id="查看日志">查看日志<a class="headerlink" href="#查看日志" title="Permanent link">&para;</a></h3>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="c1"># 所有服务</span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>docker<span class="w"> </span>compose<span class="w"> </span>-f<span class="w"> </span>docker/docker-compose.yml<span class="w"> </span>logs<span class="w"> </span>-f
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="c1"># 特定服务</span>
+</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>docker<span class="w"> </span>compose<span class="w"> </span>-f<span class="w"> </span>docker/docker-compose.yml<span class="w"> </span>logs<span class="w"> </span>-f<span class="w"> </span>shortener-server
+</span></code></pre></div>
+<h3 id="检查容器状态">检查容器状态<a class="headerlink" href="#检查容器状态" title="Permanent link">&para;</a></h3>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>docker<span class="w"> </span>compose<span class="w"> </span>-f<span class="w"> </span>docker/docker-compose.yml<span class="w"> </span>ps
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>docker<span class="w"> </span>inspect<span class="w"> </span>shortener-server<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-A<span class="w"> </span><span class="m">10</span><span class="w"> </span>Health
+</span></code></pre></div>
+<h3 id="在容器中执行命令">在容器中执行命令<a class="headerlink" href="#在容器中执行命令" title="Permanent link">&para;</a></h3>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="c1"># Shell 访问</span>
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>docker<span class="w"> </span>compose<span class="w"> </span>-f<span class="w"> </span>docker/docker-compose.yml<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>shortener-server<span class="w"> </span>sh
+</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>
+</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="c1"># 检查配置</span>
+</span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>docker<span class="w"> </span>compose<span class="w"> </span>-f<span class="w"> </span>docker/docker-compose.yml<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>shortener-server<span class="w"> </span>cat<span class="w"> </span>/app/config.toml
+</span><span id="__span-13-6"><a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a>
+</span><span id="__span-13-7"><a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a><span class="c1"># 检查数据库连接</span>
+</span><span id="__span-13-8"><a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a>docker<span class="w"> </span>compose<span class="w"> </span>-f<span class="w"> </span>docker/docker-compose.yml<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>postgres<span class="w"> </span>psql<span class="w"> </span>-U<span class="w"> </span>shortener<span class="w"> </span>-d<span class="w"> </span>shortener
+</span></code></pre></div>
+<h3 id="重新构建">重新构建<a class="headerlink" href="#重新构建" title="Permanent link">&para;</a></h3>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="c1"># 重新构建并重启</span>
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>docker<span class="w"> </span>compose<span class="w"> </span>-f<span class="w"> </span>docker/docker-compose.yml<span class="w"> </span>up<span class="w"> </span>-d<span class="w"> </span>--build
+</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>
+</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="c1"># 强制重新创建</span>
+</span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a>docker<span class="w"> </span>compose<span class="w"> </span>-f<span class="w"> </span>docker/docker-compose.yml<span class="w"> </span>up<span class="w"> </span>-d<span class="w"> </span>--force-recreate
+</span></code></pre></div>
+<h3 id="清理">清理<a class="headerlink" href="#清理" title="Permanent link">&para;</a></h3>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="c1"># 停止并删除容器</span>
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>docker<span class="w"> </span>compose<span class="w"> </span>-f<span class="w"> </span>docker/docker-compose.yml<span class="w"> </span>down
+</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>
+</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="c1"># 同时删除卷</span>
+</span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>docker<span class="w"> </span>compose<span class="w"> </span>-f<span class="w"> </span>docker/docker-compose.yml<span class="w"> </span>down<span class="w"> </span>-v
+</span><span id="__span-15-6"><a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a>
+</span><span id="__span-15-7"><a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a><span class="c1"># 删除所有未使用的 Docker 资源</span>
+</span><span id="__span-15-8"><a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a>docker<span class="w"> </span>system<span class="w"> </span>prune<span class="w"> </span>-a
+</span></code></pre></div>
+<h2 id="参考">参考<a class="headerlink" href="#参考" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://docs.docker.com/">Docker 文档</a></li>
+<li><a href="https://docs.docker.com/compose/">Docker Compose 文档</a></li>
+<li><a href="https://docs.docker.com/build/bake/">Docker Buildx Bake</a></li>
+<li><a href="../CROSS_COMPILE/">交叉编译指南</a></li>
+<li><a href="../DOCKER/">Docker 部署指南</a></li>
 </ul>
 
 

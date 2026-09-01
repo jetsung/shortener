@@ -1989,11 +1989,11 @@
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># 服务器地址</span>
 </span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">SERVER__ADDRESS</span><span class="o">=</span><span class="s2">":9090"</span>
 </span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="c1"># 数据库连接 URL（覆盖配置文件的 database.url）</span>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="nb">export</span><span class="w"> </span><span class="nv">DATABASE_URL</span><span class="o">=</span><span class="s2">"postgres://user:pass@localhost:5432/shortener?sslmode=require"</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="c1"># 数据库连接 URL（覆盖配置文件的 database.url；兼容回退：DATABASE_URL）</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="nb">export</span><span class="w"> </span><span class="nv">DATABASE__URL</span><span class="o">=</span><span class="s2">"postgres://user:pass@localhost:5432/shortener?sslmode=require"</span>
 </span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="c1"># 缓存连接 URL（覆盖配置文件的 cache.url）</span>
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="nb">export</span><span class="w"> </span><span class="nv">CACHE_URL</span><span class="o">=</span><span class="s2">"redis://:password@localhost:6379/0"</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="c1"># 缓存连接 URL（覆盖配置文件的 cache.url；兼容回退：CACHE_URL）</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="nb">export</span><span class="w"> </span><span class="nv">CACHE__URL</span><span class="o">=</span><span class="s2">"redis://:password@localhost:6379/0"</span>
 </span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>
 </span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="c1"># 启用缓存</span>
 </span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="nb">export</span><span class="w"> </span><span class="nv">CACHE__ENABLED</span><span class="o">=</span><span class="s2">"true"</span>
@@ -2042,27 +2042,30 @@
 <h2 id="oidc-配置">OIDC 配置<a class="headerlink" href="#oidc-配置" title="Permanent link">&para;</a></h2>
 <p>通过标准 OIDC / OAuth2.0（授权码流）对接任意身份提供方（IdP），如 Keycloak、Authelia、Okta、Microsoft Entra ID、Google 等。登录时仅<strong>白名单</strong>内的 IdP 用户可登录。</p>
 <div class="language-toml highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="k">[oidc]</span>
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="c1"># IdP 的 issuer 地址（自动发现端点 .well-known/openid-configuration 的前缀）</span>
-</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="c1"># 留空表示不启用 OIDC 登录</span>
-</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="n">issuer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"https://keycloak.example.com/realms/shortener"</span>
-</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>
-</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="c1"># 在 IdP 注册的 OAuth2 客户端 ID</span>
-</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="n">client_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"shortener-app"</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="c1"># OIDC 登录总开关（false 时 OIDC 登录不可用）</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="n">enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="c1"># IdP 的 issuer 地址（自动发现端点 .well-known/openid-configuration 的前缀）</span>
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="c1"># enabled 时必填</span>
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="n">issuer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"https://keycloak.example.com/realms/shortener"</span>
 </span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>
-</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="c1"># 客户端密钥。可留空（公钥客户端），或通过环境变量 OIDC_CLIENT_SECRET 注入</span>
-</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span class="n">client_secret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">""</span>
+</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="c1"># 在 IdP 注册的 OAuth2 客户端 ID</span>
+</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span class="n">client_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"shortener-app"</span>
 </span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a>
-</span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a><span class="c1"># 在 IdP 注册的回调地址（必须与该 IdP 的配置完全一致）</span>
-</span><span id="__span-7-13"><a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a><span class="n">redirect_uri</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"https://shortener.example.com/api/account/oidc/callback"</span>
+</span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a><span class="c1"># 客户端密钥。可留空（公钥客户端），或通过环境变量 OIDC__CLIENT_SECRET 注入</span>
+</span><span id="__span-7-13"><a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a><span class="n">client_secret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">""</span>
 </span><span id="__span-7-14"><a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a>
-</span><span id="__span-7-15"><a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a><span class="c1"># 允许登录的用户白名单（email 与/或 sub 任一命中即放行；都为空则放行任意已认证用户）</span>
-</span><span id="__span-7-16"><a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a><span class="n">allow_emails</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">"admin@example.com"</span><span class="p">]</span>
-</span><span id="__span-7-17"><a id="__codelineno-7-17" name="__codelineno-7-17" href="#__codelineno-7-17"></a><span class="n">allow_subjects</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[]</span>
+</span><span id="__span-7-15"><a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a><span class="c1"># 在 IdP 注册的回调地址（必须与该 IdP 的配置完全一致）</span>
+</span><span id="__span-7-16"><a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a><span class="n">redirect_uri</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"https://shortener.example.com/api/account/oidc/callback"</span>
+</span><span id="__span-7-17"><a id="__codelineno-7-17" name="__codelineno-7-17" href="#__codelineno-7-17"></a>
+</span><span id="__span-7-18"><a id="__codelineno-7-18" name="__codelineno-7-18" href="#__codelineno-7-18"></a><span class="c1"># 允许登录的用户白名单（email 与/或 sub 任一命中即放行；都为空则放行任意已认证用户）</span>
+</span><span id="__span-7-19"><a id="__codelineno-7-19" name="__codelineno-7-19" href="#__codelineno-7-19"></a><span class="n">allow_emails</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">"admin@example.com"</span><span class="p">]</span>
+</span><span id="__span-7-20"><a id="__codelineno-7-20" name="__codelineno-7-20" href="#__codelineno-7-20"></a><span class="n">allow_subjects</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[]</span>
 </span></code></pre></div>
 <h3 id="环境变量覆盖">环境变量覆盖<a class="headerlink" href="#环境变量覆盖" title="Permanent link">&para;</a></h3>
 <p>敏感配置优先使用环境变量（双下划线 <code>__</code> 分隔嵌套键，无前缀），<code>client_secret</code> 强烈建议通过环境变量注入，避免写入文件：</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">OIDC_CLIENT_SECRET</span><span class="o">=</span><span class="s2">"your-client-secret"</span>
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="c1"># 等价于配置项 [oidc] client_secret</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">OIDC__CLIENT_SECRET</span><span class="o">=</span><span class="s2">"your-client-secret"</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="c1"># 等价于配置项 [oidc] client_secret；兼容回退：OIDC_CLIENT_SECRET</span>
 </span></code></pre></div>
 <p>JWT 签名密钥（两条登录通道签发令牌都依赖它）也必须通过环境变量提供：</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">JWT_SECRET</span><span class="o">=</span><span class="s2">"</span><span class="k">$(</span>openssl<span class="w"> </span>rand<span class="w"> </span>-base64<span class="w"> </span><span class="m">48</span><span class="k">)</span><span class="s2">"</span>
@@ -2077,7 +2080,7 @@
 <li>将回调地址（Redirect URI / Callback URL）设置为本服务的
    <code>https://&lt;你的域名&gt;/api/account/oidc/callback</code>。</li>
 <li>申请 <code>openid</code>、<code>profile</code>、<code>email</code> 三个 scope。</li>
-<li>若 IdP 要求客户端密钥，将其填入 <code>client_secret</code> 或 <code>OIDC_CLIENT_SECRET</code>。</li>
+<li>若 IdP 要求客户端密钥，将其填入 <code>client_secret</code> 或 <code>OIDC__CLIENT_SECRET</code>。</li>
 </ol>
 <h3 id="登录流程">登录流程<a class="headerlink" href="#登录流程" title="Permanent link">&para;</a></h3>
 <ol>

@@ -2080,10 +2080,17 @@
 <ol>
 <li>更新版本号并创建 Git 标签：<code>just release 0.2.0</code>
    （自动同步 <code>Cargo.toml</code>、<code>openapi.yml</code>、<code>shortener-frontend/package.json</code> 三处版本号，再提交并打标签）</li>
-<li>只同步版本号、不提交打标签：<code>just bump-version 0.2.0</code></li>
+<li>只同步版本号、不提交打标签：<code>just bump-version 0.2.0</code>
+   （不带参数 <code>just bump-version</code> 或 <code>make bump-version</code> 会默认读取 <code>Cargo.toml</code> 的当前版本同步）</li>
 <li>构建发布二进制文件：<code>just release-build</code></li>
-<li>发布到 GitHub Releases</li>
 </ol>
+<blockquote>
+<p><strong>版本同步机制</strong>：根 <code>Cargo.toml</code> 的 <code>workspace.package.version</code> 是唯一版本源，
+子 crate（server/cli/common）通过 <code>version.workspace = true</code> 继承，依赖声明用
+<code>workspace = true</code> / <code>path</code> 引用（不带 version），因此 <code>bump-version</code> 只需改根
+<code>Cargo.toml</code> 一处，后端二进制版本与前端 <code>package.json</code> 版本即全链路自动同步。
+4. 发布到 GitHub Releases</p>
+</blockquote>
 <h2 id="获取帮助">获取帮助<a class="headerlink" href="#获取帮助" title="Permanent link">&para;</a></h2>
 <p>如果你需要帮助：</p>
 <ul>

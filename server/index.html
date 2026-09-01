@@ -1823,30 +1823,31 @@
 <h3 id="开发相关">开发相关<a class="headerlink" href="#开发相关" title="Permanent link">&para;</a></h3>
 <ul>
 <li><a href="../general/INSTALLATION/">安装指南</a></li>
-<li><a href="../../CONTRIBUTING/">贡献指南</a></li>
+<li><a href="../CONTRIBUTING/">贡献指南</a></li>
 </ul>
 <h2 id="项目结构">项目结构<a class="headerlink" href="#项目结构" title="Permanent link">&para;</a></h2>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>shortener-server/
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>├── src/
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>│   ├── cache/          # 缓存实现
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>│   ├── config/         # 配置管理
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>│   ├── db/             # 数据库连接
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>│   ├── errors/         # 错误处理
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>│   ├── geoip/          # GeoIP 功能
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>│   ├── handlers/       # HTTP 处理器
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>│   ├── logging/        # 日志配置
-</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>│   ├── middleware/     # 中间件
-</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>│   ├── migration/      # 数据库迁移
-</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>│   ├── models/         # 数据模型
-</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>│   ├── repositories/   # 数据访问层
-</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>│   ├── services/       # 业务逻辑层
-</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>│   ├── router.rs       # 路由配置
-</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>│   ├── lib.rs          # 库入口
-</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>│   └── main.rs         # 程序入口
-</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>├── tests/              # 测试文件
-</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>├── benches/            # 性能测试
-</span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>├── docs/               # 项目文档
-</span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>└── Cargo.toml          # 项目配置
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>│   ├── geoip/          # GeoIP 功能（ip2region 等）
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>│   ├── handlers/       # HTTP 处理器
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>│   ├── logging/        # 日志配置
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>│   ├── middleware/     # 中间件（HybridAuth 等）
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>│   ├── migration/      # 数据库迁移
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>│   ├── models/         # 数据模型
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>│   ├── repositories/   # 数据访问层
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>│   ├── services/       # 业务逻辑层
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>│   ├── config.rs       # 配置管理
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>│   ├── db.rs           # 数据库连接
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>│   ├── errors.rs       # 错误处理
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>│   ├── jwt.rs          # JWT 签发与校验
+</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>│   ├── router.rs       # 路由配置
+</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>│   ├── lib.rs          # 库入口
+</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>│   └── main.rs         # 程序入口
+</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>├── tests/              # 测试文件
+</span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>├── benches/            # 性能测试
+</span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>├── docs/               # 项目文档
+</span><span id="__span-0-22"><a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>└── Cargo.toml          # 项目配置
 </span></code></pre></div>
 <h2 id="技术栈">技术栈<a class="headerlink" href="#技术栈" title="Permanent link">&para;</a></h2>
 <ul>
@@ -1855,6 +1856,9 @@
 <li><strong>异步运行时</strong>: Tokio</li>
 <li><strong>序列化</strong>: Serde</li>
 <li><strong>日志</strong>: Tracing</li>
+<li><strong>口令哈希</strong>: Argon2（PHC 格式）</li>
+<li><strong>JWT</strong>: jsonwebtoken（HS256）</li>
+<li><strong>OIDC</strong>: openidconnect</li>
 </ul>
 <h2 id="支持的数据库">支持的数据库<a class="headerlink" href="#支持的数据库" title="Permanent link">&para;</a></h2>
 <ul>
@@ -1877,9 +1881,11 @@
 <li>✅ 用户代理解析</li>
 <li>✅ API 密钥认证</li>
 <li>✅ JWT 令牌认证</li>
+<li>✅ OIDC 单点登录</li>
 <li>✅ 健康检查</li>
 <li>✅ 缓存支持</li>
 <li>✅ 多数据库支持</li>
+<li>✅ 命令行子命令（init / hash-password）</li>
 </ul>
 <h2 id="开发">开发<a class="headerlink" href="#开发" title="Permanent link">&para;</a></h2>
 <h3 id="运行测试">运行测试<a class="headerlink" href="#运行测试" title="Permanent link">&para;</a></h3>

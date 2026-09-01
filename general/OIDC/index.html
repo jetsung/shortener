@@ -1594,26 +1594,30 @@
 <h2 id="步骤三配置-shortener">步骤三：配置 Shortener<a class="headerlink" href="#步骤三配置-shortener" title="Permanent link">&para;</a></h2>
 <p>编辑配置文件（默认 <code>config.toml</code>），新增 <code>[oidc]</code> 段：</p>
 <div class="language-toml highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">[oidc]</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="c1"># IdP 的 issuer。discovery 文档位于 &lt;issuer&gt;/.well-known/openid-configuration</span>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="n">issuer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"https://keycloak.example.com/realms/shortener"</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="c1"># OIDC 登录总开关（false 时登录不可用）</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="n">enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
 </span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="c1"># 步骤二中创建的客户端 ID</span>
-</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="n">client_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"shortener-app"</span>
-</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>
-</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="c1"># 客户端密钥。强烈建议改用环境变量 OIDC_CLIENT_SECRET 注入，勿写入文件</span>
-</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="n">client_secret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">""</span>
-</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>
-</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="c1"># 必须与 IdP 中登记的 Redirect URI 完全一致</span>
-</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="n">redirect_uri</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"https://shortener.example.com/api/account/oidc/callback"</span>
-</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>
-</span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="c1"># 白名单：email 或 sub 任一命中即放行</span>
-</span><span id="__span-3-15"><a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a><span class="n">allow_emails</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">"admin@example.com"</span><span class="p">]</span>
-</span><span id="__span-3-16"><a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a><span class="n">allow_subjects</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[]</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="c1"># IdP 的 issuer。discovery 文档位于 &lt;issuer&gt;/.well-known/openid-configuration</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="c1"># enabled 时必填</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="n">issuer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"https://keycloak.example.com/realms/shortener"</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="c1"># 步骤二中创建的客户端 ID</span>
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="n">client_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"shortener-app"</span>
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>
+</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="c1"># 客户端密钥。强烈建议改用环境变量 OIDC__CLIENT_SECRET 注入，勿写入文件</span>
+</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="n">client_secret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">""</span>
+</span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>
+</span><span id="__span-3-15"><a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a><span class="c1"># 必须与 IdP 中登记的 Redirect URI 完全一致</span>
+</span><span id="__span-3-16"><a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a><span class="n">redirect_uri</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"https://shortener.example.com/api/account/oidc/callback"</span>
+</span><span id="__span-3-17"><a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a>
+</span><span id="__span-3-18"><a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a><span class="c1"># 白名单：email 或 sub 任一命中即放行</span>
+</span><span id="__span-3-19"><a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a><span class="n">allow_emails</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">"admin@example.com"</span><span class="p">]</span>
+</span><span id="__span-3-20"><a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a><span class="n">allow_subjects</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[]</span>
 </span></code></pre></div>
 <p>环境变量覆盖（敏感项优先）：</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">OIDC_CLIENT_SECRET</span><span class="o">=</span><span class="s2">"your-client-secret"</span><span class="w">   </span><span class="c1"># 等价于 [oidc] client_secret</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">OIDC__CLIENT_SECRET</span><span class="o">=</span><span class="s2">"your-client-secret"</span><span class="w">   </span><span class="c1"># 等价于 [oidc] client_secret；兼容回退：OIDC_CLIENT_SECRET</span>
 </span></code></pre></div>
-<p><code>issuer</code> 留空即表示<strong>不启用</strong> OIDC 登录。</p>
+<p><code>enabled</code> 为 OIDC 登录的总开关：默认 <code>false</code>（不启用）；设为 <code>true</code> 并配置 <code>issuer</code> / <code>client_id</code> / <code>redirect_uri</code> 后启用 OIDC 登录。</p>
 <h2 id="步骤四准备密码通道可选但推荐保留">步骤四：准备密码通道（可选但推荐保留）<a class="headerlink" href="#步骤四准备密码通道可选但推荐保留" title="Permanent link">&para;</a></h2>
 <p>即使启用了 OIDC，也建议保留配置中的管理员账号，用于脚本 / 无 IdP 环境的运维登录。
 口令必须以 Argon2id 哈希存储，生成方式：</p>
@@ -1682,7 +1686,8 @@
 </ul>
 <h2 id="排错">排错<a class="headerlink" href="#排错" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong><code>issuer</code> 配置错误 / 网络不通</strong>：服务启动后首次访问 <code>/api/account/oidc/login</code> 会返回 500，
+<li><strong>未启用 OIDC（<code>enabled</code> 未设或为 <code>false</code>）</strong>：访问 <code>/api/account/oidc/login</code> 会返回 404（"OIDC login is not enabled"）。</li>
+<li><strong><code>issuer</code> 配置错误 / 网络不通</strong>：<code>enabled</code> 已设为 <code>true</code> 但首次访问 <code>/api/account/oidc/login</code> 仍返回 500，
   检查 <code>issuer</code> 是否可从本服务访问、<code>.well-known/openid-configuration</code> 是否可达。</li>
 <li><strong>回调 404 / 不匹配</strong>：确认 IdP 登记的 Redirect URI 与配置 <code>redirect_uri</code> <strong>完全一致</strong>（含协议、域名、路径）。</li>
 <li><strong>登录后 403</strong>：说明用户不在白名单，检查 <code>allow_emails</code> / <code>allow_subjects</code>。</li>
