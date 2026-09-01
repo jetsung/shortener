@@ -2138,21 +2138,12 @@
 </ul>
 <h4 id="数据库配置">数据库配置<a class="headerlink" href="#数据库配置" title="Permanent link">&para;</a></h4>
 <ul>
-<li><code>DATABASE_TYPE</code>：数据库类型（sqlite、postgres、mysql）</li>
-<li><code>DATABASE_HOST</code>：数据库主机</li>
-<li><code>DATABASE_PORT</code>：数据库端口</li>
-<li><code>DATABASE_NAME</code>：数据库名称</li>
-<li><code>DATABASE_USER</code>：数据库用户</li>
-<li><code>DATABASE_PASSWORD</code>：数据库密码</li>
-<li><code>DATABASE_PATH</code>：SQLite 数据库路径</li>
+<li><code>DATABASE_URL</code>：数据库连接字符串（<code>sqlite://...</code>、<code>postgres://...</code>、<code>mysql://...</code>），引擎类型由 URL scheme 推断</li>
 </ul>
 <h4 id="缓存配置">缓存配置<a class="headerlink" href="#缓存配置" title="Permanent link">&para;</a></h4>
 <ul>
 <li><code>CACHE_ENABLED</code>：启用缓存（true/false）</li>
-<li><code>CACHE_TYPE</code>：缓存类型（redis、valkey）</li>
-<li><code>CACHE_HOST</code>：缓存主机</li>
-<li><code>CACHE_PORT</code>：缓存端口</li>
-<li><code>CACHE_PASSWORD</code>：缓存密码</li>
+<li><code>CACHE_URL</code>：缓存连接字符串（<code>redis://...</code>、<code>valkey://...</code>），引擎类型由 URL scheme 推断</li>
 </ul>
 <h4 id="geoip-配置">GeoIP 配置<a class="headerlink" href="#geoip-配置" title="Permanent link">&para;</a></h4>
 <ul>
@@ -2161,7 +2152,7 @@
 </ul>
 <h3 id="卷挂载">卷挂载<a class="headerlink" href="#卷挂载" title="Permanent link">&para;</a></h3>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="nt">volumes</span><span class="p">:</span>
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">../config/config.docker.toml:/app/config.toml:ro</span><span class="w"> </span><span class="c1"># 配置文件</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">../config.toml:/app/config.toml:ro</span><span class="w"> </span><span class="c1"># 配置文件</span>
 </span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">../data:/app/data</span><span class="w"> </span><span class="c1"># 数据文件（数据库、GeoIP等）</span>
 </span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">app-logs:/app/logs</span><span class="w"> </span><span class="c1"># 日志</span>
 </span></code></pre></div>
@@ -2242,8 +2233,8 @@
 <p>生产环境使用 Docker secrets 或环境文件：</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="c1"># 创建 .env 文件</span>
 </span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>cat<span class="w"> </span>&gt;<span class="w"> </span>.env<span class="w"> </span><span class="s">&lt;&lt; EOF</span>
-</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="s">DATABASE_PASSWORD=your_secure_password</span>
-</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="s">CACHE_PASSWORD=your_redis_password</span>
+</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="s">DATABASE_URL=postgres://shortener:your_secure_password@postgres:5432/shortener</span>
+</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="s">CACHE_URL=redis://:your_redis_password@redis:6379/0</span>
 </span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="s">API_KEY=your_api_key</span>
 </span><span id="__span-13-6"><a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a><span class="s">EOF</span>
 </span><span id="__span-13-7"><a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a>
@@ -2299,26 +2290,18 @@
 <h2 id="生产部署">生产部署<a class="headerlink" href="#生产部署" title="Permanent link">&para;</a></h2>
 <h3 id="1-准备配置">1. 准备配置<a class="headerlink" href="#1-准备配置" title="Permanent link">&para;</a></h3>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="c1"># 复制并编辑配置</span>
-</span><span id="__span-20-2"><a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a>cp<span class="w"> </span>config/config.toml<span class="w"> </span>config/production.toml
-</span><span id="__span-20-3"><a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a>vim<span class="w"> </span>config/production.toml
+</span><span id="__span-20-2"><a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a>cp<span class="w"> </span>config.toml<span class="w"> </span>config.toml.production
+</span><span id="__span-20-3"><a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a>vim<span class="w"> </span>config.toml.production
 </span></code></pre></div>
 <h3 id="2-设置环境变量">2. 设置环境变量<a class="headerlink" href="#2-设置环境变量" title="Permanent link">&para;</a></h3>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="c1"># 创建生产环境文件</span>
 </span><span id="__span-21-2"><a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a>cat<span class="w"> </span>&gt;<span class="w"> </span>.env.production<span class="w"> </span><span class="s">&lt;&lt; EOF</span>
 </span><span id="__span-21-3"><a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a><span class="s">RUST_LOG=info</span>
-</span><span id="__span-21-4"><a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a><span class="s">DATABASE_TYPE=postgres</span>
-</span><span id="__span-21-5"><a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a><span class="s">DATABASE_HOST=postgres</span>
-</span><span id="__span-21-6"><a id="__codelineno-21-6" name="__codelineno-21-6" href="#__codelineno-21-6"></a><span class="s">DATABASE_PORT=5432</span>
-</span><span id="__span-21-7"><a id="__codelineno-21-7" name="__codelineno-21-7" href="#__codelineno-21-7"></a><span class="s">DATABASE_NAME=shortener</span>
-</span><span id="__span-21-8"><a id="__codelineno-21-8" name="__codelineno-21-8" href="#__codelineno-21-8"></a><span class="s">DATABASE_USER=shortener</span>
-</span><span id="__span-21-9"><a id="__codelineno-21-9" name="__codelineno-21-9" href="#__codelineno-21-9"></a><span class="s">DATABASE_PASSWORD=$(openssl rand -base64 32)</span>
-</span><span id="__span-21-10"><a id="__codelineno-21-10" name="__codelineno-21-10" href="#__codelineno-21-10"></a><span class="s">CACHE_ENABLED=true</span>
-</span><span id="__span-21-11"><a id="__codelineno-21-11" name="__codelineno-21-11" href="#__codelineno-21-11"></a><span class="s">CACHE_TYPE=redis</span>
-</span><span id="__span-21-12"><a id="__codelineno-21-12" name="__codelineno-21-12" href="#__codelineno-21-12"></a><span class="s">CACHE_HOST=redis</span>
-</span><span id="__span-21-13"><a id="__codelineno-21-13" name="__codelineno-21-13" href="#__codelineno-21-13"></a><span class="s">CACHE_PORT=6379</span>
-</span><span id="__span-21-14"><a id="__codelineno-21-14" name="__codelineno-21-14" href="#__codelineno-21-14"></a><span class="s">CACHE_PASSWORD=$(openssl rand -base64 32)</span>
-</span><span id="__span-21-15"><a id="__codelineno-21-15" name="__codelineno-21-15" href="#__codelineno-21-15"></a><span class="s">API_KEY=$(openssl rand -base64 32)</span>
-</span><span id="__span-21-16"><a id="__codelineno-21-16" name="__codelineno-21-16" href="#__codelineno-21-16"></a><span class="s">EOF</span>
+</span><span id="__span-21-4"><a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a><span class="s">DATABASE_URL=postgres://shortener:$(openssl rand -base64 32)@postgres:5432/shortener</span>
+</span><span id="__span-21-5"><a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a><span class="s">CACHE_ENABLED=true</span>
+</span><span id="__span-21-6"><a id="__codelineno-21-6" name="__codelineno-21-6" href="#__codelineno-21-6"></a><span class="s">CACHE_URL=redis://:$(openssl rand -base64 32)@redis:6379/0</span>
+</span><span id="__span-21-7"><a id="__codelineno-21-7" name="__codelineno-21-7" href="#__codelineno-21-7"></a><span class="s">API_KEY=$(openssl rand -base64 32)</span>
+</span><span id="__span-21-8"><a id="__codelineno-21-8" name="__codelineno-21-8" href="#__codelineno-21-8"></a><span class="s">EOF</span>
 </span></code></pre></div>
 <h3 id="3-部署">3. 部署<a class="headerlink" href="#3-部署" title="Permanent link">&para;</a></h3>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-22-1"><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="c1"># 构建并启动</span>

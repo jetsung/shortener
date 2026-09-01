@@ -649,17 +649,6 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#配置文件列表" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        配置文件列表
-      </span>
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#快速开始" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -668,33 +657,16 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="快速开始">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#本地开发" class="md-nav__link">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#初始化配置" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        本地开发
+        初始化配置
       </span>
     </span>
   </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#使用预设配置" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        使用预设配置
-      </span>
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -1742,38 +1714,22 @@
 
 
 <h1 id="配置文件说明">配置文件说明<a class="headerlink" href="#配置文件说明" title="Permanent link">&para;</a></h1>
-<h2 id="配置文件列表">配置文件列表<a class="headerlink" href="#配置文件列表" title="Permanent link">&para;</a></h2>
-<ul>
-<li><code>config.example.toml</code> - 完整的配置示例和文档（推荐阅读）</li>
-<li><code>config.local.toml</code> - 本地开发配置（git 已忽略）</li>
-<li><code>config.development.toml</code> - 开发环境预设</li>
-<li><code>config.production.toml</code> - 生产环境配置模板</li>
-<li><code>config.docker.toml</code> - Docker 部署配置</li>
-<li><code>test-config.toml</code> - 测试专用配置</li>
-</ul>
+<p>Shortener 使用单一配置文件 <code>config.toml</code>，位于项目根目录（默认路径），也支持通过 <code>--config</code> 参数指定其他路径。</p>
 <h2 id="快速开始">快速开始<a class="headerlink" href="#快速开始" title="Permanent link">&para;</a></h2>
-<h3 id="本地开发">本地开发<a class="headerlink" href="#本地开发" title="Permanent link">&para;</a></h3>
-<ol>
-<li>
-<p>复制并编辑本地配置：
-   <div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>cp<span class="w"> </span>config/config.example.toml<span class="w"> </span>config/config.local.toml
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="c1"># 编辑 config.local.toml，修改 api_key 等敏感信息</span>
-</span></code></pre></div></p>
-</li>
-<li>
-<p>运行服务：
-   <div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>cargo<span class="w"> </span>run<span class="w"> </span>-p<span class="w"> </span>shortener-server<span class="w"> </span>--<span class="w"> </span>--config<span class="w"> </span>config/config.local.toml
-</span></code></pre></div></p>
-</li>
-</ol>
-<h3 id="使用预设配置">使用预设配置<a class="headerlink" href="#使用预设配置" title="Permanent link">&para;</a></h3>
-<p>直接使用开发环境预设：
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>cargo<span class="w"> </span>run<span class="w"> </span>-p<span class="w"> </span>shortener-server<span class="w"> </span>--<span class="w"> </span>--config<span class="w"> </span>config/config.development.toml
-</span></code></pre></div></p>
+<p>直接编辑项目根目录的 <code>config.toml</code>，修改 <code>api_key</code> 等敏感信息后启动服务：</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>cargo<span class="w"> </span>run<span class="w"> </span>-p<span class="w"> </span>shortener-server
+</span></code></pre></div>
+<p>或显式指定配置文件：</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>cargo<span class="w"> </span>run<span class="w"> </span>-p<span class="w"> </span>shortener-server<span class="w"> </span>--<span class="w"> </span>--config<span class="w"> </span>config.toml
+</span></code></pre></div>
+<h2 id="初始化配置">初始化配置<a class="headerlink" href="#初始化配置" title="Permanent link">&para;</a></h2>
+<p>运行以下命令生成一份新的默认配置：</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>cargo<span class="w"> </span>run<span class="w"> </span>-p<span class="w"> </span>shortener-server<span class="w"> </span>--<span class="w"> </span>init
+</span></code></pre></div>
 <h2 id="配置优化">配置优化<a class="headerlink" href="#配置优化" title="Permanent link">&para;</a></h2>
 <h3 id="可选字段">可选字段<a class="headerlink" href="#可选字段" title="Permanent link">&para;</a></h3>
 <p>当某些功能被禁用时，相关的配置字段可以省略：</p>
-<div class="language-toml highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># 禁用缓存时，可以省略 cache.type 和具体配置</span>
+<div class="language-toml highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># 禁用缓存时，可以省略 cache.url</span>
 </span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="k">[cache]</span>
 </span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="n">enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span>
 </span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>
@@ -1782,15 +1738,15 @@
 </span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="n">enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span>
 </span></code></pre></div>
 <h3 id="环境变量">环境变量<a class="headerlink" href="#环境变量" title="Permanent link">&para;</a></h3>
-<p>支持通过环境变量覆盖配置（前缀 <code>SHORTENER__</code>）：</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">SHORTENER__SERVER__API_KEY</span><span class="o">=</span><span class="s2">"your-secret-key"</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">SHORTENER__ADMIN__PASSWORD</span><span class="o">=</span><span class="s2">"secure-password"</span>
+<p>支持通过环境变量覆盖配置（双下划线 <code>__</code> 分隔嵌套键，无前缀）：</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">SERVER__API_KEY</span><span class="o">=</span><span class="s2">"your-secret-key"</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">ADMIN__PASSWORD</span><span class="o">=</span><span class="s2">"secure-password"</span>
 </span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>cargo<span class="w"> </span>run<span class="w"> </span>-p<span class="w"> </span>shortener-server
 </span></code></pre></div>
 <h2 id="git-忽略规则">Git 忽略规则<a class="headerlink" href="#git-忽略规则" title="Permanent link">&para;</a></h2>
 <p>以下文件会被 git 忽略，可以安全地存储敏感信息：
 - <code>*.local.toml</code>
-- <code>config/config.toml</code></p>
+- <code>.env</code></p>
 
 
 

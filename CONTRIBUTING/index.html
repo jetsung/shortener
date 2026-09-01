@@ -2078,9 +2078,10 @@
 <h2 id="发布流程">发布流程<a class="headerlink" href="#发布流程" title="Permanent link">&para;</a></h2>
 <p>发布由维护者处理：</p>
 <ol>
-<li>更新版本号</li>
-<li>创建 Git 标签</li>
-<li>构建发布二进制文件</li>
+<li>更新版本号并创建 Git 标签：<code>just release 0.2.0</code>
+   （自动同步 <code>Cargo.toml</code>、<code>openapi.yml</code>、<code>shortener-frontend/package.json</code> 三处版本号，再提交并打标签）</li>
+<li>只同步版本号、不提交打标签：<code>just bump-version 0.2.0</code></li>
+<li>构建发布二进制文件：<code>just release-build</code></li>
 <li>发布到 GitHub Releases</li>
 </ol>
 <h2 id="获取帮助">获取帮助<a class="headerlink" href="#获取帮助" title="Permanent link">&para;</a></h2>
