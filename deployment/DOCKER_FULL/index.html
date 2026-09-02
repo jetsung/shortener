@@ -1913,7 +1913,7 @@
 <h2 id="后端服务">后端服务<a class="headerlink" href="#后端服务" title="Permanent link">&para;</a></h2>
 <h3 id="构建镜像">构建镜像<a class="headerlink" href="#构建镜像" title="Permanent link">&para;</a></h3>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># 标准镜像（Debian）</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>docker<span class="w"> </span>build<span class="w"> </span>-f<span class="w"> </span>docker/Dockerfile.server<span class="w"> </span>-t<span class="w"> </span>shortener-server:latest<span class="w"> </span>.
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>docker<span class="w"> </span>build<span class="w"> </span>-f<span class="w"> </span>docker/Dockerfile.backend<span class="w"> </span>-t<span class="w"> </span>shortener-server:latest<span class="w"> </span>.
 </span></code></pre></div>
 <h3 id="运行容器使用-sqlite">运行容器（使用 SQLite）<a class="headerlink" href="#运行容器使用-sqlite" title="Permanent link">&para;</a></h3>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>docker<span class="w"> </span>run<span class="w"> </span>-d<span class="w"> </span><span class="se">\</span>
