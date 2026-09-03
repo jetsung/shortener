@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="zensical-0.0.58">
+      <meta name="generator" content="zensical-0.0.59">
     
     
       
@@ -2151,10 +2151,10 @@
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># 服务器地址</span>
 </span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">SERVER__ADDRESS</span><span class="o">=</span><span class="s2">":9090"</span>
 </span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="c1"># 数据库连接 URL（覆盖配置文件的 database.url；兼容回退：DATABASE_URL）</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="c1"># 数据库连接 URL（覆盖配置文件的 database.url）</span>
 </span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="nb">export</span><span class="w"> </span><span class="nv">DATABASE__URL</span><span class="o">=</span><span class="s2">"postgres://user:pass@localhost:5432/shortener?sslmode=require"</span>
 </span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="c1"># 缓存连接 URL（覆盖配置文件的 cache.url；兼容回退：CACHE_URL）</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="c1"># 缓存连接 URL（覆盖配置文件的 cache.url）</span>
 </span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="nb">export</span><span class="w"> </span><span class="nv">CACHE__URL</span><span class="o">=</span><span class="s2">"redis://:password@localhost:6379/0"</span>
 </span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>
 </span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="c1"># 启用缓存</span>
@@ -2164,18 +2164,18 @@
 </span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="nb">export</span><span class="w"> </span><span class="nv">SERVER__API_KEY</span><span class="o">=</span><span class="s2">"your-secret-key"</span>
 </span></code></pre></div>
 <blockquote>
-<p>📖 完整的变量清单、默认值、兼容回退与各部署方式示例，请参阅 <a href="../ENVIRONMENT_VARIABLES/">环境变量参考</a>。</p>
+<p>📖 完整的变量清单、默认值与各部署方式示例，请参阅 <a href="../ENVIRONMENT_VARIABLES/">环境变量参考</a>。</p>
 </blockquote>
 <h2 id="服务器配置">服务器配置<a class="headerlink" href="#服务器配置" title="Permanent link">&para;</a></h2>
 <div class="language-toml highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">[server]</span>
 </span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="n">address</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">":8080"</span><span class="w">                          </span><span class="c1"># 监听地址</span>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="n">site_url</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"http://localhost:8080"</span><span class="w">        </span><span class="c1"># 公共站点 URL</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="n">short_url</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"https://s.example.com"</span><span class="w">      </span><span class="c1"># 短址专用域名（可选，未设置时从监听地址推断，通配地址回退 localhost）</span>
 </span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="n">api_key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"your-secret-api-key"</span><span class="w">           </span><span class="c1"># API 密钥（必需）</span>
 </span></code></pre></div>
 <h3 id="详细说明">详细说明<a class="headerlink" href="#详细说明" title="Permanent link">&para;</a></h3>
 <ul>
 <li><code>address</code>：服务器监听地址，默认 <code>:8080</code></li>
-<li><code>site_url</code>：站点的公共 URL，用于生成短链接</li>
+<li><code>short_url</code>：短址专用域名，用于生成短链接；未设置时从监听地址推断，通配地址回退 localhost</li>
 <li><code>api_key</code>：用于认证的 API 密钥，使用 <code>openssl rand -base64 32</code> 生成</li>
 </ul>
 <h2 id="短链接配置">短链接配置<a class="headerlink" href="#短链接配置" title="Permanent link">&para;</a></h2>
@@ -2220,17 +2220,17 @@
 </span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a><span class="c1"># 客户端密钥。可留空（公钥客户端），或通过环境变量 OIDC__CLIENT_SECRET 注入</span>
 </span><span id="__span-7-13"><a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a><span class="n">client_secret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">""</span>
 </span><span id="__span-7-14"><a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a>
-</span><span id="__span-7-15"><a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a><span class="c1"># 在 IdP 注册的回调地址（必须与该 IdP 的配置完全一致）</span>
-</span><span id="__span-7-16"><a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a><span class="n">redirect_uri</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"https://shortener.example.com/api/account/oidc/callback"</span>
+</span><span id="__span-7-15"><a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a><span class="c1"># 回调地址由服务根据请求的 Host 头自动推导（https://&lt;域名&gt;/api/oidc/callback），</span>
+</span><span id="__span-7-16"><a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a><span class="c1"># 无需在此配置；请确保 IdP 中登记的回调地址与该地址完全一致</span>
 </span><span id="__span-7-17"><a id="__codelineno-7-17" name="__codelineno-7-17" href="#__codelineno-7-17"></a>
-</span><span id="__span-7-18"><a id="__codelineno-7-18" name="__codelineno-7-18" href="#__codelineno-7-18"></a><span class="c1"># 允许登录的用户白名单（email 与/或 sub 任一命中即放行；都为空则放行任意已认证用户）</span>
+</span><span id="__span-7-18"><a id="__codelineno-7-18" name="__codelineno-7-18" href="#__codelineno-7-18"></a><span class="c1"># 允许登录的用户白名单（email 与/或 sub 任一命中即放行；至少配置一项，不能都为空）</span>
 </span><span id="__span-7-19"><a id="__codelineno-7-19" name="__codelineno-7-19" href="#__codelineno-7-19"></a><span class="n">allow_emails</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">"admin@example.com"</span><span class="p">]</span>
 </span><span id="__span-7-20"><a id="__codelineno-7-20" name="__codelineno-7-20" href="#__codelineno-7-20"></a><span class="n">allow_subjects</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[]</span>
 </span></code></pre></div>
 <h3 id="环境变量覆盖">环境变量覆盖<a class="headerlink" href="#环境变量覆盖" title="Permanent link">&para;</a></h3>
 <p>敏感配置优先使用环境变量（双下划线 <code>__</code> 分隔嵌套键，无前缀），<code>client_secret</code> 强烈建议通过环境变量注入，避免写入文件：</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">OIDC__CLIENT_SECRET</span><span class="o">=</span><span class="s2">"your-client-secret"</span>
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="c1"># 等价于配置项 [oidc] client_secret；兼容回退：OIDC_CLIENT_SECRET</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="c1"># 等价于配置项 [oidc] client_secret</span>
 </span></code></pre></div>
 <p>JWT 签名密钥（两条登录通道签发令牌都依赖它）也必须通过环境变量提供：</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">JWT_SECRET</span><span class="o">=</span><span class="s2">"</span><span class="k">$(</span>openssl<span class="w"> </span>rand<span class="w"> </span>-base64<span class="w"> </span><span class="m">48</span><span class="k">)</span><span class="s2">"</span>
@@ -2243,14 +2243,14 @@
 <ol>
 <li>创建 OAuth2 / OIDC 客户端（授权码流，<code>response_type=code</code>）。</li>
 <li>将回调地址（Redirect URI / Callback URL）设置为本服务的
-   <code>https://&lt;你的域名&gt;/api/account/oidc/callback</code>。</li>
+   <code>https://&lt;你的域名&gt;/api/oidc/callback</code>。</li>
 <li>申请 <code>openid</code>、<code>profile</code>、<code>email</code> 三个 scope。</li>
 <li>若 IdP 要求客户端密钥，将其填入 <code>client_secret</code> 或 <code>OIDC__CLIENT_SECRET</code>。</li>
 </ol>
 <h3 id="登录流程">登录流程<a class="headerlink" href="#登录流程" title="Permanent link">&para;</a></h3>
 <ol>
-<li>访问 <code>GET /api/account/oidc/login?redirect=&lt;前端回跳路径&gt;</code> → 浏览器被重定向到 IdP 授权页。</li>
-<li>用户在 IdP 完成认证后，IdP 回调 <code>GET /api/account/oidc/callback?code=...&amp;state=...</code>。</li>
+<li>访问 <code>GET /api/oidc/login</code> → 浏览器被重定向到 IdP 授权页（登录后固定跳转前端 <code>/#/dashboard</code>）。</li>
+<li>用户在 IdP 完成认证后，IdP 回调 <code>GET /api/oidc/callback?code=...&amp;state=...</code>。</li>
 <li>服务用 <code>code</code> 换取 token，校验 <code>id_token</code> 签名，并比对 <code>email</code>/<code>sub</code> 白名单。</li>
 <li>校验通过则签发本地 JWT，302 跳回前端并附带 <code>?token=&lt;jwt&gt;</code>；前端将其存入 <code>localStorage</code>。</li>
 </ol>
@@ -2318,7 +2318,7 @@
 <h3 id="开发环境">开发环境<a class="headerlink" href="#开发环境" title="Permanent link">&para;</a></h3>
 <div class="language-toml highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="k">[server]</span>
 </span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="n">address</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">":8080"</span>
-</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="n">site_url</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"http://localhost:8080"</span>
+</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="n">short_url</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"http://localhost:8080"</span>
 </span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="n">api_key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"dev-api-key"</span>
 </span><span id="__span-16-5"><a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a>
 </span><span id="__span-16-6"><a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a><span class="k">[admin]</span>
@@ -2338,7 +2338,7 @@
 <h3 id="生产环境">生产环境<a class="headerlink" href="#生产环境" title="Permanent link">&para;</a></h3>
 <div class="language-toml highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="k">[server]</span>
 </span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="n">address</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">":8080"</span>
-</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="n">site_url</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"https://short.example.com"</span>
+</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="n">short_url</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"https://short.example.com"</span>
 </span><span id="__span-17-4"><a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="n">api_key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"${SHORTENER_API_KEY}"</span>
 </span><span id="__span-17-5"><a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a>
 </span><span id="__span-17-6"><a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a><span class="k">[admin]</span>
