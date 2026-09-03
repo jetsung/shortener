@@ -16,6 +16,15 @@
         <loc>https://jetsung.github.io/shortener/general/CONFIG_FILES/</loc>
       </url>
       <url>
+        <loc>https://jetsung.github.io/shortener/general/ENVIRONMENT_VARIABLES/</loc>
+      </url>
+      <url>
+        <loc>https://jetsung.github.io/shortener/general/OIDC/</loc>
+      </url>
+      <url>
+        <loc>https://jetsung.github.io/shortener/general/GEOIP/</loc>
+      </url>
+      <url>
         <loc>https://jetsung.github.io/shortener/server/</loc>
       </url>
       <url>
@@ -58,6 +67,12 @@
         <loc>https://jetsung.github.io/shortener/deployment/DOCKER_FULL/</loc>
       </url>
       <url>
+        <loc>https://jetsung.github.io/shortener/deployment/DOCKER_FRONTEND/</loc>
+      </url>
+      <url>
+        <loc>https://jetsung.github.io/shortener/deployment/DOCKER_AIO/</loc>
+      </url>
+      <url>
         <loc>https://jetsung.github.io/shortener/deployment/DOCKER_ADVANCED/</loc>
       </url>
       <url>
@@ -83,5 +98,8 @@
       </url>
       <url>
         <loc>https://jetsung.github.io/shortener/QUICK_REFERENCE/</loc>
+      </url>
+      <url>
+        <loc>https://jetsung.github.io/shortener/adr/0001-oidc-and-password-login/</loc>
       </url>
 </urlset>
