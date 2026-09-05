@@ -1,6 +1,6 @@
 {
   "name": "shortener-frontend",
-  "version": "0.2.0",
+  "version": "0.2.1-preview.1",
   "description": "A modern URL shortener service frontend built with Semi Design and React 19",
   "private": true,
   "type": "module",

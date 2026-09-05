@@ -3,7 +3,7 @@ use crate::config::SlugConfig;
 use crate::errors::ServiceError;
 use crate::models::url::{Model as UrlModel, UrlStatus};
 use crate::repositories::url_repository::{CreateUrlDto, ListParams, UpdateUrlDto, UrlRepository};
-use rand::Rng;
+use rand::RngExt;
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use tracing::{debug, info, warn};
