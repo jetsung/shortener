@@ -2565,9 +2565,9 @@ dependencies = [
 
 [[package]]
 name = "papergrid"
-version = "0.17.0"
+version = "0.18.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6978128c8b51d8f4080631ceb2302ab51e32cc6e8615f735ee2f83fd269ae3f1"
+checksum = "d0984e668274d34691bc2b262ef0d115de5fa9973bcdee7ae32213f93099153e"
 dependencies = [
  "bytecount",
  "fnv",
@@ -3915,7 +3915,7 @@ checksum = "f8fadd59c855ef2080decdef8ff161eb6661b86933c9d82e5ba29dc602a55aba"
 
 [[package]]
 name = "shortener-cli"
-version = "0.2.0-preview.1"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "argon2",
@@ -3937,7 +3937,7 @@ dependencies = [
 
 [[package]]
 name = "shortener-common"
-version = "0.2.0-preview.1"
+version = "0.2.0"
 dependencies = [
  "chrono",
  "serde",
@@ -3947,7 +3947,7 @@ dependencies = [
 
 [[package]]
 name = "shortener-server"
-version = "0.2.0-preview.1"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "argon2",
@@ -4446,9 +4446,9 @@ dependencies = [
 
 [[package]]
 name = "tabled"
-version = "0.20.0"
+version = "0.21.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e39a2ee1fbcd360805a771e1b300f78cc88fec7b8d3e2f71cd37bbf23e725c7d"
+checksum = "b5dc662e6da844ad6e428ad16b57967c9d33c82e16bb1c258326c0c078605dff"
 dependencies = [
  "papergrid",
  "testing_table",
