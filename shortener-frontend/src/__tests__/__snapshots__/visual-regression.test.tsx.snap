@@ -13,33 +13,23 @@ exports[`Visual Regression Tests > Dashboard Component > renders with consistent
               "textContent": "欢迎使用 Shortener 短网址生成器",
             },
             {
-              "children": [
-                {
-                  "tagName": "a",
-                  "textContent": "后端使用 Gin 框架",
-                },
-                {
-                  "tagName": "a",
-                  "textContent": "前端使用 React 框架",
-                },
-              ],
               "className": "semi-typography-text ",
               "tagName": "span",
-              "textContent": "Shortener 是一个使用 Go 语言开发的短网址生成器。后端使用 Gin 框架，前端使用 React 框架，UI 框架使用 Semi Design。",
+              "textContent": "Shortener 是一个使用 Rust 语言开发的短网址生成器，UI 框架使用 Semi Design。",
             },
           ],
           "tagName": "div",
-          "textContent": "欢迎使用 Shortener 短网址生成器Shortener 是一个使用 Go 语言开发的短网址生成器。后端使用 Gin 框架，前端使用 React 框架，UI 框架使用 Semi Design。",
+          "textContent": "欢迎使用 Shortener 短网址生成器Shortener 是一个使用 Rust 语言开发的短网址生成器，UI 框架使用 Semi Design。",
         },
       ],
       "className": "semi-card-content",
       "tagName": "div",
-      "textContent": "欢迎使用 Shortener 短网址生成器Shortener 是一个使用 Go 语言开发的短网址生成器。后端使用 Gin 框架，前端使用 React 框架，UI 框架使用 Semi Design。",
+      "textContent": "欢迎使用 Shortener 短网址生成器Shortener 是一个使用 Rust 语言开发的短网址生成器，UI 框架使用 Semi Design。",
     },
   ],
   "className": "semi-card",
   "tagName": "div",
-  "textContent": "欢迎使用 Shortener 短网址生成器Shortener 是一个使用 Go 语言开发的短网址生成器。后端使用 Gin 框架，前端使用 React 框架，UI 框架使用 Semi Design。",
+  "textContent": "欢迎使用 Shortener 短网址生成器Shortener 是一个使用 Rust 语言开发的短网址生成器，UI 框架使用 Semi Design。",
 }
 `;
 
@@ -264,11 +254,20 @@ exports[`Visual Regression Tests > MainLayout Component > renders layout with co
             {
               "children": [
                 {
+                  "children": [
+                    {
+                      "className": "semi-icon semi-icon-menu",
+                      "tagName": "span",
+                      "textContent": "☰",
+                    },
+                  ],
                   "className": "semi-button semi-button-default semi-button-borderless semi-button-default",
                   "tagName": "button",
+                  "textContent": "☰",
                 },
               ],
               "tagName": "div",
+              "textContent": "☰",
             },
             {
               "children": [
@@ -290,7 +289,7 @@ exports[`Visual Regression Tests > MainLayout Component > renders layout with co
             },
           ],
           "tagName": "div",
-          "textContent": "Test User",
+          "textContent": "☰Test User",
         },
         {
           "children": [
@@ -328,10 +327,107 @@ exports[`Visual Regression Tests > MainLayout Component > renders layout with co
         },
       ],
       "tagName": "div",
-      "textContent": "Test UserPage Content© 2024 Shortener. All rights reserved.",
+      "textContent": "☰Test UserPage Content© 2024 Shortener. All rights reserved.",
     },
   ],
   "tagName": "div",
-  "textContent": "Shortener🏠仪表盘🔗短址管理📊日志管理Test UserPage Content© 2024 Shortener. All rights reserved.",
+  "textContent": "Shortener🏠仪表盘🔗短址管理📊日志管理☰Test UserPage Content© 2024 Shortener. All rights reserved.",
+}
+`;
+
+exports[`Visual Regression Tests > Shortener Component > renders table with consistent styling > shortener-structure 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "className": "semi-table-header",
+          "tagName": "div",
+          "textContent": "短址列表",
+        },
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "children": [
+                    {
+                      "className": "semi-table-th",
+                      "tagName": "th",
+                      "textContent": "ID",
+                    },
+                    {
+                      "className": "semi-table-th",
+                      "tagName": "th",
+                      "textContent": "短码",
+                    },
+                    {
+                      "className": "semi-table-th",
+                      "tagName": "th",
+                      "textContent": "源地址",
+                    },
+                    {
+                      "className": "semi-table-th",
+                      "tagName": "th",
+                      "textContent": "描述",
+                    },
+                    {
+                      "className": "semi-table-th",
+                      "tagName": "th",
+                      "textContent": "状态",
+                    },
+                    {
+                      "className": "semi-table-th",
+                      "tagName": "th",
+                      "textContent": "最后更新时间",
+                    },
+                    {
+                      "className": "semi-table-th",
+                      "tagName": "th",
+                      "textContent": "创建时间",
+                    },
+                    {
+                      "className": "semi-table-th",
+                      "tagName": "th",
+                      "textContent": "操作",
+                    },
+                  ],
+                  "tagName": "tr",
+                  "textContent": "ID短码源地址描述状态最后更新时间创建时间操作",
+                },
+              ],
+              "tagName": "thead",
+              "textContent": "ID短码源地址描述状态最后更新时间创建时间操作",
+            },
+            {
+              "children": [
+                {
+                  "children": [
+                    {
+                      "className": "semi-table-td",
+                      "tagName": "td",
+                      "textContent": "Sample Data",
+                    },
+                  ],
+                  "tagName": "tr",
+                  "textContent": "Sample Data",
+                },
+              ],
+              "tagName": "tbody",
+              "textContent": "Sample Data",
+            },
+          ],
+          "className": "semi-table",
+          "tagName": "table",
+          "textContent": "ID短码源地址描述状态最后更新时间创建时间操作Sample Data",
+        },
+      ],
+      "className": "semi-table-wrapper",
+      "tagName": "div",
+      "textContent": "短址列表ID短码源地址描述状态最后更新时间创建时间操作Sample Data",
+    },
+  ],
+  "tagName": "div",
+  "textContent": "短址列表ID短码源地址描述状态最后更新时间创建时间操作Sample Data",
 }
 `;

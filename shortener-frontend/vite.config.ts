@@ -42,7 +42,15 @@ export default defineConfig(({ mode }) => {
     build: {
       outDir: 'dist',
       sourcemap: true,
-      rollupOptions: {
+      rolldownOptions: {
+        // 关闭第三方库噪音告警：
+        // - eval：semi-foundation 的传递依赖 lottie-web 内部使用了 direct eval，
+        //   但该代码已被 tree-shake，不会进入产物
+        // - pluginTimings：仅是构建性能剖析提示，非性能问题
+        checks: {
+          eval: false,
+          pluginTimings: false,
+        },
         output: {
           manualChunks: (id) => {
             // Semi Design 组件单独打包
@@ -88,7 +96,8 @@ export default defineConfig(({ mode }) => {
         },
       },
       // 设置 chunk 大小警告阈值
-      chunkSizeWarningLimit: 1000,
+      // semi-ui 全量组件打包后约 1.1MB（gzip 约 280KB），属合理体积
+      chunkSizeWarningLimit: 1200,
     },
     css: {
       preprocessorOptions: {

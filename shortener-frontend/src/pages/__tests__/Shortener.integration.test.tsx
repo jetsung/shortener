@@ -7,32 +7,50 @@ import Shortener from '../Shortener';
 // Mock API services
 const mockShortenService = {
   getShortens: vi.fn(),
-  createShorten: vi.fn(),
+  addShorten: vi.fn(),
   updateShorten: vi.fn(),
   deleteShorten: vi.fn(),
 };
 
-vi.mock('../../services/shortener', () => ({
-  getShortens: (...args: any[]) => mockShortenService.getShortens(...args),
-  createShorten: (...args: any[]) => mockShortenService.createShorten(...args),
-  updateShorten: (...args: any[]) => mockShortenService.updateShorten(...args),
-  deleteShorten: (...args: any[]) => mockShortenService.deleteShorten(...args),
+vi.mock('@/services/shortener/shorten', () => ({
+  getShortens: (...args: unknown[]) => mockShortenService.getShortens(...args),
+  addShorten: (...args: unknown[]) => mockShortenService.addShorten(...args),
+  updateShorten: (...args: unknown[]) => mockShortenService.updateShorten(...args),
+  deleteShorten: (...args: unknown[]) => mockShortenService.deleteShorten(...args),
+}));
+
+const mockCacheService = {
+  refreshCache: vi.fn(),
+};
+
+vi.mock('@/services/shortener/cache', () => ({
+  refreshCache: (...args: unknown[]) => mockCacheService.refreshCache(...args),
+}));
+
+// Mock notification
+vi.mock('@/utils/notification', () => ({
+  Toast: {
+    info: vi.fn(),
+    update: vi.fn(),
+    success: vi.fn(),
+    error: vi.fn(),
+  },
 }));
 
 // Mock Semi UI components
 vi.mock('@douyinfe/semi-ui-19', () => ({
-  Card: ({ children, title }: any) => (
-    <div data-testid="card">
-      {title && <div data-testid="card-title">{title}</div>}
-      {children}
-    </div>
-  ),
-  Button: ({ children, onClick, type, ...props }: any) => (
-    <button onClick={onClick} data-type={type} {...props}>
+  Button: ({ children, onClick, type, icon, title, loading, ...props }: any) => (
+    <button
+      onClick={onClick}
+      data-type={type}
+      data-loading={loading ? 'true' : undefined}
+      title={title}
+      {...props}
+    >
+      {icon}
       {children}
     </button>
   ),
-  Space: ({ children }: any) => <div data-testid="space">{children}</div>,
   Modal: ({ visible, title, children, onOk, onCancel }: any) =>
     visible ? (
       <div data-testid="modal">
@@ -46,10 +64,16 @@ vi.mock('@douyinfe/semi-ui-19', () => ({
         </button>
       </div>
     ) : null,
-  Form: ({ children, onSubmit }: any) => (
-    <form onSubmit={onSubmit} data-testid="form">
-      {children}
-    </form>
+  Form: Object.assign(
+    ({ children, onSubmit }: any) => (
+      <form onSubmit={onSubmit} data-testid="form">
+        {children}
+      </form>
+    ),
+    {
+      Input: ({ label }: any) => <div data-testid="form-input">{label}</div>,
+      TextArea: ({ label }: any) => <div data-testid="form-textarea">{label}</div>,
+    },
   ),
   Typography: Object.assign(({ children, ...props }: any) => <div {...props}>{children}</div>, {
     Title: ({ children, heading, style, ...props }: any) => (
@@ -57,8 +81,8 @@ vi.mock('@douyinfe/semi-ui-19', () => ({
         {children}
       </h1>
     ),
-    Text: ({ children, type, size, ...props }: any) => (
-      <span data-type={type} data-size={size} {...props}>
+    Text: ({ children, strong, type, size, ...props }: any) => (
+      <span data-strong={strong ? 'true' : undefined} data-type={type} data-size={size} {...props}>
         {children}
       </span>
     ),
@@ -70,98 +94,130 @@ vi.mock('@douyinfe/semi-ui-19', () => ({
   },
 }));
 
-// Mock SemiTable component
-vi.mock('../../components/SemiTable', () => ({
-  default: function MockSemiTable({
-    headerTitle,
-    request,
-    columns,
-    toolBarRender,
-    actionRef,
-  }: any) {
-    const mockData = [
-      { id: 1, code: 'abc123', original_url: 'https://example.com', created_at: '2024-01-01' },
-      { id: 2, code: 'def456', original_url: 'https://test.com', created_at: '2024-01-02' },
-    ];
-
-    // Simulate table request
-    React.useEffect(() => {
-      if (request) {
-        request({ current: 1, pageSize: 10 }, {}, {}).then(() => {
-          // Mock successful request
-        });
-      }
-    }, [request]);
-
-    // Expose actionRef methods
-    React.useEffect(() => {
-      if (actionRef) {
-        actionRef.current = {
-          reload: vi.fn(),
-          reloadAndRest: vi.fn(),
-        };
-      }
-    }, [actionRef]);
-
-    return (
-      <div data-testid="semi-table">
-        <div data-testid="table-title">{headerTitle}</div>
-        <div data-testid="table-toolbar">{toolBarRender && toolBarRender()}</div>
-        <table>
-          <thead>
-            <tr>
-              {columns?.map((col: any) => (
-                <th key={col.key || col.dataIndex}>{col.title}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {mockData.map((item: any) => (
-              <tr key={item.id}>
-                {columns?.map((col: any) => (
-                  <td key={col.key || col.dataIndex}>
-                    {col.render ? col.render(item[col.dataIndex], item) : item[col.dataIndex]}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    );
-  },
+// Mock Semi Icons
+vi.mock('@douyinfe/semi-icons', () => ({
+  IconPlus: () => <span data-testid="icon-plus">+</span>,
+  IconCopy: () => <span data-testid="icon-copy">⧉</span>,
+  IconRefresh: () => <span data-testid="icon-refresh">⟳</span>,
 }));
 
-// Mock SemiForm components
-vi.mock('../../components/SemiForm', () => ({
-  default: ({ children, onFinish }: any) => (
-    <form
-      data-testid="semi-form"
-      onSubmit={(e) => {
-        e.preventDefault();
-        onFinish?.({ code: 'test123', original_url: 'https://example.com' });
-      }}
-    >
-      {children}
-    </form>
-  ),
-  ModalForm: ({ visible, title, children, onFinish }: any) =>
-    visible ? (
-      <div data-testid="modal-form">
-        <div data-testid="modal-form-title">{title}</div>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            onFinish?.({ code: 'test123', original_url: 'https://example.com' });
-          }}
+const mockReload = vi.fn();
+
+const MockSemiTable = ({
+  headerTitle,
+  request,
+  columns,
+  toolBarRender,
+  actionRef,
+  rowSelection,
+}: any) => {
+  const mockData = [
+    {
+      id: 1,
+      short_code: 'abc123',
+      short_url: 'https://s.example.com/abc123',
+      original_url: 'https://example.com',
+      description: '示例一',
+      status: 0,
+      updated_at: '2024-01-01T00:00:00Z',
+      created_at: '2024-01-01T00:00:00Z',
+    },
+    {
+      id: 2,
+      short_code: 'def456',
+      short_url: 'https://s.example.com/def456',
+      original_url: 'https://test.com',
+      description: '示例二',
+      status: 0,
+      updated_at: '2024-01-02T00:00:00Z',
+      created_at: '2024-01-02T00:00:00Z',
+    },
+  ];
+
+  // Simulate table request
+  React.useEffect(() => {
+    if (request) {
+      request({ current: 1, pageSize: 10 }, {});
+    }
+  }, [request]);
+
+  // Expose actionRef methods
+  React.useEffect(() => {
+    if (actionRef) {
+      actionRef.current = {
+        reload: mockReload,
+        reloadAndRest: vi.fn(),
+      };
+    }
+  }, [actionRef]);
+
+  return (
+    <div data-testid="semi-table">
+      <div data-testid="table-title">{headerTitle}</div>
+      <div data-testid="table-toolbar">{toolBarRender && toolBarRender()}</div>
+      {rowSelection && (
+        <button
+          data-testid="select-row"
+          onClick={() => rowSelection.onChange?.([mockData[0].id], [mockData[0]])}
         >
-          {children}
-          <button type="submit" data-testid="modal-form-submit">
-            提交
-          </button>
-        </form>
-      </div>
-    ) : null,
+          选择行
+        </button>
+      )}
+      <table>
+        <thead>
+          <tr>
+            {columns?.map((col: any) => (
+              <th key={col.key || col.dataIndex}>{col.title}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {mockData.map((item: any) => (
+            <tr key={item.id}>
+              {columns?.map((col: any) => (
+                <td key={col.key || col.dataIndex}>
+                  {col.render ? col.render(item[col.dataIndex], item) : item[col.dataIndex]}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+};
+
+const MockSemiModalForm = ({ visible, title, children, onFinish, onCancel }: any) =>
+  visible ? (
+    <div data-testid="modal-form">
+      <div data-testid="modal-form-title">{title}</div>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          onFinish?.({ short_code: 'test123', original_url: 'https://example.com' });
+        }}
+      >
+        {children}
+        <button type="submit" data-testid="modal-form-submit">
+          提交
+        </button>
+      </form>
+      <button onClick={onCancel} data-testid="modal-form-cancel">
+        取消
+      </button>
+    </div>
+  ) : null;
+
+// Mock 组件（Shortener 从 @/components 导入命名导出 SemiTable、SemiModalForm）
+vi.mock('@/components', () => ({
+  SemiTable: (props: any) => MockSemiTable(props),
+  SemiModalForm: (props: any) => MockSemiModalForm(props),
+}));
+
+// Mock UpdateForm（避免其内部依赖）
+vi.mock('../components/UpdateForm', () => ({
+  default: ({ updateModalOpen }: { updateModalOpen: boolean }) =>
+    updateModalOpen ? <div data-testid="update-form" /> : null,
 }));
 
 const renderWithRouter = (component: React.ReactElement) => {
@@ -175,16 +231,34 @@ describe('Shortener Integration Tests', () => {
     // Setup default mock responses
     mockShortenService.getShortens.mockResolvedValue({
       data: [
-        { id: 1, code: 'abc123', original_url: 'https://example.com', created_at: '2024-01-01' },
-        { id: 2, code: 'def456', original_url: 'https://test.com', created_at: '2024-01-02' },
+        {
+          id: 1,
+          short_code: 'abc123',
+          short_url: 'https://s.example.com/abc123',
+          original_url: 'https://example.com',
+          description: '示例一',
+          status: 0,
+          updated_at: '2024-01-01T00:00:00Z',
+          created_at: '2024-01-01T00:00:00Z',
+        },
+        {
+          id: 2,
+          short_code: 'def456',
+          short_url: 'https://s.example.com/def456',
+          original_url: 'https://test.com',
+          description: '示例二',
+          status: 0,
+          updated_at: '2024-01-02T00:00:00Z',
+          created_at: '2024-01-02T00:00:00Z',
+        },
       ],
       success: true,
-      total: 2,
+      meta: { total: 2 },
     });
 
-    mockShortenService.createShorten.mockResolvedValue({
+    mockShortenService.addShorten.mockResolvedValue({
       success: true,
-      data: { id: 3, code: 'new123', original_url: 'https://new.com' },
+      data: { id: 3, short_code: 'new123', original_url: 'https://new.com' },
     });
 
     mockShortenService.updateShorten.mockResolvedValue({
@@ -194,6 +268,11 @@ describe('Shortener Integration Tests', () => {
     mockShortenService.deleteShorten.mockResolvedValue({
       success: true,
     });
+
+    mockCacheService.refreshCache.mockResolvedValue({
+      cleared_keys: 2,
+      warmed_urls: 2,
+    });
   });
 
   it('renders shortener page with table and toolbar', async () => {
@@ -202,6 +281,8 @@ describe('Shortener Integration Tests', () => {
     expect(screen.getByTestId('semi-table')).toBeInTheDocument();
     expect(screen.getByTestId('table-title')).toHaveTextContent('短址列表');
     expect(screen.getByTestId('table-toolbar')).toBeInTheDocument();
+    expect(screen.getByText('新建')).toBeInTheDocument();
+    expect(screen.getByText('刷新缓存')).toBeInTheDocument();
   });
 
   it('loads shortener data on mount', async () => {
@@ -210,11 +291,9 @@ describe('Shortener Integration Tests', () => {
     await waitFor(() => {
       expect(mockShortenService.getShortens).toHaveBeenCalledWith(
         expect.objectContaining({
-          current: 1,
-          pageSize: 10,
+          page: 1,
+          per_page: 10,
         }),
-        {},
-        {},
       );
     });
   });
@@ -258,15 +337,15 @@ describe('Shortener Integration Tests', () => {
     fireEvent.click(submitButton);
 
     await waitFor(() => {
-      expect(mockShortenService.createShorten).toHaveBeenCalledWith({
-        code: 'test123',
+      expect(mockShortenService.addShorten).toHaveBeenCalledWith({
+        short_code: 'test123',
         original_url: 'https://example.com',
       });
     });
   });
 
   it('handles create shortener error', async () => {
-    mockShortenService.createShorten.mockRejectedValue(new Error('Create failed'));
+    mockShortenService.addShorten.mockRejectedValue(new Error('Create failed'));
 
     renderWithRouter(<Shortener />);
 
@@ -283,38 +362,40 @@ describe('Shortener Integration Tests', () => {
     fireEvent.click(submitButton);
 
     await waitFor(() => {
-      expect(mockShortenService.createShorten).toHaveBeenCalled();
+      expect(mockShortenService.addShorten).toHaveBeenCalled();
     });
   });
 
   it('handles bulk delete operation', async () => {
     renderWithRouter(<Shortener />);
 
-    // Find and click bulk delete button (assuming it exists in toolbar)
-    const bulkDeleteButton = screen.getByText('批量删除');
+    // 选中一行后出现批量删除工具栏
+    fireEvent.click(screen.getByTestId('select-row'));
+
+    const bulkDeleteButton = await screen.findByText('批量删除');
     fireEvent.click(bulkDeleteButton);
 
-    // Should show confirmation or perform delete
+    // 确认弹窗出现后点击确定
+    const modalOk = await screen.findByTestId('modal-ok');
+    fireEvent.click(modalOk);
+
     await waitFor(() => {
-      // This would depend on the actual implementation
-      expect(bulkDeleteButton).toBeInTheDocument();
+      expect(mockShortenService.deleteShorten).toHaveBeenCalledWith({ ids: [1] });
     });
   });
 
-  it('refreshes data when reload is triggered', async () => {
+  it('refreshes cache when refresh button is clicked', async () => {
     renderWithRouter(<Shortener />);
 
-    // Wait for initial load
     await waitFor(() => {
       expect(mockShortenService.getShortens).toHaveBeenCalledTimes(1);
     });
 
-    // Find refresh button and click it
-    const refreshButton = screen.getByText('刷新');
-    fireEvent.click(refreshButton);
+    fireEvent.click(screen.getByText('刷新缓存'));
 
     await waitFor(() => {
-      expect(mockShortenService.getShortens).toHaveBeenCalledTimes(2);
+      expect(mockCacheService.refreshCache).toHaveBeenCalledTimes(1);
+      expect(mockReload).toHaveBeenCalled();
     });
   });
 
@@ -335,7 +416,6 @@ describe('Shortener Integration Tests', () => {
     renderWithRouter(<Shortener />);
 
     // The search functionality would be tested if the component supports it
-    // This is a placeholder for search-related integration tests
     expect(screen.getByTestId('semi-table')).toBeInTheDocument();
   });
 
@@ -346,11 +426,9 @@ describe('Shortener Integration Tests', () => {
     await waitFor(() => {
       expect(mockShortenService.getShortens).toHaveBeenCalledWith(
         expect.objectContaining({
-          current: 1,
-          pageSize: 10,
+          page: 1,
+          per_page: 10,
         }),
-        {},
-        {},
       );
     });
   });

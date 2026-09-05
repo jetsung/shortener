@@ -129,6 +129,7 @@ vi.mock('../../components', () => ({
 const mockUseAuth = {
   currentUser: { id: 1, name: 'Test User' },
   loading: false,
+  isAuth: true,
   logout: vi.fn(),
 };
 
@@ -152,6 +153,7 @@ describe('MainLayout', () => {
     vi.clearAllMocks();
     window.innerWidth = 1024;
     mockUseAuth.loading = false;
+    mockUseAuth.isAuth = true;
     mockUseAuth.currentUser = { id: 1, name: 'Test User' };
   });
 
@@ -230,12 +232,11 @@ describe('MainLayout', () => {
 
     renderWithRouter(<MainLayout />);
 
-    // In mobile, nav should still be visible but drawer is used
-    // Wait a bit for resize handler to process
-    await new Promise((resolve) => setTimeout(resolve, 100));
-
-    expect(screen.getByTestId('nav')).toBeInTheDocument();
-    expect(screen.getByTestId('nav')).toHaveAttribute('data-collapsed', 'true');
+    // 移动端：侧边栏收进抽屉，抽屉关闭时 nav 不渲染
+    await waitFor(() => {
+      expect(screen.queryByTestId('nav')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('side-sheet')).not.toBeInTheDocument();
+    });
   });
 
   it('shows mobile drawer when menu is toggled on mobile', async () => {
@@ -302,26 +303,20 @@ describe('MainLayout', () => {
     // Nav should be visible initially
     expect(screen.getByTestId('nav')).toBeInTheDocument();
 
-    // Resize to mobile
+    // Resize to mobile: nav moves into the closed drawer
     window.innerWidth = 600;
     window.dispatchEvent(new Event('resize'));
 
-    // Wait for resize handler to process
-    await new Promise((resolve) => setTimeout(resolve, 100));
+    await waitFor(() => {
+      expect(screen.queryByTestId('nav')).not.toBeInTheDocument();
+    });
 
-    // Layout should adapt to mobile - nav should be collapsed
-    const nav = screen.getByTestId('nav');
-    expect(nav).toHaveAttribute('data-collapsed', 'true');
-
-    // Resize back to desktop
+    // Resize back to desktop: nav is rendered again
     window.innerWidth = 1024;
     window.dispatchEvent(new Event('resize'));
 
-    // Wait for resize handler to process
-    await new Promise((resolve) => setTimeout(resolve, 100));
-
-    // Layout should show desktop nav again - may be expanded
-    const navAfterResize = screen.getByTestId('nav');
-    expect(navAfterResize).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByTestId('nav')).toBeInTheDocument();
+    });
   });
 });
