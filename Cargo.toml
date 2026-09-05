@@ -45,7 +45,7 @@ redis = { version = "0.32", features = ["tokio-comp", "connection-manager"] }
 
 # 配置
 config = "0.15"
-toml = "0.9"
+toml = "1.1"
 
 # 日志
 tracing = "0.1"
