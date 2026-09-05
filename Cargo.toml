@@ -86,7 +86,7 @@ directories = "6.0"
 # 表格输出
 # 关闭 default（derive/macros/assert）以避开 tabled_derive -> proc-macro-error2 2.0.1
 # 的 future-incompat 警告（rust#127909），上游暂无修复版本
-tabled = { version = "0.20", default-features = false, features = ["std"] }
+tabled = { version = "0.21", default-features = false, features = ["std"] }
 
 # 终端工具
 crossterm = "0.29"
