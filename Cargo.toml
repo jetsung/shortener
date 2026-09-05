@@ -77,7 +77,7 @@ argon2 = "0.5"
 jsonwebtoken = "9.3"
 
 # OIDC / OAuth2
-openidconnect = { version = "3", default-features = false, features = ["reqwest", "native-tls"] }
+openidconnect = { version = "4", default-features = false, features = ["reqwest", "native-tls"] }
 oauth2 = "5"
 
 # 配置目录
