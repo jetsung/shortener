@@ -1,4 +1,4 @@
-name: Docker-Release-Server-Debian
+name: Docker-Release-Server
 
 on:
   push:
