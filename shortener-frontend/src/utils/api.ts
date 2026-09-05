@@ -7,39 +7,46 @@ import { Toast } from '@douyinfe/semi-ui-19';
 /**
  * 处理 API 响应
  */
-export const handleApiResponse = <T>(response: any): T => {
+export const handleApiResponse = <T>(response: unknown): T => {
   if (response && typeof response === 'object') {
+    const res = response as Record<string, unknown>;
+
     // 如果有 success 字段且为 false，抛出错误
-    if ('success' in response && !response.success) {
-      throw new Error(response.message || response.errinfo || '请求失败');
+    if ('success' in res && !res.success) {
+      throw new Error(String(res.message || res.errinfo || '请求失败'));
     }
 
     // 如果有 errcode 字段且不为 0，抛出错误
-    if ('errcode' in response && response.errcode !== 0) {
-      throw new Error(response.errinfo || '请求失败');
+    if ('errcode' in res && res.errcode !== 0) {
+      throw new Error(String(res.errinfo || '请求失败'));
     }
 
     // 返回数据部分
-    return response.data || response;
+    return (res.data || res) as T;
   }
 
-  return response;
+  return response as T;
 };
 
 /**
  * 处理 API 错误
  */
-export const handleApiError = (error: any, defaultMessage = '操作失败') => {
+export const handleApiError = (error: unknown, defaultMessage = '操作失败') => {
   console.error('API Error:', error);
+
+  const err = error as {
+    response?: { data?: { message?: string; errinfo?: string } };
+    message?: string;
+  };
 
   let message = defaultMessage;
 
-  if (error?.response?.data?.message) {
-    message = error.response.data.message;
-  } else if (error?.response?.data?.errinfo) {
-    message = error.response.data.errinfo;
-  } else if (error?.message) {
-    message = error.message;
+  if (err?.response?.data?.message) {
+    message = err.response.data.message;
+  } else if (err?.response?.data?.errinfo) {
+    message = err.response.data.errinfo;
+  } else if (err?.message) {
+    message = err.message;
   }
 
   Toast.error(message);

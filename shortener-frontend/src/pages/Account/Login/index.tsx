@@ -53,9 +53,13 @@ const Login: React.FC = () => {
 
       if (response && typeof response === 'object') {
         // 尝试不同的可能字段名
-        const responseData = response as any;
-        token = responseData.token || responseData.access_token || responseData.accessToken;
-        errorMessage = responseData.errinfo || responseData.error || responseData.message;
+        const responseData = response as Record<string, unknown>;
+        token = (responseData.token || responseData.access_token || responseData.accessToken) as
+          | string
+          | undefined;
+        errorMessage = (responseData.errinfo || responseData.error || responseData.message) as
+          | string
+          | undefined;
       }
 
       if (token) {

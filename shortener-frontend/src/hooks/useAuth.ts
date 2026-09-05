@@ -64,8 +64,9 @@ export const useAuth = () => {
           : location.pathname + location.search;
         navigate(`/account/login?redirect=${encodeURIComponent(redirect)}`, { replace: true });
       }
-    } catch (error: any) {
-      const is401 = error.response?.status === 401 || error.response?.status === 403;
+    } catch (error: unknown) {
+      const err = error as { response?: { status?: number } };
+      const is401 = err.response?.status === 401 || err.response?.status === 403;
       if (is401) {
         setIsAuth(false);
         clearAuth();
@@ -99,6 +100,7 @@ export const useAuth = () => {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- 挂载时需同步校验登录态并跳转
     checkAuth();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- 仅在挂载时校验一次登录态
   }, []);
 
   return {

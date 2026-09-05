@@ -25,7 +25,7 @@ const ProxyTest: React.FC = () => {
       addResult('直接请求 (应该失败 - CORS)', response.data);
       Toast.success('直接请求成功');
     } catch (error: unknown) {
-      const axiosError = error as any;
+      const axiosError = error as AxiosError;
       addResult('直接请求 (CORS 错误)', {
         message: axiosError.message,
         status: axiosError.response?.status,
@@ -47,7 +47,7 @@ const ProxyTest: React.FC = () => {
       addResult('代理请求 (应该成功)', response.data);
       Toast.success('代理请求成功');
     } catch (error: unknown) {
-      const axiosError = error as any;
+      const axiosError = error as AxiosError;
       addResult('代理请求 (错误)', {
         message: axiosError.message,
         status: axiosError.response?.status,
@@ -67,7 +67,7 @@ const ProxyTest: React.FC = () => {
       addResult('代理健康检查', response.data);
       Toast.success('代理健康检查成功');
     } catch (error: unknown) {
-      const axiosError = error as any;
+      const axiosError = error as AxiosError;
       addResult('代理健康检查 (错误)', {
         message: axiosError.message,
         status: axiosError.response?.status,

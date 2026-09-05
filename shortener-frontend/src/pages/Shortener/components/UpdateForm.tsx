@@ -61,21 +61,22 @@ const UpdateForm: React.FC<UpdateFormProps> = (props) => {
   }, [updateModalOpen, values]);
 
   return (
-    <SemiModalForm
-      ref={formRef}
-      title="更新短链"
-      visible={updateModalOpen}
-      onFinish={async (formValues: FormValueType) => {
-        try {
-          const success = await onSubmit(formValues);
-          if (success) {
-            onCancel(false);
+      <SemiModalForm
+        ref={formRef}
+        title="更新短链"
+        visible={updateModalOpen}
+        onFinish={async (formValues: Record<string, unknown>) => {
+          const value = formValues as FormValueType;
+          try {
+            const success = await onSubmit(value);
+            if (success) {
+              onCancel(false);
+            }
+            return success;
+          } catch {
+            return false;
           }
-          return success;
-        } catch {
-          return false;
-        }
-      }}
+        }}
       onCancel={() => onCancel(false)}
       width={600}
       okText="确定"

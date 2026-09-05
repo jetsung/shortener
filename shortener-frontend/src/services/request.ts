@@ -1,9 +1,9 @@
-import axios, { AxiosResponse } from 'axios';
+import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 import { Toast } from '@/utils/notification';
 import { redirectToLogin } from '@/utils/api';
 
 // 创建 axios 实例
-const request = axios.create({
+const instance = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
   timeout: 10000,
   headers: {
@@ -12,7 +12,7 @@ const request = axios.create({
 });
 
 // 请求拦截器
-request.interceptors.request.use(
+instance.interceptors.request.use(
   (config) => {
     // 添加 token 等认证信息
     const token = localStorage.getItem('token');
@@ -29,7 +29,7 @@ request.interceptors.request.use(
 );
 
 // 响应拦截器
-request.interceptors.response.use(
+instance.interceptors.response.use(
   (response: AxiosResponse) => {
     const { data } = response;
 
@@ -72,5 +72,12 @@ request.interceptors.response.use(
     return Promise.reject(error);
   },
 );
+
+// 响应拦截器已把返回值收敛为响应体（而非 AxiosResponse），
+// 这里校正类型签名使其与运行时行为一致，调用方 `request<T>` 直接拿到 Promise<T>
+const request = instance as unknown as {
+  <T = unknown>(config: AxiosRequestConfig): Promise<T>;
+  <T = unknown>(url: string, config?: AxiosRequestConfig): Promise<T>;
+};
 
 export default request;

@@ -21,7 +21,7 @@ function useIsMobile() {
   return isMobile;
 }
 
-export interface SemiTableColumn<T extends Record<string, any> = any> extends Omit<
+export interface SemiTableColumn<T extends Record<string, unknown> = Record<string, unknown>> extends Omit<
   ColumnProps<T>,
   'render'
 > {
@@ -37,8 +37,8 @@ export interface SemiTableColumn<T extends Record<string, any> = any> extends Om
   copyable?: boolean;
   valueType?: 'text' | 'textarea' | 'dateTime' | 'option';
   valueEnum?: Record<string, { text: string; status?: string }>;
-  render?: (value: any, record: T, index: number) => React.ReactNode;
-  renderText?: (text: any, record: T) => string;
+  render?: (value: unknown, record: T, index: number) => React.ReactNode;
+  renderText?: (text: unknown, record: T) => string;
 }
 
 export interface SemiTableActionRef {
@@ -46,15 +46,18 @@ export interface SemiTableActionRef {
   reloadAndRest: () => void;
 }
 
-export interface SemiTableProps<T extends Record<string, any> = any, P = any> {
+export interface SemiTableProps<
+  T extends Record<string, unknown> = Record<string, unknown>,
+  P = unknown,
+> {
   headerTitle?: string;
   actionRef?: React.MutableRefObject<SemiTableActionRef | undefined>;
   rowKey: string;
   columns: SemiTableColumn<T>[];
   request?: (
     params: P & { current?: number; pageSize?: number },
-    sorter: Record<string, any>,
-    filter: Record<string, any>,
+    sorter: Record<string, unknown>,
+    filter: Record<string, unknown>,
   ) => Promise<{
     data: T[];
     success: boolean;
@@ -70,13 +73,15 @@ export interface SemiTableProps<T extends Record<string, any> = any, P = any> {
   columnsState?: {
     defaultValue?: Record<string, { show: boolean }>;
   };
-  pagination?: boolean | object;
+  pagination?: boolean | Record<string, unknown>;
   expandable?: {
     expandedRowRender?: (record: T, index: number, expanded: boolean) => React.ReactNode;
   };
 }
 
-function SemiTable<T extends Record<string, any> = any, P = any>(props: SemiTableProps<T, P>) {
+function SemiTable<T extends Record<string, unknown>, P = unknown>(
+  props: SemiTableProps<T, P>,
+) {
   const {
     headerTitle,
     actionRef,
@@ -97,10 +102,10 @@ function SemiTable<T extends Record<string, any> = any, P = any>(props: SemiTabl
   const [total, setTotal] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-  const [sorter, setSorter] = useState<Record<string, any>>({});
-  const [searchParams, setSearchParams] = useState<Record<string, any>>({});
+  const [sorter, setSorter] = useState<Record<string, unknown>>({});
+  const [searchParams, setSearchParams] = useState<Record<string, unknown>>({});
   const [selectedRowKeys, setSelectedRowKeys] = useState<(string | number)[]>([]);
-  const formRef = useRef<any>(null);
+  const formRef = useRef<Form | null>(null);
 
   // 处理列配置，支持隐藏列
   const processedColumns = columns
@@ -128,20 +133,20 @@ function SemiTable<T extends Record<string, any> = any, P = any>(props: SemiTabl
       // 处理复制功能
       if (col.copyable) {
         const originalRender = col.render;
-        processedCol.render = (value: any, record: T, index: number) => {
+        processedCol.render = (value: unknown, record: T, index: number) => {
           const displayValue = originalRender ? originalRender(value, record, index) : value;
-          return displayValue;
+          return displayValue as React.ReactNode;
         };
       }
 
       // 处理状态枚举
       if (col.valueEnum && !col.render) {
-        processedCol.render = (value: any) => {
-          const enumItem = col.valueEnum![value];
+        processedCol.render = (value: unknown) => {
+          const enumItem = col.valueEnum![String(value)];
           if (enumItem) {
-            return <Text type={enumItem.status as any}>{enumItem.text}</Text>;
+            return <Text type={enumItem.status as React.ComponentProps<typeof Text>['type']}>{enumItem.text}</Text>;
           }
-          return value;
+          return String(value ?? '');
         };
       }
 
@@ -205,9 +210,7 @@ function SemiTable<T extends Record<string, any> = any, P = any>(props: SemiTabl
           setCurrentPage(1);
           setSearchParams({});
           setSorter({});
-          if (formRef.current) {
-            formRef.current.reset();
-          }
+          formRef.current?.formApi.reset();
           // 重置后会触发 loadData
         },
       };
@@ -222,9 +225,7 @@ function SemiTable<T extends Record<string, any> = any, P = any>(props: SemiTabl
 
   // 处理重置
   const handleReset = () => {
-    if (formRef.current) {
-      formRef.current.formApi?.reset();
-    }
+    formRef.current?.formApi.reset();
     setSearchParams({});
     setCurrentPage(1);
   };
@@ -333,14 +334,18 @@ function SemiTable<T extends Record<string, any> = any, P = any>(props: SemiTabl
       pageSizeOpts: [10, 20, 50, 100],
       onChange: handlePageChange,
       onPageSizeChange: handlePageSizeChange,
-      size: isMobile ? 'small' : 'default',
+      size: isMobile ? ('small' as const) : ('default' as const),
       showTotal: isMobile ? false : undefined,
     };
 
     // 如果传入的是对象，合并配置，但确保关键属性不被覆盖
     if (typeof pagination === 'object') {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { onChange, onPageSizeChange, currentPage: _, ...restPagination } = pagination as any;
+      const {
+        onChange: _onChange,
+        onPageSizeChange: _onPageSizeChange,
+        currentPage: _currentPage,
+        ...restPagination
+      } = pagination;
       return {
         ...restPagination,
         ...baseConfig,

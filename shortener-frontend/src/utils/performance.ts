@@ -6,7 +6,7 @@ import React from 'react';
  * @param fallback 加载时的占位组件
  * @returns 懒加载组件
  */
-export function createLazyComponent<T extends React.ComponentType<any>>(
+export function createLazyComponent<T extends React.ComponentType<unknown>>(
   importFunc: () => Promise<{ default: T }>,
 ) {
   return React.lazy(importFunc);

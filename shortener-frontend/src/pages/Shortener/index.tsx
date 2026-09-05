@@ -4,6 +4,7 @@ import { Toast } from '@/utils/notification';
 import { IconPlus, IconCopy, IconRefresh } from '@douyinfe/semi-icons';
 import { SemiTable, SemiModalForm } from '@/components';
 import type { SemiTableActionRef, SemiTableColumn } from '@/components/SemiTable';
+import type { SemiFormRef } from '@/components/SemiForm/types';
 import {
   getShortens,
   addShorten,
@@ -26,7 +27,7 @@ const Shortener: React.FC = () => {
   const [selectedRowsState, setSelectedRows] = useState<ShortenResponse[]>([]);
   const [showConfirm, setShowConfirm] = useState(false);
   const [refreshingCache, setRefreshingCache] = useState<boolean>(false);
-  const addFormRef = useRef<any>(null);
+  const addFormRef = useRef<SemiFormRef>(null);
   const navigate = useNavigate();
 
   const copyToClipboard = (text: string, messageText: string) => {
@@ -43,8 +44,8 @@ const Shortener: React.FC = () => {
     Toast.info('正在刷新缓存');
     try {
       const res = await refreshCache();
-      const cleared = (res as any).cleared_keys ?? 0;
-      const warmed = (res as any).warmed_urls ?? 0;
+      const cleared = res.cleared_keys ?? 0;
+      const warmed = res.warmed_urls ?? 0;
       Toast.update(`缓存已刷新：清除 ${cleared} 个旧键，重新缓存 ${warmed} 条短链`, 'success');
       actionRef.current?.reload();
       return true;
@@ -184,7 +185,9 @@ const Shortener: React.FC = () => {
               )
             }
           />
-          <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>{text}</span>
+          <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            {String(text ?? '')}
+          </span>
         </div>
       ),
     },
@@ -315,14 +318,15 @@ const Shortener: React.FC = () => {
               query.order = orderBy[1] === 'ascend' ? 'asc' : 'desc';
             }
             const res = await getShortens(query);
-            data = (res as any).data || [];
-            total = (res as any).meta?.total || 0;
+            data = res.data || [];
+            total = res.meta?.total || 0;
             success = true;
           } catch (error: unknown) {
-            const errinfo = (error as any)?.response?.data?.errinfo;
+            const err = error as { response?: { data?: { errinfo?: string }; status?: number } };
+            const errinfo = err?.response?.data?.errinfo;
             Toast.error(errinfo ?? '数据获取失败');
 
-            const status = (error as any)?.response?.status;
+            const status = err?.response?.status;
             if (status === 401) {
               navigate('/account/login');
             }

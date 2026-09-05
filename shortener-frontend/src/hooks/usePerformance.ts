@@ -12,8 +12,9 @@ export function usePerformance(componentName: string) {
 
   // 组件挂载时开始计时
   useEffect(() => {
+    const monitor = performanceMonitor.current;
     mountTime.current = performance.now();
-    performanceMonitor.current.startMeasure(`${componentName}-mount`);
+    monitor.startMeasure(`${componentName}-mount`);
 
     return () => {
       // 组件卸载时结束计时
@@ -21,9 +22,9 @@ export function usePerformance(componentName: string) {
         void (performance.now() - mountTime.current);
         // Component mounted
       }
-      performanceMonitor.current.endMeasure(`${componentName}-mount`);
+      monitor.endMeasure(`${componentName}-mount`);
     };
-  }, [componentName]);
+  }, [componentName, performanceMonitor]);
 
   // 测量异步操作性能
   const measureAsync = useCallback(
@@ -60,8 +61,8 @@ export function usePerformance(componentName: string) {
  * 组件渲染优化 Hook
  * 用于检测不必要的重新渲染
  */
-export function useRenderOptimization(_componentName: string, props: Record<string, any>) {
-  const prevProps = useRef<Record<string, any> | undefined>(undefined);
+export function useRenderOptimization(_componentName: string, props: Record<string, unknown>) {
+  const prevProps = useRef<Record<string, unknown> | undefined>(undefined);
   const renderCount = useRef(0);
 
   useEffect(() => {
@@ -91,13 +92,13 @@ export function useRenderOptimization(_componentName: string, props: Record<stri
 /**
  * 内存使用监控 Hook
  */
-export function useMemoryMonitor(componentName: string) {
+export function useMemoryMonitor(_componentName: string) {
   const checkMemory = useCallback(() => {
     if ('memory' in performance && import.meta.env.DEV) {
-      void (performance as any).memory;
+      void (performance as Performance & { memory?: unknown }).memory;
       // Memory usage tracking
     }
-  }, [componentName]);
+  }, []);
 
   useEffect(() => {
     // 组件挂载时检查内存

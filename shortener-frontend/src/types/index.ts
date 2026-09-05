@@ -42,7 +42,7 @@ export interface ClickHistory {
 }
 
 // API 响应类型
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean;
   data: T;
   message?: string;
@@ -98,15 +98,15 @@ export type ThemeMode = 'light' | 'dark';
 export type Locale = 'zh-CN' | 'en-US';
 
 // 表格列配置类型
-export interface TableColumn<T = any> {
+export interface TableColumn<T = Record<string, unknown>> {
   title: string;
   dataIndex: keyof T;
   key: string;
   width?: number;
   align?: 'left' | 'center' | 'right';
-  render?: (value: any, record: T, index: number) => React.ReactNode;
+  render?: (value: unknown, record: T, index: number) => React.ReactNode;
   sorter?: boolean;
-  filters?: Array<{ text: string; value: any }>;
+  filters?: Array<{ text: string; value: unknown }>;
 }
 
 // 统计数据类型

@@ -1,21 +1,24 @@
-import type { ReactNode } from 'react';
+import type { ComponentProps, CSSProperties, ReactNode } from 'react';
+import type { Modal } from '@douyinfe/semi-ui-19';
 
 export interface SemiFormProps {
-  onFinish?: (values: any) => Promise<boolean> | boolean;
-  onFinishFailed?: (errorInfo: any) => void;
+  onFinish?: (values: Record<string, unknown>) => Promise<boolean> | boolean;
+  onFinishFailed?: (errorInfo: unknown) => void;
   children?: ReactNode;
   labelPosition?: 'left' | 'top' | 'inset';
   labelWidth?: number | string;
-  initValues?: any;
-  [key: string]: any;
+  initValues?: Record<string, unknown>;
+  style?: CSSProperties;
+  className?: string;
+  'data-testid'?: string;
 }
 
 export interface SemiFormRef {
   submit: () => Promise<void>;
-  validate: () => Promise<any>;
+  validate: () => Promise<unknown>;
   reset: () => void;
-  setValues: (values: any) => void;
-  getValues: () => any;
+  setValues: (values: Record<string, unknown>) => void;
+  getValues: () => Record<string, unknown>;
 }
 
 export interface SemiModalFormProps extends SemiFormProps {
@@ -26,5 +29,9 @@ export interface SemiModalFormProps extends SemiFormProps {
   width?: number | string;
   okText?: string;
   cancelText?: string;
-  modalProps?: unknown;
+  /** 透传给 Modal 的其余属性 */
+  modalProps?: Omit<
+    ComponentProps<typeof Modal>,
+    keyof SemiModalFormProps | 'children'
+  > & { 'data-testid'?: string };
 }

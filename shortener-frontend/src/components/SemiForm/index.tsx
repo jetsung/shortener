@@ -1,24 +1,9 @@
 import React, { forwardRef, useImperativeHandle } from 'react';
 import { Form } from '@douyinfe/semi-ui-19';
 import type { FormApi } from '@douyinfe/semi-ui-19/lib/es/form/interface';
+import type { SemiFormProps, SemiFormRef } from './types';
 
-export interface SemiFormProps {
-  onFinish?: (values: any) => Promise<boolean> | boolean;
-  onFinishFailed?: (errorInfo: any) => void;
-  children?: React.ReactNode;
-  labelPosition?: 'left' | 'top' | 'inset';
-  labelWidth?: number | string;
-  initValues?: any;
-  [key: string]: any;
-}
-
-export interface SemiFormRef {
-  submit: () => Promise<void>;
-  validate: () => Promise<any>;
-  reset: () => void;
-  setValues: (values: any) => void;
-  getValues: () => any;
-}
+export type { SemiFormProps, SemiFormRef } from './types';
 
 /**
  * Semi Form 组件封装
@@ -37,11 +22,11 @@ const SemiForm = forwardRef<SemiFormRef, SemiFormProps>((props, ref) => {
       return await formApiRef.current?.validate();
     },
     reset: () => formApiRef.current?.reset(),
-    setValues: (values: any) => formApiRef.current?.setValues(values),
+    setValues: (values: Record<string, unknown>) => formApiRef.current?.setValues(values),
     getValues: () => formApiRef.current?.getValues() || {},
   }));
 
-  const handleSubmit = async (values: unknown) => {
+  const handleSubmit = async (values: Record<string, unknown>) => {
     try {
       if (onFinish) {
         return await onFinish(values);
