@@ -66,7 +66,7 @@ clap = { version = "4.5", features = ["derive", "env"] }
 reqwest = { version = "0.12", features = ["json"] }
 
 # 工具
-rand = "0.9"
+rand = "0.10"
 chrono = "0.4"
 uuid = { version = "1.11", features = ["v4"] }
 
