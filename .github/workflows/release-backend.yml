@@ -53,20 +53,14 @@ jobs:
         run: cargo install cargo-zigbuild
       - name: Install cargo-deb and cargo-generate-rpm
         run: cargo install cargo-deb cargo-generate-rpm
-      - name: Add OpenSSL
-        run: |
-          cargo add openssl --features vendored -p shortener-server
-          cargo add openssl --features vendored -p shortener-cli
       - name: Update submodules
         run: git submodule update --init --recursive
       - name: Build server and cli for Linux
         run: |
-          cargo zigbuild -p shortener-server --release --target x86_64-unknown-linux-musl --features openssl/vendored
-          cargo zigbuild -p shortener-server --release --target aarch64-unknown-linux-musl --features openssl/vendored
-          cargo zigbuild -p shortener-server --release --target loongarch64-unknown-linux-musl --features openssl/vendored
-          cargo zigbuild -p shortener-cli --release --target x86_64-unknown-linux-musl --features openssl/vendored
-          cargo zigbuild -p shortener-cli --release --target aarch64-unknown-linux-musl --features openssl/vendored
-          cargo zigbuild -p shortener-cli --release --target loongarch64-unknown-linux-musl --features openssl/vendored
+          for arch in x86_64 aarch64 loongarch64; do
+            cargo zigbuild -p shortener-server --release --target $arch-unknown-linux-musl
+            cargo zigbuild -p shortener-cli --release --target $arch-unknown-linux-musl
+          done
       - name: Create release tarballs
         run: |
           mkdir ${{ env.RELEASE_DIR }}
@@ -74,16 +68,14 @@ jobs:
             tar -cJf "${{ env.RELEASE_DIR }}/shortener-server-${{ steps.tag.outputs.VERSION }}-$arch-unknown-linux-musl.tar.xz" -C target/$arch-unknown-linux-musl/release shortener-server
             tar -cJf "${{ env.RELEASE_DIR }}/shortener-cli-${{ steps.tag.outputs.VERSION }}-$arch-unknown-linux-musl.tar.xz" -C target/$arch-unknown-linux-musl/release shortener-cli
           done
-      - name: Build native x86_64 binaries (for deb/rpm)
-        run: |
-          cargo build --release -p shortener-server --features openssl/vendored
-          cargo build --release -p shortener-cli --features openssl/vendored
       - name: Package deb and rpm
         run: |
-          cargo deb -p shortener-server --no-build --output ${{ env.RELEASE_DIR }}
-          cargo deb -p shortener-cli --no-build --output ${{ env.RELEASE_DIR }}
-          cargo generate-rpm -p shortener-server --output ${{ env.RELEASE_DIR }}
-          cargo generate-rpm -p shortener-cli --output ${{ env.RELEASE_DIR }}
+          for arch in x86_64 aarch64 loongarch64; do
+            cargo deb -p shortener-server --no-build --target $arch-unknown-linux-musl --output ${{ env.RELEASE_DIR }}
+            cargo deb -p shortener-cli --no-build --target $arch-unknown-linux-musl --output ${{ env.RELEASE_DIR }}
+            cargo generate-rpm -p shortener-server --target $arch-unknown-linux-musl --output ${{ env.RELEASE_DIR }}
+            cargo generate-rpm -p shortener-cli --target $arch-unknown-linux-musl --output ${{ env.RELEASE_DIR }}
+          done
       - name: Upload release assets
         uses: softprops/action-gh-release@v3
         with:
