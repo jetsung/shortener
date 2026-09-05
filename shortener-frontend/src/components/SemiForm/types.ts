@@ -30,8 +30,7 @@ export interface SemiModalFormProps extends SemiFormProps {
   okText?: string;
   cancelText?: string;
   /** 透传给 Modal 的其余属性 */
-  modalProps?: Omit<
-    ComponentProps<typeof Modal>,
-    keyof SemiModalFormProps | 'children'
-  > & { 'data-testid'?: string };
+  modalProps?: Omit<ComponentProps<typeof Modal>, keyof SemiModalFormProps | 'children'> & {
+    'data-testid'?: string;
+  };
 }

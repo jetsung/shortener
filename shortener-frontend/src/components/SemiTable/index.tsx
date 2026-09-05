@@ -21,10 +21,9 @@ function useIsMobile() {
   return isMobile;
 }
 
-export interface SemiTableColumn<T extends Record<string, unknown> = Record<string, unknown>> extends Omit<
-  ColumnProps<T>,
-  'render'
-> {
+export interface SemiTableColumn<
+  T extends Record<string, unknown> = Record<string, unknown>,
+> extends Omit<ColumnProps<T>, 'render'> {
   title: React.ReactNode;
   dataIndex: string;
   key?: string;
@@ -79,9 +78,7 @@ export interface SemiTableProps<
   };
 }
 
-function SemiTable<T extends Record<string, unknown>, P = unknown>(
-  props: SemiTableProps<T, P>,
-) {
+function SemiTable<T extends Record<string, unknown>, P = unknown>(props: SemiTableProps<T, P>) {
   const {
     headerTitle,
     actionRef,
@@ -144,7 +141,11 @@ function SemiTable<T extends Record<string, unknown>, P = unknown>(
         processedCol.render = (value: unknown) => {
           const enumItem = col.valueEnum![String(value)];
           if (enumItem) {
-            return <Text type={enumItem.status as React.ComponentProps<typeof Text>['type']}>{enumItem.text}</Text>;
+            return (
+              <Text type={enumItem.status as React.ComponentProps<typeof Text>['type']}>
+                {enumItem.text}
+              </Text>
+            );
           }
           return String(value ?? '');
         };

@@ -55,11 +55,9 @@ const Login: React.FC = () => {
         // 尝试不同的可能字段名
         const responseData = response as Record<string, unknown>;
         token = (responseData.token || responseData.access_token || responseData.accessToken) as
-          | string
-          | undefined;
+          string | undefined;
         errorMessage = (responseData.errinfo || responseData.error || responseData.message) as
-          | string
-          | undefined;
+          string | undefined;
       }
 
       if (token) {
