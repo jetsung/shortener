@@ -2114,11 +2114,15 @@
 <h2 id="概述">概述<a class="headerlink" href="#概述" title="Permanent link">&para;</a></h2>
 <p>Shortener 服务器使用 TOML 格式进行配置。配置可以从以下位置加载：</p>
 <ol>
-<li>配置文件（默认：<code>config.toml</code>）</li>
+<li>配置文件（默认：<code>config.toml</code>，<strong>可选</strong>——文件不存在时以纯环境变量启动）</li>
 <li>环境变量（<code>__</code> 分隔嵌套键（无前缀））</li>
-<li>命令行参数</li>
 </ol>
-<p>优先级（从高到低）：命令行 &gt; 环境变量 &gt; 配置文件</p>
+<p>优先级（从高到低）：环境变量 &gt; 配置文件 &gt; 内置缺省值</p>
+<blockquote>
+<p><code>--config</code> 命令行参数仅用于指定配置文件路径，不直接提供配置值。
+另有三个平铺别名环境变量（<code>DATABASE_URL</code> / <code>CACHE_URL</code> / <code>OIDC_CLIENT_SECRET</code>），
+仅当对应的 <code>__</code> 嵌套形式未设置时生效。</p>
+</blockquote>
 <h2 id="配置文件">配置文件<a class="headerlink" href="#配置文件" title="Permanent link">&para;</a></h2>
 <h3 id="位置">位置<a class="headerlink" href="#位置" title="Permanent link">&para;</a></h3>
 <p>默认位置（按优先级顺序）：</p>
@@ -2186,7 +2190,7 @@
 <h2 id="管理员配置">管理员配置<a class="headerlink" href="#管理员配置" title="Permanent link">&para;</a></h2>
 <p>管理员账号用于密码登录通道。口令以 <strong>Argon2id 哈希</strong>（PHC 字符串格式）存储，不以明文保存。</p>
 <div class="language-toml highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">[admin]</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="n">username</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"admin"</span><span class="w">                        </span><span class="c1"># 管理员用户名（必需）</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="n">username</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"admin"</span><span class="w">                        </span><span class="c1"># 管理员用户名（可选，默认 "admin"）</span>
 </span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="n">password_hash</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"$argon2id$v=19$m=19456,t=2,p=1$..."</span><span class="w">  </span><span class="c1"># 口令 Argon2id 哈希（必需）</span>
 </span></code></pre></div>
 <p>生成哈希（任选其一）：</p>

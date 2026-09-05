@@ -695,6 +695,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="加载优先级">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#最小必填项" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        最小必填项
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -857,6 +874,17 @@
   
     <nav class="md-nav" aria-label="使用示例">
       <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#纯环境变量启动无-configtoml" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        纯环境变量启动（无 config.toml）
+      </span>
+    </span>
+  </a>
+  
+</li>
         
           <li class="md-nav__item">
   <a href="#shell-直接导出" class="md-nav__link">
@@ -2123,6 +2151,7 @@
 <h2 id="目录">目录<a class="headerlink" href="#目录" title="Permanent link">&para;</a></h2>
 <ul>
 <li><a href="#加载优先级">加载优先级</a></li>
+<li><a href="#最小必填项">最小必填项</a></li>
 <li><a href="#命名规则">命名规则</a></li>
 <li><a href="#完整速查表">完整速查表</a></li>
 <li><a href="#服务器配置-server">服务器配置</a></li>
@@ -2139,14 +2168,49 @@
 <li><a href="#常见问题">常见问题</a></li>
 </ul>
 <h2 id="加载优先级">加载优先级<a class="headerlink" href="#加载优先级" title="Permanent link">&para;</a></h2>
-<p>配置来源（从高到低）：</p>
+<p>配置来源（从高到低，后者仅在高位未提供时生效）：</p>
 <ol>
-<li><strong>命令行参数</strong>（<code>--config</code> 指定配置文件）</li>
-<li><strong>环境变量</strong>（覆盖配置文件中的值）</li>
-<li><strong>配置文件</strong> <code>config.toml</code>（默认路径：<code>./config.toml</code>，或 <code>/etc/shortener/config.toml</code>）</li>
+<li><strong>环境变量</strong>（<code>__</code> 嵌套形式，如 <code>SERVER__ADDRESS</code>）</li>
+<li><strong>平铺别名</strong>（仅 <code>DATABASE_URL</code> / <code>CACHE_URL</code> / <code>OIDC_CLIENT_SECRET</code> 三个，且仅当对应 <code>__</code> 形式未设置时生效）</li>
+<li><strong>配置文件</strong> <code>config.toml</code>（默认路径 <code>./config.toml</code>，可用 <code>--config</code> 指定其他路径）</li>
+<li><strong>内置缺省值</strong>（serde default + <code>apply_defaults()</code>）</li>
 </ol>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>命令行参数 &gt; 环境变量 &gt; 配置文件
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>环境变量（__ 形式） &gt; 平铺别名 &gt; 配置文件 &gt; 缺省值
 </span></code></pre></div>
+<blockquote>
+<p><strong><code>config.toml</code> 是可选的</strong>：文件不存在时服务直接以纯环境变量（加缺省值）启动，
+日志会提示 <code>Configuration file 'config.toml' not found, using environment variables only</code>。
+<code>--config</code> 只是配置文件的路径参数，不参与上述优先级。</p>
+</blockquote>
+<h3 id="最小必填项">最小必填项<a class="headerlink" href="#最小必填项" title="Permanent link">&para;</a></h3>
+<p>无论使用文件还是纯环境变量，以下配置必须提供（缺失时启动报字段级错误）：</p>
+<table>
+<thead>
+<tr>
+<th>环境变量</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>JWT_SECRET</code>（或 <code>JWT_SECRET_FILE</code>）</td>
+<td>JWT 签名密钥，独立于配置文件，见 <a href="#jwt-密钥">JWT 密钥</a></td>
+</tr>
+<tr>
+<td><code>SERVER__API_KEY</code></td>
+<td>API 认证密钥</td>
+</tr>
+<tr>
+<td><code>ADMIN__PASSWORD_HASH</code></td>
+<td>管理员口令哈希</td>
+</tr>
+<tr>
+<td><code>DATABASE__URL</code></td>
+<td>数据库连接串</td>
+</tr>
+</tbody>
+</table>
+<p>其余全部配置项均有合理默认值（如监听地址 <code>:8080</code>、管理员用户名 <code>admin</code>、短码长度 <code>6</code>）。</p>
 <h2 id="命名规则">命名规则<a class="headerlink" href="#命名规则" title="Permanent link">&para;</a></h2>
 <p>环境变量使用<strong>双下划线 <code>__</code></strong> 分隔嵌套配置键，<strong>无前缀</strong>：</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># TOML 配置             环境变量</span>
@@ -2208,8 +2272,8 @@
 <tr>
 <td><code>ADMIN__USERNAME</code></td>
 <td><code>[admin] username</code></td>
-<td><strong>是</strong></td>
-<td>-</td>
+<td>否</td>
+<td><code>admin</code></td>
 </tr>
 <tr>
 <td><code>ADMIN__PASSWORD_HASH</code></td>
@@ -2485,14 +2549,14 @@
 <td><code>ADMIN__USERNAME</code></td>
 <td><code>username</code></td>
 <td>字符串</td>
-<td>是</td>
+<td>否（默认 <code>admin</code>）</td>
 <td>管理员用户名</td>
 </tr>
 <tr>
 <td><code>ADMIN__PASSWORD_HASH</code></td>
 <td><code>password_hash</code></td>
 <td>字符串</td>
-<td>是</td>
+<td><strong>是</strong></td>
 <td>口令的 Argon2id 哈希，生成：<code>shortener-server hash-password</code></td>
 </tr>
 </tbody>
@@ -2881,57 +2945,66 @@
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">RUST_LOG</span><span class="o">=</span><span class="s2">"shortener_server=info,sqlx=off"</span>
 </span></code></pre></div>
 <h2 id="使用示例">使用示例<a class="headerlink" href="#使用示例" title="Permanent link">&para;</a></h2>
-<h3 id="shell-直接导出">Shell 直接导出<a class="headerlink" href="#shell-直接导出" title="Permanent link">&para;</a></h3>
+<h3 id="纯环境变量启动无-configtoml">纯环境变量启动（无 config.toml）<a class="headerlink" href="#纯环境变量启动无-configtoml" title="Permanent link">&para;</a></h3>
+<p>不需要配置文件，在任意目录下提供必填项即可启动：</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">SERVER__API_KEY</span><span class="o">=</span><span class="s2">"</span><span class="k">$(</span>openssl<span class="w"> </span>rand<span class="w"> </span>-base64<span class="w"> </span><span class="m">32</span><span class="k">)</span><span class="s2">"</span>
-</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">ADMIN__PASSWORD_HASH</span><span class="o">=</span><span class="s1">'$argon2id$v=19$m=19456,t=2,p=1$...'</span>
-</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="nb">export</span><span class="w"> </span><span class="nv">JWT_SECRET</span><span class="o">=</span><span class="s2">"</span><span class="k">$(</span>openssl<span class="w"> </span>rand<span class="w"> </span>-base64<span class="w"> </span><span class="m">48</span><span class="k">)</span><span class="s2">"</span>
-</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>cargo<span class="w"> </span>run<span class="w"> </span>-p<span class="w"> </span>shortener-server
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">ADMIN__PASSWORD_HASH</span><span class="o">=</span><span class="s1">'$(shortener-server hash-password --password "your-password")'</span>
+</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="nb">export</span><span class="w"> </span><span class="nv">DATABASE__URL</span><span class="o">=</span><span class="s2">"sqlite:///var/lib/shortener/shortener.db?mode=rwc"</span>
+</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="nb">export</span><span class="w"> </span><span class="nv">JWT_SECRET</span><span class="o">=</span><span class="s2">"</span><span class="k">$(</span>openssl<span class="w"> </span>rand<span class="w"> </span>-base64<span class="w"> </span><span class="m">48</span><span class="k">)</span><span class="s2">"</span>
+</span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>
+</span><span id="__span-13-6"><a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a>shortener-server<span class="w">   </span><span class="c1"># 日志提示 "using environment variables only"</span>
+</span></code></pre></div>
+<h3 id="shell-直接导出">Shell 直接导出<a class="headerlink" href="#shell-直接导出" title="Permanent link">&para;</a></h3>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">SERVER__API_KEY</span><span class="o">=</span><span class="s2">"</span><span class="k">$(</span>openssl<span class="w"> </span>rand<span class="w"> </span>-base64<span class="w"> </span><span class="m">32</span><span class="k">)</span><span class="s2">"</span>
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">ADMIN__PASSWORD_HASH</span><span class="o">=</span><span class="s1">'$argon2id$v=19$m=19456,t=2,p=1$...'</span>
+</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="nb">export</span><span class="w"> </span><span class="nv">JWT_SECRET</span><span class="o">=</span><span class="s2">"</span><span class="k">$(</span>openssl<span class="w"> </span>rand<span class="w"> </span>-base64<span class="w"> </span><span class="m">48</span><span class="k">)</span><span class="s2">"</span>
+</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a>cargo<span class="w"> </span>run<span class="w"> </span>-p<span class="w"> </span>shortener-server
 </span></code></pre></div>
 <h3 id="direnv--envrc参考仓库根目录-envrc">direnv / .envrc（参考仓库根目录 <code>.envrc</code>）<a class="headerlink" href="#direnv--envrc参考仓库根目录-envrc" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="c1"># .envrc</span>
-</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">SERVER__ADDRESS</span><span class="o">=</span><span class="s2">"0.0.0.0:8080"</span>
-</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="nb">export</span><span class="w"> </span><span class="nv">SERVER__SHORT_URL</span><span class="o">=</span><span class="s2">"https://s.example.com"</span>
-</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="nb">export</span><span class="w"> </span><span class="nv">SERVER__API_KEY</span><span class="o">=</span><span class="s2">"your-api-key"</span>
-</span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a>
-</span><span id="__span-14-6"><a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a><span class="nb">export</span><span class="w"> </span><span class="nv">DATABASE__URL</span><span class="o">=</span><span class="s2">"postgres://shortener:pass@localhost:5432/shortener"</span>
-</span><span id="__span-14-7"><a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a><span class="nb">export</span><span class="w"> </span><span class="nv">CACHE__ENABLED</span><span class="o">=</span><span class="s2">"true"</span>
-</span><span id="__span-14-8"><a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a><span class="nb">export</span><span class="w"> </span><span class="nv">CACHE__URL</span><span class="o">=</span><span class="s2">"redis://:pass@localhost:6379/0"</span>
-</span><span id="__span-14-9"><a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a>
-</span><span id="__span-14-10"><a id="__codelineno-14-10" name="__codelineno-14-10" href="#__codelineno-14-10"></a><span class="nb">export</span><span class="w"> </span><span class="nv">GEOIP__ENABLED</span><span class="o">=</span><span class="s2">"true"</span>
-</span><span id="__span-14-11"><a id="__codelineno-14-11" name="__codelineno-14-11" href="#__codelineno-14-11"></a><span class="nb">export</span><span class="w"> </span><span class="nv">GEOIP__IP2REGION__PATH</span><span class="o">=</span><span class="s2">"data/ip2region.xdb"</span>
-</span><span id="__span-14-12"><a id="__codelineno-14-12" name="__codelineno-14-12" href="#__codelineno-14-12"></a>
-</span><span id="__span-14-13"><a id="__codelineno-14-13" name="__codelineno-14-13" href="#__codelineno-14-13"></a><span class="nb">export</span><span class="w"> </span><span class="nv">LOGGING__LEVEL</span><span class="o">=</span><span class="s2">"info"</span>
-</span><span id="__span-14-14"><a id="__codelineno-14-14" name="__codelineno-14-14" href="#__codelineno-14-14"></a><span class="nb">export</span><span class="w"> </span><span class="nv">LOGGING__FORMAT</span><span class="o">=</span><span class="s2">"json"</span>
-</span><span id="__span-14-15"><a id="__codelineno-14-15" name="__codelineno-14-15" href="#__codelineno-14-15"></a>
-</span><span id="__span-14-16"><a id="__codelineno-14-16" name="__codelineno-14-16" href="#__codelineno-14-16"></a><span class="nb">export</span><span class="w"> </span><span class="nv">JWT_SECRET</span><span class="o">=</span><span class="s2">"your-jwt-secret"</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="c1"># .envrc</span>
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">SERVER__ADDRESS</span><span class="o">=</span><span class="s2">"0.0.0.0:8080"</span>
+</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="nb">export</span><span class="w"> </span><span class="nv">SERVER__SHORT_URL</span><span class="o">=</span><span class="s2">"https://s.example.com"</span>
+</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="nb">export</span><span class="w"> </span><span class="nv">SERVER__API_KEY</span><span class="o">=</span><span class="s2">"your-api-key"</span>
+</span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>
+</span><span id="__span-15-6"><a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a><span class="nb">export</span><span class="w"> </span><span class="nv">DATABASE__URL</span><span class="o">=</span><span class="s2">"postgres://shortener:pass@localhost:5432/shortener"</span>
+</span><span id="__span-15-7"><a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a><span class="nb">export</span><span class="w"> </span><span class="nv">CACHE__ENABLED</span><span class="o">=</span><span class="s2">"true"</span>
+</span><span id="__span-15-8"><a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a><span class="nb">export</span><span class="w"> </span><span class="nv">CACHE__URL</span><span class="o">=</span><span class="s2">"redis://:pass@localhost:6379/0"</span>
+</span><span id="__span-15-9"><a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a>
+</span><span id="__span-15-10"><a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a><span class="nb">export</span><span class="w"> </span><span class="nv">GEOIP__ENABLED</span><span class="o">=</span><span class="s2">"true"</span>
+</span><span id="__span-15-11"><a id="__codelineno-15-11" name="__codelineno-15-11" href="#__codelineno-15-11"></a><span class="nb">export</span><span class="w"> </span><span class="nv">GEOIP__IP2REGION__PATH</span><span class="o">=</span><span class="s2">"data/ip2region.xdb"</span>
+</span><span id="__span-15-12"><a id="__codelineno-15-12" name="__codelineno-15-12" href="#__codelineno-15-12"></a>
+</span><span id="__span-15-13"><a id="__codelineno-15-13" name="__codelineno-15-13" href="#__codelineno-15-13"></a><span class="nb">export</span><span class="w"> </span><span class="nv">LOGGING__LEVEL</span><span class="o">=</span><span class="s2">"info"</span>
+</span><span id="__span-15-14"><a id="__codelineno-15-14" name="__codelineno-15-14" href="#__codelineno-15-14"></a><span class="nb">export</span><span class="w"> </span><span class="nv">LOGGING__FORMAT</span><span class="o">=</span><span class="s2">"json"</span>
+</span><span id="__span-15-15"><a id="__codelineno-15-15" name="__codelineno-15-15" href="#__codelineno-15-15"></a>
+</span><span id="__span-15-16"><a id="__codelineno-15-16" name="__codelineno-15-16" href="#__codelineno-15-16"></a><span class="nb">export</span><span class="w"> </span><span class="nv">JWT_SECRET</span><span class="o">=</span><span class="s2">"your-jwt-secret"</span>
 </span></code></pre></div>
 <h3 id="systemd参考-deploysystemdshortener-serverservice">systemd（参考 <code>deploy/systemd/shortener-server.service</code>）<a class="headerlink" href="#systemd参考-deploysystemdshortener-serverservice" title="Permanent link">&para;</a></h3>
-<div class="language-ini highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="k">[Service]</span>
-</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="na">Environment</span><span class="o">=</span><span class="s">SERVER__ADDRESS=0.0.0.0:8080</span>
-</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="na">Environment</span><span class="o">=</span><span class="s">SERVER__SHORT_URL=https://s.example.com</span>
-</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="na">Environment</span><span class="o">=</span><span class="s">SERVER__API_KEY=your-api-key</span>
-</span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a><span class="na">Environment</span><span class="o">=</span><span class="s">DATABASE__URL=postgres://shortener:pass@localhost:5432/shortener</span>
-</span><span id="__span-15-6"><a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a><span class="na">Environment</span><span class="o">=</span><span class="s">CACHE__ENABLED=true</span>
-</span><span id="__span-15-7"><a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a><span class="na">Environment</span><span class="o">=</span><span class="s">CACHE__URL=redis://:pass@localhost:6379/0</span>
-</span><span id="__span-15-8"><a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a><span class="na">Environment</span><span class="o">=</span><span class="s">JWT_SECRET=your-jwt-secret</span>
+<div class="language-ini highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="k">[Service]</span>
+</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="na">Environment</span><span class="o">=</span><span class="s">SERVER__ADDRESS=0.0.0.0:8080</span>
+</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="na">Environment</span><span class="o">=</span><span class="s">SERVER__SHORT_URL=https://s.example.com</span>
+</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="na">Environment</span><span class="o">=</span><span class="s">SERVER__API_KEY=your-api-key</span>
+</span><span id="__span-16-5"><a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="na">Environment</span><span class="o">=</span><span class="s">DATABASE__URL=postgres://shortener:pass@localhost:5432/shortener</span>
+</span><span id="__span-16-6"><a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a><span class="na">Environment</span><span class="o">=</span><span class="s">CACHE__ENABLED=true</span>
+</span><span id="__span-16-7"><a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a><span class="na">Environment</span><span class="o">=</span><span class="s">CACHE__URL=redis://:pass@localhost:6379/0</span>
+</span><span id="__span-16-8"><a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a><span class="na">Environment</span><span class="o">=</span><span class="s">JWT_SECRET=your-jwt-secret</span>
 </span></code></pre></div>
 <p>密钥以文件方式挂载：</p>
-<div class="language-ini highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="k">[Service]</span>
-</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="na">LoadCredential</span><span class="o">=</span><span class="s">jwt_secret:/etc/shortener/jwt_secret</span>
-</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="na">Environment</span><span class="o">=</span><span class="s">JWT_SECRET_FILE=/run/credentials/shortener-server.service/jwt_secret</span>
+<div class="language-ini highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="k">[Service]</span>
+</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="na">LoadCredential</span><span class="o">=</span><span class="s">jwt_secret:/etc/shortener/jwt_secret</span>
+</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="na">Environment</span><span class="o">=</span><span class="s">JWT_SECRET_FILE=/run/credentials/shortener-server.service/jwt_secret</span>
 </span></code></pre></div>
 <h3 id="docker-compose参考-dockerdocker-composeyml">Docker Compose（参考 <code>docker/docker-compose.yml</code>）<a class="headerlink" href="#docker-compose参考-dockerdocker-composeyml" title="Permanent link">&para;</a></h3>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="nt">services</span><span class="p">:</span>
-</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="w">  </span><span class="nt">shortener</span><span class="p">:</span>
-</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">jetsung/shortener-server:latest</span>
-</span><span id="__span-17-4"><a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="w">    </span><span class="nt">environment</span><span class="p">:</span>
-</span><span id="__span-17-5"><a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">RUST_LOG=shortener_server=info,sqlx=off</span>
-</span><span id="__span-17-6"><a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">DATABASE__URL=postgres://shortener:shortener_password@postgres:5432/shortener</span>
-</span><span id="__span-17-7"><a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CACHE__ENABLED=true</span>
-</span><span id="__span-17-8"><a id="__codelineno-17-8" name="__codelineno-17-8" href="#__codelineno-17-8"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CACHE__URL=redis://:redis_password@redis:6379/0</span>
-</span><span id="__span-17-9"><a id="__codelineno-17-9" name="__codelineno-17-9" href="#__codelineno-17-9"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">GEOIP__ENABLED=true</span>
-</span><span id="__span-17-10"><a id="__codelineno-17-10" name="__codelineno-17-10" href="#__codelineno-17-10"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">GEOIP__IP2REGION__PATH=/app/data/ip2region.xdb</span>
-</span><span id="__span-17-11"><a id="__codelineno-17-11" name="__codelineno-17-11" href="#__codelineno-17-11"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">JWT_SECRET=change-me-in-production</span>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="nt">services</span><span class="p">:</span>
+</span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="w">  </span><span class="nt">shortener</span><span class="p">:</span>
+</span><span id="__span-18-3"><a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">jetsung/shortener-server:latest</span>
+</span><span id="__span-18-4"><a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="w">    </span><span class="nt">environment</span><span class="p">:</span>
+</span><span id="__span-18-5"><a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">RUST_LOG=shortener_server=info,sqlx=off</span>
+</span><span id="__span-18-6"><a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">DATABASE__URL=postgres://shortener:shortener_password@postgres:5432/shortener</span>
+</span><span id="__span-18-7"><a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CACHE__ENABLED=true</span>
+</span><span id="__span-18-8"><a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CACHE__URL=redis://:redis_password@redis:6379/0</span>
+</span><span id="__span-18-9"><a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">GEOIP__ENABLED=true</span>
+</span><span id="__span-18-10"><a id="__codelineno-18-10" name="__codelineno-18-10" href="#__codelineno-18-10"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">GEOIP__IP2REGION__PATH=/app/data/ip2region.xdb</span>
+</span><span id="__span-18-11"><a id="__codelineno-18-11" name="__codelineno-18-11" href="#__codelineno-18-11"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">JWT_SECRET=change-me-in-production</span>
 </span></code></pre></div>
 <h2 id="常见问题">常见问题<a class="headerlink" href="#常见问题" title="Permanent link">&para;</a></h2>
 <h3 id="环境变量为什么不生效">环境变量为什么不生效？<a class="headerlink" href="#环境变量为什么不生效" title="Permanent link">&para;</a></h3>

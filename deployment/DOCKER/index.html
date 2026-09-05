@@ -2272,15 +2272,15 @@
 </span></code></pre></div>
 <p>AIO 镜像同时包含前端与后端，对外仅暴露 <strong>80 端口</strong>（nginx），内部架构：</p>
 <ul>
-<li><strong>nginx</strong>（监听 80）：托管前端静态资源、SPA 回退，并反向代理 <code>/api/*</code> 与短码重定向到容器内后端</li>
+<li><strong>nginx</strong>（监听 80）：托管前端静态资源（前端为 hash 路由 <code>/#/...</code>），并反向代理 <code>/api/*</code> 与短码重定向到容器内后端</li>
 <li><strong>shortener-server</strong>（监听 <code>127.0.0.1:8080</code>）：API 服务，仅容器内网可访问</li>
 </ul>
-<p>两个进程由 <code>docker/entrypoint-aio.sh</code> 同时拉起。</p>
+<p>两个进程由 <code>docker/entrypoint-aio.sh</code> 同时拉起（后端以 <code>setsid</code> 独立会话运行，nginx 前台运行）。</p>
 <p>快速运行（含 Redis）：</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>docker<span class="w"> </span>compose<span class="w"> </span>-f<span class="w"> </span>docker/docker-compose.aio.yml<span class="w"> </span>up<span class="w"> </span>-d
 </span></code></pre></div>
 <blockquote>
-<p>注意：<code>/{short_code}</code> 短码重定向由 nginx 反代到后端，已知前端 SPA 路由（如 <code>/dashboard</code>、<code>/shortens</code> 等）优先于短码匹配；若短码恰好与 SPA 路由同名，将以 SPA 路由为准。</p>
+<p>注意：<code>/{short_code}</code> 短码重定向由 nginx 反代到后端。前端采用 hash 路由（<code>/#/...</code>），SPA 路由不占用服务端路径，与短码路径无冲突。</p>
 </blockquote>
 <h2 id="使用-docker-bake">使用 Docker Bake<a class="headerlink" href="#使用-docker-bake" title="Permanent link">&para;</a></h2>
 <p>Docker Bake 提供了更强大的构建配置。</p>

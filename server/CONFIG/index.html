@@ -2041,7 +2041,8 @@
 <h2 id="特性">特性<a class="headerlink" href="#特性" title="Permanent link">&para;</a></h2>
 <ul>
 <li><strong>类型安全配置</strong>：所有配置值都是强类型的</li>
-<li><strong>多数据源</strong>：从 TOML 文件和环境变量加载</li>
+<li><strong>多数据源</strong>：从 TOML 文件和环境变量加载（<strong>文件可选</strong>：文件不存在时以纯环境变量启动）</li>
+<li><strong>加载优先级</strong>：环境变量（<code>__</code> 形式）&gt; 平铺别名（<code>DATABASE_URL</code> 等）&gt; 配置文件 &gt; 缺省值</li>
 <li><strong>验证</strong>：自动验证必需字段和值范围</li>
 <li><strong>默认值</strong>：可选配置的合理默认值</li>
 <li><strong>多数据库支持</strong>：SQLite、PostgreSQL 和 MySQL</li>
@@ -2064,7 +2065,7 @@
 <h3 id="管理员配置">管理员配置<a class="headerlink" href="#管理员配置" title="Permanent link">&para;</a></h3>
 <p>管理员账号用于密码登录通道。口令以 <strong>Argon2id 哈希</strong>（PHC 字符串格式）存储，不以明文保存。</p>
 <div class="language-toml highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">[admin]</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="n">username</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"admin"</span><span class="w">                        </span><span class="c1"># 管理员用户名（必需）</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="n">username</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"admin"</span><span class="w">                        </span><span class="c1"># 管理员用户名（可选，默认 "admin"）</span>
 </span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="n">password_hash</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"$argon2id$v=19$m=19456,t=2,p=1$..."</span><span class="w">  </span><span class="c1"># 口令 Argon2id 哈希（必需）</span>
 </span></code></pre></div>
 <p>生成哈希（任选其一，交互式输入可在 shell 历史中不留痕）：</p>
@@ -2173,7 +2174,7 @@
 </span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="kd">let</span><span class="w"> </span><span class="n">config</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Config</span><span class="p">::</span><span class="n">from_file</span><span class="p">(</span><span class="s">"path/to/config.toml"</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
 </span></code></pre></div>
 <h3 id="环境变量">环境变量<a class="headerlink" href="#环境变量" title="Permanent link">&para;</a></h3>
-<p>可以使用环境变量覆盖配置（双下划线 <code>__</code> 分隔嵌套键，无前缀）：</p>
+<p>可以使用环境变量覆盖配置（双下划线 <code>__</code> 分隔嵌套键，无前缀），<strong>环境变量优先于配置文件</strong>；配置文件不存在时以纯环境变量启动：</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="c1"># 覆盖服务器地址</span>
 </span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">SERVER__ADDRESS</span><span class="o">=</span><span class="s2">":9090"</span>
 </span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>
