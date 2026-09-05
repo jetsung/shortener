@@ -1,0 +1,161 @@
+[project]
+site_name = "Shortener"
+site_description = "Shortener - 高性能 URL 短链接服务"
+site_author = "Jetsung Chan"
+site_url = "https://jetsung.github.io/shortener"
+
+repo_url = "https://github.com/jetsung/shortener"
+repo_name = "jetsung/shortener"
+edit_uri = "edit/main/docs/"
+
+copyright = "Copyright &copy; 2026 Jetsung Chan"
+
+nav = [
+  { "首页" = "index.md" },
+  { "项目概述" = "PROJECT_README.md" },
+
+  { "快速开始" = [
+    { "安装指南" = "general/INSTALLATION.md" },
+    { "配置指南" = "general/CONFIGURATION.md" },
+    { "配置文件说明" = "general/CONFIG_FILES.md" },
+    { "环境变量参考" = "general/ENVIRONMENT_VARIABLES.md" },
+    { "OIDC 对接部署" = "general/OIDC.md" },
+    { "GeoIP 配置指南" = "general/GEOIP.md" },
+  ]},
+
+  { "服务器" = [
+    { "概述" = "server/README.md" },
+    { "API 文档" = "server/API.md" },
+    { "配置详解" = "server/CONFIG.md" },
+    { "性能基准" = "server/BENCHMARKS.md" },
+  ]},
+
+  { "前端" = [
+    { "概述" = "frontend/README.md" },
+    { "组件文档" = "frontend/COMPONENTS.md" },
+    { "部署指南" = "frontend/DEPLOYMENT.md" },
+  ]},
+
+  { "CLI 工具" = [
+    { "概述" = "cli/README.md" },
+    { "使用指南" = "cli/CLI.md" },
+    { "命令参考" = "cli/USAGE.md" },
+  ]},
+
+  { "部署" = [
+    { "部署概述" = "deployment/README.md" },
+    { "生产部署" = "deployment/DEPLOYMENT.md" },
+    { "Docker 部署" = "deployment/DOCKER.md" },
+    { "Docker 完整指南" = "deployment/DOCKER_FULL.md" },
+    { "Docker 前端部署" = "deployment/DOCKER_FRONTEND.md" },
+    { "Docker All-In-One" = "deployment/DOCKER_AIO.md" },
+    { "Docker 高级" = "deployment/DOCKER_ADVANCED.md" },
+    { "Systemd 服务" = "deployment/SYSTEMD.md" },
+    { "DEB 打包" = "deployment/DEB_PACKAGING_SIMPLIFIED.md" },
+    { "DEB 构建" = "deployment/BUILD_DEB.md" },
+    { "RPM 构建" = "deployment/BUILD_RPM.md" },
+    { "交叉编译" = "deployment/CROSS_COMPILE.md" },
+  ]},
+
+  { "开发" = [
+    { "共享库" = "common/README.md" },
+    { "贡献指南" = "CONTRIBUTING.md" },
+    { "快速参考" = "QUICK_REFERENCE.md" },
+    { "ADR 记录" = "adr/0001-oidc-and-password-login.md" },
+  ]},
+]
+
+extra_css = ["stylesheets/extra.css"]
+
+[[project.extra.social]]
+icon = "fontawesome/brands/github"
+link = "https://github.com/jetsung"
+
+[[project.extra.social]]
+icon = "fontawesome/solid/envelope"
+link = "mailto:i@jetsung.com"
+
+[project.theme]
+# variant = "classic"
+# custom_dir = "overrides"
+# favicon = "images/favicon.png"
+language = "zh"
+features = [
+  "announce.dismiss",
+  # "content.action.edit",
+  # "content.action.view",
+  "content.code.annotate",
+  "content.code.copy",
+  "content.code.select",
+  "content.footnote.tooltips",
+  "content.tabs.link",
+  "content.tooltips",
+  # "header.autohide",
+  # "navigation.expand",
+  "navigation.footer",
+  "navigation.instant",
+  "navigation.instant.prefetch",
+  # "navigation.instant.progress",
+  "navigation.path",
+  # "navigation.prune",
+  "navigation.sections",
+  "navigation.tabs",
+  # "navigation.tabs.sticky",
+  "navigation.top",
+  "navigation.tracking",
+  "search.highlight",
+  # "toc.follow",
+  "toc.integrate",
+]
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme)"
+toggle.icon = "lucide/sun-moon"
+toggle.name = "切换到浅色模式"
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme: light)"
+scheme = "default"
+toggle.icon = "lucide/sun"
+toggle.name = "切换到深色模式"
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme: dark)"
+scheme = "slate"
+toggle.icon = "lucide/moon"
+toggle.name = "切换到系统偏好"
+
+[project.markdown_extensions]
+abbr = {}
+admonition = {}
+attr_list = {}
+def_list = {}
+footnotes = {}
+md_in_html = {}
+toc.permalink = true
+toc.toc_depth = 3
+toc.slugify.object = "pymdownx.slugs.slugify"
+toc.slugify.kwds.case = "lower"
+tables = {}
+pymdownx.arithmatex.generic = true
+pymdownx.betterem = {}
+pymdownx.caret = {}
+pymdownx.details = {}
+pymdownx.emoji.emoji_generator = "zensical.extensions.emoji.to_svg"
+pymdownx.emoji.emoji_index = "zensical.extensions.emoji.twemoji"
+pymdownx.highlight.anchor_linenums = true
+pymdownx.highlight.line_spans = "__span"
+pymdownx.highlight.pygments_lang_class = true
+pymdownx.inlinehilite = {}
+pymdownx.keys = {}
+pymdownx.magiclink = {}
+pymdownx.mark = {}
+pymdownx.smartsymbols = {}
+pymdownx.snippets = {}
+pymdownx.superfences.custom_fences = [
+  { name = "mermaid", class = "mermaid", format = "pymdownx.superfences.fence_code_format" },
+]
+pymdownx.tabbed.alternate_style = true
+pymdownx.tabbed.combine_header_slug = true
+pymdownx.tasklist.custom_checkbox = true
+pymdownx.tilde = {}

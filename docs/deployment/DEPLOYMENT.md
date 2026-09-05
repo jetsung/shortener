@@ -36,7 +36,7 @@ Shortener 服务器可以通过多种方式部署：
 
 ### 软件要求
 
-- Rust：1.85+（从源码构建）
+- Rust：1.90+（从源码构建）
 - Docker：20.10+（Docker 部署）
 - PostgreSQL：12+ 或 MySQL：8.0+（可选，生产环境）
 - Redis：6.0+ 或 Valkey：7.0+（可选，缓存）
@@ -77,8 +77,23 @@ docker compose up -d
 ```
 
 更多详细信息请查看 [Docker 部署指南](DOCKER.md)。
-ADMIN_PASSWORD=$(openssl rand -base64 32)
+
+2. 创建环境变量文件（生成随机口令，供配置 `password_hash` 使用）：
+
+```bash
+cat > .env << EOF
+DATABASE__URL=postgres://shortener:your_secure_password@postgres:5432/shortener
+CACHE__URL=redis://:your_redis_password@redis:6379/0
+API_KEY=$(openssl rand -base64 32)
+OIDC__CLIENT_SECRET=$(openssl rand -base64 32)
+JWT_SECRET=$(openssl rand -base64 48)
 EOF
+```
+
+管理员登录口令同样随机生成，并用 `shortener-server hash-password` 转为 Argon2id 哈希后填入配置的 `admin.password_hash`：
+
+```bash
+shortener-server hash-password --password "$(openssl rand -base64 16)"
 ```
 
 3. 启动服务：
@@ -97,7 +112,7 @@ docker compose ps
 docker compose logs -f shortener-server
 
 # 测试 API
-curl http://localhost:8080/health
+curl http://localhost:8080/ping
 ```
 
 详细说明请参阅 [Docker 部署指南](DOCKER.md)。
@@ -143,8 +158,8 @@ sudo vim /opt/shortener/config/config.toml
 配置数据库路径：
 
 ```toml
-[database.sqlite]
-path = "/opt/shortener/data/shortener.db"
+[database]
+url = "sqlite:///opt/shortener/data/shortener.db?mode=rwc"
 ```
 
 4. 启动服务：
@@ -209,7 +224,7 @@ sudo mkdir -p /opt/shortener/logs
 
 # 复制文件
 sudo cp target/release/shortener-server /usr/local/bin/
-sudo cp config/config.toml /opt/shortener/config/
+sudo cp config.toml /opt/shortener/config/
 
 # 设置权限
 sudo chown -R shortener:shortener /opt/shortener
@@ -258,15 +273,7 @@ docker compose up -d
 
 ```toml
 [database]
-type = "postgres"
-
-[database.postgres]
-host = "shortener.xxxxx.us-east-1.rds.amazonaws.com"
-port = 5432
-user = "shortener"
-password = "${DB_PASSWORD}"
-database = "shortener"
-sslmode = "require"
+url = "postgres://shortener:${DB_PASSWORD}@shortener.xxxxx.us-east-1.rds.amazonaws.com:5432/shortener?sslmode=require"
 ```
 
 #### ElastiCache Redis
@@ -274,12 +281,7 @@ sslmode = "require"
 ```toml
 [cache]
 enabled = true
-type = "redis"
-
-[cache.redis]
-host = "shortener.xxxxx.cache.amazonaws.com"
-port = 6379
-password = "${REDIS_PASSWORD}"
+url = "redis://:${REDIS_PASSWORD}@shortener.xxxxx.cache.amazonaws.com:6379/0"
 ```
 
 ### Google Cloud Platform
@@ -368,7 +370,7 @@ sudo certbot renew --dry-run
 
 ```bash
 # 检查服务器是否运行
-curl http://localhost:8080/health
+curl http://localhost:8080/ping
 ```
 
 ### 日志
@@ -436,8 +438,9 @@ sudo chown -R shortener:shortener /opt/shortener
 
 1. 检查配置：
 ```bash
-shortener-server --config /opt/shortener/config/config.toml --check
+shortener-server --config /opt/shortener/config/config.toml
 ```
+   服务端提供 `init` 与 `hash-password` 两个子命令：`init` 生成默认配置，`hash-password` 生成 Argon2id 口令哈希。运行服务前可用 `shortener-server init` 检查配置生成逻辑。
 
 2. 检查日志：
 ```bash
@@ -507,5 +510,5 @@ sudo journalctl -u redis -f
 
 - [Docker 部署](DOCKER.md)
 - [DEB 包安装](DEB_PACKAGING_SIMPLIFIED.md)
-- [配置指南](CONFIGURATION.md)
-- [API 文档](API.md)
+- [配置指南](../general/CONFIGURATION.md)
+- [API 文档](../server/API.md)

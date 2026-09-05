@@ -1,6 +1,6 @@
 use sea_orm::{EntityTrait, Set};
 use shortener_server::{
-    config::{Config, DatabaseConfig, DatabaseType, SqliteConfig},
+    config::{Config, DatabaseConfig},
     db::DbFactory,
     logging::LoggingConfig,
     models::{HistoryEntity, UrlEntity, history, url},
@@ -11,34 +11,28 @@ fn create_test_config() -> Config {
         server: shortener_server::config::ServerConfig {
             address: ":8080".to_string(),
             trusted_platform: None,
-            site_url: "http://localhost:8080".to_string(),
+            short_url: "http://localhost:8080".to_string(),
             api_key: "test-key".to_string(),
         },
-        shortener: shortener_server::config::ShortenerConfig {
-            code_length: 6,
-            code_charset: "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        slug: shortener_server::config::SlugConfig {
+            length: 6,
+            alphabet: "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
                 .to_string(),
         },
         admin: shortener_server::config::AdminConfig {
             username: "admin".to_string(),
-            password: "admin123".to_string(),
+            password_hash: "".to_string(),
         },
+        oidc: shortener_server::config::OidcConfig::default(),
         database: DatabaseConfig {
-            db_type: DatabaseType::Sqlite,
+            url: Some("sqlite::memory:".to_string()),
             log_level: 1,
-            sqlite: Some(SqliteConfig {
-                path: ":memory:".to_string(),
-            }),
-            postgres: None,
-            mysql: None,
         },
         cache: shortener_server::config::CacheConfig {
             enabled: false,
-            cache_type: shortener_server::config::CacheType::Redis,
             expire: 3600,
             prefix: "shorten:".to_string(),
-            redis: None,
-            valkey: None,
+            url: None,
         },
         geoip: shortener_server::config::GeoIpConfig {
             enabled: false,

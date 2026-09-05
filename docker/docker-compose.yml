@@ -1,31 +1,22 @@
-version: '3.8'
-
 services:
   # Shortener Server
   shortener-server:
     build:
       context: ..
-      dockerfile: docker/Dockerfile
+      dockerfile: docker/Dockerfile.backend
     container_name: shortener-server
     restart: unless-stopped
     ports:
       - "8080:8080"
     environment:
       - RUST_LOG=shortener_server=info,sqlx=off
-      - DATABASE_TYPE=postgres
-      - DATABASE_HOST=postgres
-      - DATABASE_PORT=5432
-      - DATABASE_NAME=shortener
-      - DATABASE_USER=shortener
-      - DATABASE_PASSWORD=shortener_password
-      - CACHE_ENABLED=true
-      - CACHE_TYPE=redis
-      - CACHE_HOST=redis
-      - CACHE_PORT=6379
-      - GEOIP_ENABLED=true
-      - GEOIP_DB_PATH=/app/data/ip2region.xdb
+      - DATABASE__URL=postgres://shortener:shortener_password@postgres:5432/shortener
+      - CACHE__ENABLED=true
+      - CACHE__URL=redis://:redis_password@redis:6379/0
+      - GEOIP__ENABLED=true
+      - GEOIP__IP2REGION__PATH=/app/data/ip2region.xdb
     volumes:
-      - ../config/config.docker.toml:/app/config.toml:ro
+      - ../config.toml:/app/config.toml:ro
       - ../data:/app/data
       - app-logs:/app/logs
     depends_on:
@@ -35,12 +26,6 @@ services:
         condition: service_healthy
     networks:
       - shortener-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
-      interval: 30s
-      timeout: 3s
-      retries: 3
-      start_period: 10s
 
   # PostgreSQL Database
   postgres:

@@ -3,8 +3,10 @@
 import * as account from './account';
 import * as shorten from './shorten';
 import * as history from './history';
+import * as cache from './cache';
 export default {
   account,
   shorten,
   history,
+  cache,
 };

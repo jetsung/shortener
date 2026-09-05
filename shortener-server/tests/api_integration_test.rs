@@ -16,8 +16,8 @@ use serde_json::{Value, json};
 use shortener_server::{
     cache::{Cache, NullCache, RedisCache},
     config::{
-        AdminConfig, CacheConfig, CacheType, Config, DatabaseConfig, DatabaseType, GeoIpConfig,
-        GeoIpType, ServerConfig, ShortenerConfig, SqliteConfig,
+        AdminConfig, CacheConfig, Config, DatabaseConfig, GeoIpConfig, GeoIpType, OidcConfig,
+        ServerConfig, SlugConfig,
     },
     db::DbFactory,
     geoip::NullGeoIp,
@@ -34,34 +34,28 @@ fn create_test_config() -> Config {
         server: ServerConfig {
             address: ":8080".to_string(),
             trusted_platform: None,
-            site_url: "http://localhost:8080".to_string(),
+            short_url: "http://localhost:8080".to_string(),
             api_key: "test-api-key-12345".to_string(),
         },
-        shortener: ShortenerConfig {
-            code_length: 6,
-            code_charset: "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        slug: SlugConfig {
+            length: 6,
+            alphabet: "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
                 .to_string(),
         },
         admin: AdminConfig {
             username: "admin".to_string(),
-            password: "admin123".to_string(),
+            password_hash: "".to_string(),
         },
+        oidc: OidcConfig::default(),
         database: DatabaseConfig {
-            db_type: DatabaseType::Sqlite,
+            url: Some("sqlite::memory:".to_string()),
             log_level: 0,
-            sqlite: Some(SqliteConfig {
-                path: ":memory:".to_string(),
-            }),
-            postgres: None,
-            mysql: None,
         },
         cache: CacheConfig {
             enabled: false,
-            cache_type: CacheType::Redis,
             expire: 3600,
             prefix: "test:shorten:".to_string(),
-            redis: None,
-            valkey: None,
+            url: None,
         },
         geoip: GeoIpConfig {
             enabled: false,
@@ -86,8 +80,8 @@ async fn setup_test_app() -> Router {
     let shorten_service = Arc::new(ShortenService::new(
         url_repo,
         cache,
-        config.shortener.clone(),
-        config.server.site_url.clone(),
+        config.slug.clone(),
+        config.server.short_url.clone(),
     ));
 
     let history_service = Arc::new(HistoryService::new(history_repo, geoip));
@@ -106,7 +100,7 @@ async fn setup_test_app() -> Router {
 async fn setup_test_app_with_redis() -> Router {
     let mut config = create_test_config();
     config.cache.enabled = true;
-    config.cache.cache_type = CacheType::Redis;
+    config.cache.url = Some("redis://localhost:6379/0".to_string());
 
     let db = DbFactory::create_connection(&config).await.unwrap();
     DbFactory::run_migrations(&db).await.unwrap();
@@ -131,8 +125,8 @@ async fn setup_test_app_with_redis() -> Router {
     let shorten_service = Arc::new(ShortenService::new(
         url_repo,
         cache,
-        config.shortener.clone(),
-        config.server.site_url.clone(),
+        config.slug.clone(),
+        config.server.short_url.clone(),
     ));
 
     let history_service = Arc::new(HistoryService::new(history_repo, geoip));

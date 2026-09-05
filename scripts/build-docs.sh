@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 文档构建脚本
-# 用于构建和部署 MkDocs 文档
+# 用于构建 Zensical 文档
 
 set -e
 
@@ -28,38 +28,28 @@ print_error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
 
-# 检查是否安装了 Python
-if ! command -v python3 &> /dev/null; then
-    print_error "Python 3 未安装"
-    exit 1
-fi
-
-# 检查是否安装了 pip
-if ! command -v pip3 &> /dev/null; then
-    print_error "pip3 未安装"
-    exit 1
+# 检查是否安装了 Zensical（优先 uv，回退 pip）
+if ! command -v zensical &> /dev/null; then
+    print_info "Zensical 未安装，正在安装..."
+    if command -v uv &> /dev/null; then
+        uv tool install zensical
+    else
+        pip3 install zensical
+    fi
 fi
 
 # 进入项目根目录
 cd "$(dirname "$0")/.."
 
-print_info "安装 MkDocs 依赖..."
-pip3 install -r docs/requirements.txt
-
 case "${1:-serve}" in
     "serve")
-        print_info "启动 MkDocs 开发服务器..."
-        mkdocs serve
+        print_info "启动 Zensical 开发服务器..."
+        zensical serve
         ;;
     "build")
-        print_info "构建 MkDocs 文档..."
-        mkdocs build
+        print_info "构建 Zensical 文档..."
+        zensical build --clean
         print_success "文档构建完成，输出在 site/ 目录"
-        ;;
-    "deploy")
-        print_info "部署文档到 GitHub Pages..."
-        mkdocs gh-deploy
-        print_success "文档已部署到 GitHub Pages"
         ;;
     "clean")
         print_info "清理构建文件..."
@@ -67,13 +57,14 @@ case "${1:-serve}" in
         print_success "清理完成"
         ;;
     *)
-        echo "用法: $0 [serve|build|deploy|clean]"
+        echo "用法: $0 [serve|build|clean]"
         echo ""
         echo "命令:"
         echo "  serve   启动开发服务器 (默认)"
         echo "  build   构建静态文档"
-        echo "  deploy  部署到 GitHub Pages"
         echo "  clean   清理构建文件"
+        echo ""
+        echo "部署由 .github/workflows/docs.yml 在推送到 main 时自动完成"
         exit 1
         ;;
 esac

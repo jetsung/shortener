@@ -167,7 +167,7 @@ just check
 # 构建 Rust 文档
 cargo doc --open
 
-# 构建 MkDocs 文档
+# 构建 Zensical 文档
 make docs-build
 
 # 或使用 just
@@ -199,16 +199,23 @@ just docs-build
 
 发布由维护者处理：
 
-1. 更新版本号
-2. 创建 Git 标签
-3. 构建发布二进制文件
+1. 更新版本号并创建 Git 标签：`just release 0.2.0`
+   （自动同步 `Cargo.toml`、`openapi.yml`、`shortener-frontend/package.json` 三处版本号，再提交并打标签）
+2. 只同步版本号、不提交打标签：`just bump-version 0.2.0`
+   （不带参数 `just bump-version` 或 `make bump-version` 会默认读取 `Cargo.toml` 的当前版本同步）
+3. 构建发布二进制文件：`just release-build`
+
+> **版本同步机制**：根 `Cargo.toml` 的 `workspace.package.version` 是唯一版本源，
+> 子 crate（server/cli/common）通过 `version.workspace = true` 继承，依赖声明用
+> `workspace = true` / `path` 引用（不带 version），因此 `bump-version` 只需改根
+> `Cargo.toml` 一处，后端二进制版本与前端 `package.json` 版本即全链路自动同步。
 4. 发布到 GitHub Releases
 
 ## 获取帮助
 
 如果你需要帮助：
 
-- 📖 阅读 [文档](docs/)
+- 📖 阅读 [文档](index.md)
 - 💬 在 [Discussions](https://github.com/jetsung/shortener/discussions) 提问
 - 🐛 在 [Issues](https://github.com/jetsung/shortener/issues) 报告问题
 - 📧 联系维护者：i@jetsung.com

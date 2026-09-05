@@ -5,7 +5,8 @@
 ## 文档列表
 
 - [API 文档](API.md) - RESTful API 参考和示例
-- [重构说明](REFACTORING.md) - 按照 OpenAPI 规范进行的重构详情
+- [配置模块文档](CONFIG.md) - 配置结构与验证规则
+- [性能基准](BENCHMARKS.md) - 性能测试结果
 
 ## 快速链接
 
@@ -16,11 +17,7 @@
 
 ### 开发相关
 - [安装指南](../general/INSTALLATION.md)
-- [贡献指南](../../CONTRIBUTING.md)
-
-### 迁移相关
-- [API 变更说明](../migration/API_CHANGES.md)
-- [数据库迁移](../migration/DATABASE_MIGRATION.md)
+- [贡献指南](../CONTRIBUTING.md)
 
 ## 项目结构
 
@@ -28,17 +25,18 @@
 shortener-server/
 ├── src/
 │   ├── cache/          # 缓存实现
-│   ├── config/         # 配置管理
-│   ├── db/             # 数据库连接
-│   ├── errors/         # 错误处理
-│   ├── geoip/          # GeoIP 功能
+│   ├── geoip/          # GeoIP 功能（ip2region 等）
 │   ├── handlers/       # HTTP 处理器
 │   ├── logging/        # 日志配置
-│   ├── middleware/     # 中间件
+│   ├── middleware/     # 中间件（HybridAuth 等）
 │   ├── migration/      # 数据库迁移
 │   ├── models/         # 数据模型
 │   ├── repositories/   # 数据访问层
 │   ├── services/       # 业务逻辑层
+│   ├── config.rs       # 配置管理
+│   ├── db.rs           # 数据库连接
+│   ├── errors.rs       # 错误处理
+│   ├── jwt.rs          # JWT 签发与校验
 │   ├── router.rs       # 路由配置
 │   ├── lib.rs          # 库入口
 │   └── main.rs         # 程序入口
@@ -55,6 +53,9 @@ shortener-server/
 - **异步运行时**: Tokio
 - **序列化**: Serde
 - **日志**: Tracing
+- **口令哈希**: Argon2（PHC 格式）
+- **JWT**: jsonwebtoken（HS256）
+- **OIDC**: openidconnect
 
 ## 支持的数据库
 
@@ -77,9 +78,11 @@ shortener-server/
 - ✅ 用户代理解析
 - ✅ API 密钥认证
 - ✅ JWT 令牌认证
+- ✅ OIDC 单点登录
 - ✅ 健康检查
-- ✅ 缓存支持
+- ✅ 缓存支持（启动预热、增删同步、一键刷新）
 - ✅ 多数据库支持
+- ✅ 命令行子命令（init / hash-password）
 
 ## 开发
 

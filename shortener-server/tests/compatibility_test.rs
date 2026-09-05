@@ -6,45 +6,24 @@ use std::path::Path;
 
 #[cfg(test)]
 mod config_compatibility_tests {
-    use shortener_server::config::Config;
+    use shortener_server::config::{CacheKind, Config, DbKind};
     use std::fs;
 
-    #[test]
-    fn test_config_file_format_compatibility() {
-        // Test that Rust version can read Go version's config format
-        let go_config_content = r#"
+    /// Shared server/admin/shortener/geoip config body (no database/cache).
+    fn base_config() -> String {
+        r#"
 [server]
 address = ":8080"
 trusted-platform = ""
-site_url = "http://localhost:8080"
 api_key = "test-api-key"
 
-[shortener]
-code_length = 6
-code_charset = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+[slug]
+length = 6
+alphabet = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 [admin]
 username = "admin"
-password = "admin123"
-
-[database]
-type = "sqlite"
-log_level = 1
-
-[database.sqlite]
-path = "data/shortener.db"
-
-[cache]
-enabled = false
-type = "redis"
-expire = 3600
-prefix = "shorten:"
-
-[cache.redis]
-host = "localhost"
-port = 6379
-password = ""
-db = 0
+password_hash = "admin123"
 
 [geoip]
 enabled = false
@@ -54,79 +33,61 @@ type = "ip2region"
 path = "data/ip2region.xdb"
 mode = "vector"
 version = "4"
-"#;
+"#
+        .to_string()
+    }
 
-        // Write temporary config file
+    #[test]
+    fn test_config_file_format_compatibility() {
+        // Verify the Rust version can read a URL-based config file.
+        let config_content = format!(
+            "{}\n{}\n{}",
+            base_config(),
+            "[database]\nlog_level = 1\nurl = \"sqlite://data/shortener.db?mode=rwc\"\n",
+            "[cache]\nenabled = false\nexpire = 3600\nprefix = \"shorten:\"\nurl = \"redis://localhost:6379/0\"\n"
+        );
+
         let temp_config_path = "/tmp/test_go_compat_config.toml";
-        fs::write(temp_config_path, go_config_content).expect("Failed to write test config");
+        fs::write(temp_config_path, config_content).expect("Failed to write test config");
 
-        // Try to load it with Rust config parser
         let result = Config::from_file(temp_config_path);
-
-        // Clean up
         let _ = fs::remove_file(temp_config_path);
 
-        // Verify it loaded successfully
         assert!(
             result.is_ok(),
-            "Failed to load Go-format config: {:?}",
+            "Failed to load URL-based config: {:?}",
             result.err()
         );
 
         let config = result.unwrap();
         assert_eq!(config.server.address, ":8080");
         assert_eq!(config.server.api_key, "test-api-key");
-        assert_eq!(config.shortener.code_length, 6);
+        assert_eq!(config.slug.length, 6);
         assert_eq!(config.admin.username, "admin");
     }
 
     #[test]
     fn test_config_field_names_match() {
-        // Verify all config field names match between Go and Rust
-        // This ensures hyphenated fields (Go) work with underscored fields (Rust)
-        let config_with_hyphens = r#"
+        // Verify hyphenated fields (Go style) still map to underscored Rust fields.
+        let config_with_hyphens = format!(
+            "{}\n{}\n{}",
+            r#"
 [server]
 address = ":8080"
 trusted-platform = "X-Real-IP"
-site_url = "http://localhost:8080"
 api_key = "test"
 
-[shortener]
-code_length = 6
-code_charset = "abc123"
+[slug]
+length = 6
+alphabet = "abc123"
 
 [admin]
 username = "admin"
-password = "pass"
-
-[database]
-type = "sqlite"
-log_level = 1
-
-[database.sqlite]
-path = ":memory:"
-
-[cache]
-enabled = false
-type = "redis"
-expire = 3600
-prefix = "shorten:"
-
-[cache.redis]
-host = "localhost"
-port = 6379
-password = ""
-db = 0
-
-[geoip]
-enabled = false
-type = "ip2region"
-
-[geoip.ip2region]
-path = "data/ip2region.xdb"
-mode = "vector"
-version = "4"
-"#;
+password_hash = "pass"
+"#,
+            "[database]\nlog_level = 1\nurl = \"sqlite::memory:\"\n",
+            "[cache]\nenabled = false\nexpire = 3600\nprefix = \"shorten:\"\nurl = \"redis://localhost:6379/0\"\n"
+        );
 
         let temp_path = "/tmp/test_hyphen_config.toml";
         fs::write(temp_path, config_with_hyphens).unwrap();
@@ -141,159 +102,79 @@ version = "4"
     }
 
     #[test]
-    fn test_database_types_compatibility() {
-        // Test all database types that Go version supports
-        let db_types = vec!["sqlite", "postgres", "mysql"];
+    fn test_database_url_scheme_compatibility() {
+        // Verify all database engines (by URL scheme) are supported.
+        let cases = vec![
+            ("sqlite", "sqlite://data/shortener.db?mode=rwc", DbKind::Sqlite),
+            (
+                "postgres",
+                "postgres://postgres:secret@localhost:5432/shortener?sslmode=disable",
+                DbKind::Postgres,
+            ),
+            (
+                "mysql",
+                "mysql://root:root@localhost:3306/shortener?charset=utf8mb4",
+                DbKind::Mysql,
+            ),
+        ];
 
-        for db_type in db_types {
+        for (name, url, expected_kind) in cases {
             let config_content = format!(
-                r#"
-[server]
-address = ":8080"
-site_url = "http://localhost:8080"
-api_key = "test"
-
-[shortener]
-code_length = 6
-code_charset = "abc"
-
-[admin]
-username = "admin"
-password = "pass"
-
-[database]
-type = "{}"
-log_level = 1
-
-[database.sqlite]
-path = ":memory:"
-
-[database.postgres]
-host = "localhost"
-port = 5432
-user = "postgres"
-password = "postgres"
-database = "shortener"
-sslmode = "disable"
-timezone = "UTC"
-
-[database.mysql]
-host = "localhost"
-port = 3306
-user = "root"
-password = "root"
-database = "shortener"
-charset = "utf8mb4"
-parse_time = true
-loc = "Local"
-
-[cache]
-enabled = false
-type = "redis"
-expire = 3600
-prefix = "shorten:"
-
-[cache.redis]
-host = "localhost"
-port = 6379
-password = ""
-db = 0
-
-[geoip]
-enabled = false
-type = "ip2region"
-
-[geoip.ip2region]
-path = "data/ip2region.xdb"
-mode = "vector"
-version = "4"
-"#,
-                db_type
+                "{}\n{}\n{}",
+                base_config(),
+                format!("[database]\nlog_level = 1\nurl = \"{}\"\n", url),
+                "[cache]\nenabled = false\nexpire = 3600\nprefix = \"shorten:\"\nurl = \"redis://localhost:6379/0\"\n"
             );
 
-            let temp_path = format!("/tmp/test_db_{}.toml", db_type);
+            let temp_path = format!("/tmp/test_db_{}.toml", name);
             fs::write(&temp_path, config_content).unwrap();
             let result = Config::from_file(&temp_path);
             let _ = fs::remove_file(&temp_path);
 
-            assert!(
-                result.is_ok(),
-                "Database type '{}' should be supported: {:?}",
-                db_type,
-                result.err()
+            let config = result.unwrap_or_else(|e| {
+                panic!("Database type '{}' should be supported: {:?}", name, e)
+            });
+
+            assert_eq!(config.get_database_url(), url);
+            assert_eq!(
+                DbKind::from_url(&config.get_database_url()),
+                Some(expected_kind)
             );
         }
     }
 
     #[test]
-    fn test_cache_types_compatibility() {
-        // Test cache types: redis and valkey
-        let cache_types = vec!["redis", "valkey"];
+    fn test_cache_url_scheme_compatibility() {
+        // Verify cache engines (by URL scheme) are supported.
+        let cases = vec![
+            ("redis", "redis://:secret@localhost:6379/1", CacheKind::Redis),
+            ("valkey", "valkey://:secret@localhost:6379/0", CacheKind::Valkey),
+        ];
 
-        for cache_type in cache_types {
+        for (name, url, expected_kind) in cases {
             let config_content = format!(
-                r#"
-[server]
-address = ":8080"
-site_url = "http://localhost:8080"
-api_key = "test"
-
-[shortener]
-code_length = 6
-code_charset = "abc"
-
-[admin]
-username = "admin"
-password = "pass"
-
-[database]
-type = "sqlite"
-log_level = 1
-
-[database.sqlite]
-path = ":memory:"
-
-[cache]
-enabled = true
-type = "{}"
-expire = 3600
-prefix = "shorten:"
-
-[cache.redis]
-host = "localhost"
-port = 6379
-password = ""
-db = 0
-
-[cache.valkey]
-host = "localhost"
-port = 6379
-username = ""
-password = ""
-db = 0
-
-[geoip]
-enabled = false
-type = "ip2region"
-
-[geoip.ip2region]
-path = "data/ip2region.xdb"
-mode = "vector"
-version = "4"
-"#,
-                cache_type
+                "{}\n{}\n{}",
+                base_config(),
+                "[database]\nlog_level = 1\nurl = \"sqlite::memory:\"\n",
+                format!(
+                    "[cache]\nenabled = true\nexpire = 3600\nprefix = \"shorten:\"\nurl = \"{}\"\n",
+                    url
+                )
             );
 
-            let temp_path = format!("/tmp/test_cache_{}.toml", cache_type);
+            let temp_path = format!("/tmp/test_cache_{}.toml", name);
             fs::write(&temp_path, config_content).unwrap();
             let result = Config::from_file(&temp_path);
             let _ = fs::remove_file(&temp_path);
 
-            assert!(
-                result.is_ok(),
-                "Cache type '{}' should be supported: {:?}",
-                cache_type,
-                result.err()
+            let config = result.unwrap_or_else(|e| {
+                panic!("Cache type '{}' should be supported: {:?}", name, e)
+            });
+
+            assert_eq!(config.get_cache_url(), Some(url.to_string()));
+            assert_eq!(
+                CacheKind::from_url(config.get_cache_url().unwrap().as_str()),
+                expected_kind
             );
         }
     }

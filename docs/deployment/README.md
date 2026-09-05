@@ -7,9 +7,13 @@
 ### 后端部署
 - [部署指南](DEPLOYMENT.md) - 生产环境部署最佳实践
 - [Docker 部署](DOCKER.md) - 使用 Docker 和 Docker Compose 部署后端服务
+- [Docker 完整指南](DOCKER_FULL.md) - Docker 部署完整流程
+- [All-In-One Docker 部署](DOCKER_AIO.md) - 前端 + 后端单镜像部署
 - [Docker 高级配置](DOCKER_ADVANCED.md) - Docker 高级配置和优化
 - [DEB 包安装](DEB_PACKAGING_SIMPLIFIED.md) - Debian/Ubuntu 系统安装
 - [DEB 包构建](BUILD_DEB.md) - 如何构建 Debian 包
+- [RPM 包构建](BUILD_RPM.md) - 如何构建 RPM 包
+- [交叉编译](CROSS_COMPILE.md) - 交叉编译指南
 - [Systemd 服务](SYSTEMD.md) - 使用 Systemd 管理服务
 
 ### 前端部署
@@ -26,7 +30,7 @@ git clone https://github.com/jetsung/shortener.git
 cd shortener
 
 # 使用 Docker Compose 启动
-docker-compose up -d
+docker compose up -d
 ```
 
 详见：[Docker 部署](DOCKER.md)

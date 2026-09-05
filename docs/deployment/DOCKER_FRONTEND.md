@@ -32,65 +32,61 @@ docker compose -f docker/docker-compose.frontend.yml down
 
 ### 构建镜像
 
-前端使用 [static-web-server](https://static-web-server.net/) 作为生产环境的静态文件服务器。
+前端使用 [Nginx](https://nginx.org/)（`nginx:alpine`）作为生产环境的静态文件服务器。
 
 ```bash
 # 从项目根目录构建
-docker build -f docker/Dockerfile.frontend -t shortener-frontend:latest ./shortener-frontend
+docker build -f docker/Dockerfile.frontend -t shortener-frontend:latest .
 
 # 运行容器
 docker run -d \
   --name shortener-frontend \
   -p 80:8080 \
-  -e SERVER_LOG_LEVEL=info \
   shortener-frontend:latest
 ```
 
 ### 镜像特点
 
-- **基础镜像**: `joseluisq/static-web-server:2`
-- **镜像大小**: 约 10MB（极小）
+- **基础镜像**: `nginx:alpine`
+- **镜像大小**: 约 60MB
 - **构建方式**: 多阶段构建
-- **运行用户**: 非 root 用户
+- **运行用户**: 非 root 用户（nginx worker）
 - **特性**:
-  - 原生支持 Gzip 和 Brotli 压缩
-  - 自动缓存控制
-  - SPA 路由支持
-  - HTTP/2 支持
+  - 原生支持 Gzip 压缩
+  - 静态资源长期缓存（Cache-Control）
+  - SPA 路由回退
+  - 健康检查（HEALTHCHECK）
 
 ### Dockerfile 说明
 
 ```dockerfile
 # 构建阶段
-FROM node:20-alpine as builder
+FROM node:24-alpine as builder
 
 WORKDIR /app
 
 # 安装依赖
-COPY package*.json pnpm-lock.yaml ./
-RUN corepack enable && corepack prepare pnpm@10.18.3 --activate
+COPY shortener-frontend/package*.json shortener-frontend/pnpm-lock.yaml ./
+RUN corepack enable && corepack prepare pnpm@latest --activate
 RUN pnpm install --frozen-lockfile
 
 # 构建应用
-COPY . .
+COPY shortener-frontend/ .
 RUN pnpm build
 
 # 生产阶段
-FROM joseluisq/static-web-server:2
+FROM nginx:alpine
+
+# 复制 nginx 配置（监听 8080，SPA 路由回退，gzip，静态资源缓存）
+COPY docker/nginx-frontend.conf /etc/nginx/conf.d/default.conf
 
 # 复制构建产物
-COPY --from=builder /app/dist /public
-
-# 配置环境变量
-ENV SERVER_PORT=8080 \
-    SERVER_ROOT=/public \
-    SERVER_LOG_LEVEL=info \
-    SERVER_FALLBACK_PAGE=/public/index.html \
-    SERVER_COMPRESSION_GZIP=true \
-    SERVER_COMPRESSION_BROTLI=true \
-    SERVER_CACHE_CONTROL_HEADERS=true
+COPY --from=builder /app/dist /usr/share/nginx/html
 
 EXPOSE 8080
+
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD wget -q -O /dev/null http://127.0.0.1:8080/ || exit 1
 ```
 
 ## Docker Compose 部署
@@ -110,14 +106,6 @@ services:
     container_name: shortener-frontend
     ports:
       - "80:8080"
-    environment:
-      - SERVER_PORT=8080
-      - SERVER_ROOT=/public
-      - SERVER_LOG_LEVEL=info
-      - SERVER_FALLBACK_PAGE=/public/index.html
-      - SERVER_COMPRESSION_GZIP=true
-      - SERVER_COMPRESSION_BROTLI=true
-      - SERVER_CACHE_CONTROL_HEADERS=true
     restart: unless-stopped
     networks:
       - shortener-network
@@ -144,8 +132,7 @@ services:
       - "8080:8080"
     environment:
       - RUST_LOG=info
-      - DATABASE_TYPE=sqlite
-      - DATABASE_PATH=/var/lib/shortener/shortener.db
+      - DATABASE__URL=sqlite:///var/lib/shortener/shortener.db?mode=rwc
     volumes:
       - ./data:/var/lib/shortener
     networks:
@@ -160,13 +147,6 @@ services:
     container_name: shortener-frontend
     ports:
       - "80:8080"
-    environment:
-      - SERVER_PORT=8080
-      - SERVER_ROOT=/public
-      - SERVER_LOG_LEVEL=info
-      - SERVER_FALLBACK_PAGE=/public/index.html
-      - SERVER_COMPRESSION_GZIP=true
-      - SERVER_COMPRESSION_BROTLI=true
     depends_on:
       - shortener-server
     networks:
@@ -181,20 +161,22 @@ networks:
 
 ## 环境变量配置
 
-### Static Web Server 环境变量
+### Nginx 配置
 
-| 变量名 | 默认值 | 说明 |
-|--------|--------|------|
-| `SERVER_PORT` | 8080 | 服务监听端口 |
-| `SERVER_ROOT` | /public | 静态文件根目录 |
-| `SERVER_HOST` | 0.0.0.0 | 监听地址 |
-| `SERVER_LOG_LEVEL` | error | 日志级别 (error/warn/info/debug/trace) |
-| `SERVER_FALLBACK_PAGE` | - | SPA 路由回退页面（设置为 /public/index.html） |
-| `SERVER_COMPRESSION_GZIP` | false | 启用 Gzip 压缩 |
-| `SERVER_COMPRESSION_BROTLI` | false | 启用 Brotli 压缩 |
-| `SERVER_CACHE_CONTROL_HEADERS` | false | 启用缓存控制头 |
-| `SERVER_CORS_ALLOW_ORIGINS` | - | CORS 允许的源（逗号分隔） |
-| `SERVER_CORS_ALLOW_HEADERS` | - | CORS 允许的请求头 |
+镜像使用 `docker/nginx-frontend.conf` 提供默认的 Nginx 配置，监听 `8080` 端口，包含：
+
+- **SPA 路由回退**：未匹配的路径回退到 `index.html`
+- **Gzip 压缩**：对文本/JS/CSS/SVG 启用
+- **静态资源缓存**：`/assets/` 目录长期缓存（`immutable`），其余静态资源 30 天
+
+如需自定义 Nginx 行为（如日志级别、缓存策略、CORS），可通过挂载自定义配置覆盖：
+
+```yaml
+services:
+  shortener-frontend:
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+```
 
 ### 构建时环境变量
 
@@ -291,18 +273,11 @@ networks:
 
 ### 1. 启用压缩
 
-```yaml
-environment:
-  - SERVER_COMPRESSION_GZIP=true
-  - SERVER_COMPRESSION_BROTLI=true
-```
+镜像默认已启用 Gzip 压缩（见 `docker/nginx-frontend.conf`）。如需调整，挂载自定义 Nginx 配置即可。
 
 ### 2. 启用缓存
 
-```yaml
-environment:
-  - SERVER_CACHE_CONTROL_HEADERS=true
-```
+镜像默认已对静态资源设置 `Cache-Control` 缓存头（见 `docker/nginx-frontend.conf`）。
 
 ### 3. 资源限制
 
@@ -322,25 +297,26 @@ services:
 
 ### 4. 健康检查
 
-由于 static-web-server:2 基于 scratch 构建，无法在容器内执行健康检查命令。建议在编排层配置：
+镜像已内置 `HEALTHCHECK`，使用 `wget` 探测 `/` 路径。也可在编排层覆盖：
 
 ```yaml
-# 使用外部健康检查
 healthcheck:
-  test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8080/ || exit 1"]
+  test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/"]
   interval: 30s
-  timeout: 10s
+  timeout: 3s
   retries: 3
-  start_period: 40s
+  start_period: 5s
 ```
-
-或者使用 Traefik/Kubernetes 的健康检查功能。
 
 ## 日志管理
 
 ### 查看日志
 
 ```bash
+# 查看容器日志
+# Nginx 默认输出 access/error 日志到容器 stdout/stderr
+# 可通过挂载 nginx.conf 配置 access_log / error_log
+
 # 查看容器日志
 docker logs shortener-frontend
 
@@ -352,19 +328,6 @@ docker logs --tail 100 shortener-frontend
 
 # 使用 Docker Compose
 docker compose -f docker/docker-compose.frontend.yml logs -f
-```
-
-### 日志级别
-
-通过环境变量控制日志详细程度：
-
-```yaml
-environment:
-  # 生产环境：只记录错误
-  - SERVER_LOG_LEVEL=error
-
-  # 开发环境：记录详细信息
-  - SERVER_LOG_LEVEL=debug
 ```
 
 ## 故障排查
@@ -408,22 +371,24 @@ docker inspect shortener-frontend | grep VITE_API_BASE_URL
 
 #### 4. 路由 404 错误
 
-确认设置了 SPA 回退页面：
+确认 SPA 回退配置正确（`docker/nginx-frontend.conf` 中的 `try_files ... /index.html`）：
 
-```yaml
-environment:
-  - SERVER_FALLBACK_PAGE=/public/index.html
+```bash
+# 检查 nginx 配置
+nginx -t
+
+# 确认 /usr/share/nginx/html 下有 index.html
+ls /usr/share/nginx/html/index.html
 ```
 
 ### 调试技巧
 
 ```bash
-# 1. 使用 alpine 版本进行调试（包含 shell）
-docker run -it joseluisq/static-web-server:2-alpine sh
+# 1. 进入容器调试（nginx:alpine 包含 shell）
+docker exec -it shortener-frontend sh
 
 # 2. 检查构建产物
-docker run --rm -it --entrypoint sh shortener-frontend:latest
-ls -la /public
+ls -la /usr/share/nginx/html
 
 # 3. 测试静态文件服务
 curl -I http://localhost:8080/
@@ -454,7 +419,6 @@ curl -H "Accept-Encoding: gzip" -I http://localhost:8080/
 
 ## 参考资源
 
-- [Static Web Server 官方文档](https://static-web-server.net/)
-- [Static Web Server 环境变量](https://static-web-server.net/configuration/environment-variables/)
+- [Nginx 官方文档](https://nginx.org/en/docs/)
 - [Docker 最佳实践](https://docs.docker.com/develop/dev-best-practices/)
 - [前端部署指南](../frontend/DEPLOYMENT.md)

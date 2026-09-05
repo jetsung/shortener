@@ -4,13 +4,13 @@
 [![Rust](https://img.shields.io/badge/rust-1.90%2B-orange.svg)](https://www.rust-lang.org/)
 [![GitHub](https://img.shields.io/badge/GitHub-jetsung%2Fshortener-blue)](https://github.com/jetsung/shortener)
 
-使用 Rust 编写的高性能 URL 短链接服务。
+高性能 URL 短链接服务，Rust 后端 + React 前端。
 
 ## ✨ 特性
 
 - 🚀 高性能 Rust 实现
 - 💾 支持 SQLite、PostgreSQL、MySQL
-- ⚡ Redis/Valkey 缓存加速
+- ⚡ Redis/Valkey 缓存加速（启动预热、增删同步、一键刷新）
 - 🌍 地理位置追踪
 - 🔒 API 密钥和 JWT 认证
 - 🎨 React 管理界面
@@ -25,7 +25,7 @@ shortener/
 ├── shortener-frontend/    # React 管理界面
 ├── shortener-cli/         # 命令行工具
 ├── shortener-common/      # 共享库
-├── config/                # 配置文件
+├── config.toml            # 服务器配置文件（默认）
 ├── docker/                # Docker 配置
 └── docs/                  # 完整文档
 ```
@@ -69,8 +69,13 @@ cargo run -p shortener-cli -- create https://example.com
 ### 本地查看文档
 
 ```bash
-pip install -r docs/requirements.txt
-mkdocs serve
+# 使用 uv 安装（推荐，独立 venv，不污染全局环境）
+uv tool install zensical
+
+# 或使用 pip 安装
+pip install zensical
+
+zensical serve
 # 访问 http://127.0.0.1:8000
 ```
 
@@ -96,4 +101,4 @@ Apache-2.0 License - 详见 [LICENSE](LICENSE)
 
 ## 仓库镜像
 
-[MyCode](https://git.jetsung.com/jetsung/shortener) ● [GitCode](https://gitcode.com/jetsung/shortener) ● [GitHub](https://github.com/jetsung/shortener)
+[MyCode](https://git.jetsung.com/jetsung/shortener) ● [AtomGit](https://atomgit.com/jetsung/shortener) ● [GitHub](https://github.com/jetsung/shortener)

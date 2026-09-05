@@ -285,7 +285,7 @@ impl HistoryService {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::config::{Config, DatabaseConfig, DatabaseType, SqliteConfig};
+    use crate::config::{Config, DatabaseConfig};
     use crate::db::DbFactory;
     use crate::geoip::NullGeoIp;
     use crate::models::url::UrlStatus;
@@ -297,34 +297,28 @@ mod tests {
             server: crate::config::ServerConfig {
                 address: ":8080".to_string(),
                 trusted_platform: None,
-                site_url: "http://localhost:8080".to_string(),
+                short_url: "http://localhost:8080".to_string(),
                 api_key: "test-key".to_string(),
             },
-            shortener: crate::config::ShortenerConfig {
-                code_length: 6,
-                code_charset: "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+            slug: crate::config::SlugConfig {
+                length: 6,
+                alphabet: "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
                     .to_string(),
             },
             admin: crate::config::AdminConfig {
                 username: "admin".to_string(),
-                password: "admin123".to_string(),
+                password_hash: "".to_string(),
             },
+            oidc: crate::config::OidcConfig::default(),
             database: DatabaseConfig {
-                db_type: DatabaseType::Sqlite,
+                url: Some("sqlite::memory:".to_string()),
                 log_level: 0,
-                sqlite: Some(SqliteConfig {
-                    path: ":memory:".to_string(),
-                }),
-                postgres: None,
-                mysql: None,
             },
             cache: crate::config::CacheConfig {
                 enabled: false,
-                cache_type: crate::config::CacheType::Redis,
                 expire: 3600,
                 prefix: "shorten:".to_string(),
-                redis: None,
-                valkey: None,
+                url: None,
             },
             geoip: crate::config::GeoIpConfig {
                 enabled: false,

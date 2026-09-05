@@ -18,7 +18,7 @@ sudo cp target/release/shortener-cli /usr/local/bin/
 shortener-cli init -u http://localhost:8080 -k your-api-key
 ```
 
-配置文件将保存在 `~/.config/shortener-cli/config.toml`
+配置文件将保存在 `~/.config/shortener/config.toml`
 
 ### 环境变量
 
@@ -56,6 +56,16 @@ shortener-cli version
 
 ```bash
 shortener-cli env
+```
+
+### 生成口令哈希
+
+生成用于配置 `[admin] password_hash` 的 Argon2id 口令哈希：
+
+```bash
+shortener-cli hash-password --password "your-secure-password"
+# 或交互式输入（不回声、不入 shell 历史）
+shortener-cli hash-password
 ```
 
 ## 短网址管理
@@ -252,5 +262,4 @@ shortener-cli list | grep xxx
 
 ## 相关文档
 
-- [API 变更说明](../migration/API_CHANGES.md)
-- [服务器配置](../server/REFACTORING.md)
+- [服务器配置](../server/CONFIG.md)

@@ -4,11 +4,13 @@ on:
   push:
     branches:
       - main
-      - dev
+      - dev*
     paths:
       - 'docs/**'
-      - 'mkdocs.yml'
+      - 'zensical.toml'
       - '.github/workflows/docs.yml'
+
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -16,34 +18,49 @@ permissions:
   id-token: write
 
 jobs:
-  documentation:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: 配置 Git 凭据
-        run: |
-          git config user.name github-actions[bot]
-          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-
-      - uses: actions/setup-python@v5
+      - uses: actions/configure-pages@v6
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: 3.x
+      - run: pip install zensical
+      - run: zensical build --clean
 
-      - run: echo "cache_id=$(date --utc '+%V')" >> $GITHUB_ENV
-
-      - uses: actions/cache@v4
+      ### SSH Server WEB
+      - name: Set up SSH
+        uses: LuisEnMarroquin/setup-ssh-action@v3.0.0
+        if: ${{ vars.ENABLE_SSH_DEPLOY == 'true' }}
         with:
-          key: mkdocs-material-${{ env.cache_id }}
-          path: .cache
-          restore-keys: |
-            mkdocs-material-
+          ORIGIN: ${{ secrets.SSH_HOSTNAME }}
+          SSHKEY: ${{ secrets.SSH_KEY }}
+          NAME: webserver
+          PORT: ${{ secrets.SSH_PORT }}
+          USER: ${{ secrets.SSH_USERNAME }}
+      - name: Deploy the website
+        if: ${{ vars.ENABLE_SSH_DEPLOY == 'true' }}
+        env:
+          WEBROOT: /data/wwwroot/shortener
+        run: |
+          echo "" >> ~/.ssh/access  # fix
+          ssh webserver "rm -rf $WEBROOT && mkdir -p $WEBROOT"
+          scp -r site/* webserver:${WEBROOT}
 
-      - run: pip install -r docs/requirements.txt
+      ### GitHub Pages
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: site
+      - uses: actions/deploy-pages@v5
+        id: deployment
 
-      - name: 创建 CNAME 文件
-        run: echo "shortener.ooos.top" > docs/CNAME
-
-      - run: mkdocs gh-deploy --force
+      - name: Deploy to Branch
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./site
+          cname: ${{ vars.PAGES_DOMAIN }}

@@ -50,8 +50,9 @@ cargo install --git https://github.com/jetsung/shortener.git shortener-cli
 
 ```bash
 # 安装特定标签版本
-cargo install --git https://github.com/jetsung/shortener.git --tag v1.0.0 shortener-server
-cargo install --git https://github.com/jetsung/shortener.git --tag v1.0.0 shortener-cli
+# 从 GitHub 源码安装（将 <version> 替换为最新发布版本，如 0.2.0）
+cargo install --git https://github.com/jetsung/shortener.git --tag v<version> shortener-server
+cargo install --git https://github.com/jetsung/shortener.git --tag v<version> shortener-cli
 
 # 查看可用标签
 git ls-remote --tags https://github.com/jetsung/shortener.git
@@ -116,7 +117,8 @@ cargo install shortener-server
 cargo install shortener-cli
 
 # 安装指定版本
-cargo install shortener-server --version 1.0.0
+# 从 crates.io 安装（将 <version> 替换为实际版本号）
+cargo install shortener-server --version <version>
 ```
 
 ## Docker 安装
@@ -149,23 +151,23 @@ docker run -d \
   jetsung/shortener-server:latest
 ```
 
-详见 [Docker 部署指南](DOCKER.md)。
+详见 [Docker 部署指南](../deployment/DOCKER.md)。
 
 ## 预构建二进制文件
 
-从 [GitHub Releases](https://github.com/jetsung/shortener/releases) 下载预构建的二进制文件。
+从 [GitHub Releases](https://github.com/jetsung/shortener/releases) 下载预构建的二进制文件（将 `<version>` 替换为实际的版本号，例如 `0.2.0`）。
 
 ### Linux
 
 ```bash
 # x86_64
-wget https://github.com/jetsung/shortener/releases/download/v1.0.0/shortener-server-v1.0.0-x86_64-unknown-linux-musl.tar.gz
-tar xzf shortener-server-v1.0.0-x86_64-unknown-linux-musl.tar.gz
+wget https://github.com/jetsung/shortener/releases/download/<version>/shortener-server-<version>-x86_64-unknown-linux-musl.tar.xz
+tar xJf shortener-server-<version>-x86_64-unknown-linux-musl.tar.xz
 sudo mv shortener-server /usr/local/bin/
 
 # ARM64
-wget https://github.com/jetsung/shortener/releases/download/v1.0.0/shortener-server-v1.0.0-aarch64-unknown-linux-musl.tar.gz
-tar xzf shortener-server-v1.0.0-aarch64-unknown-linux-musl.tar.gz
+wget https://github.com/jetsung/shortener/releases/download/<version>/shortener-server-<version>-aarch64-unknown-linux-musl.tar.xz
+tar xJf shortener-server-<version>-aarch64-unknown-linux-musl.tar.xz
 sudo mv shortener-server /usr/local/bin/
 ```
 
@@ -173,21 +175,21 @@ sudo mv shortener-server /usr/local/bin/
 
 ```bash
 # Intel Mac
-wget https://github.com/jetsung/shortener/releases/download/v1.0.0/shortener-server-v1.0.0-x86_64-apple-darwin.tar.gz
-tar xzf shortener-server-v1.0.0-x86_64-apple-darwin.tar.gz
+wget https://github.com/jetsung/shortener/releases/download/<version>/shortener-server-<version>-x86_64-apple-darwin.tar.xz
+tar xJf shortener-server-<version>-x86_64-apple-darwin.tar.xz
 sudo mv shortener-server /usr/local/bin/
 
 # Apple Silicon
-wget https://github.com/jetsung/shortener/releases/download/v1.0.0/shortener-server-v1.0.0-aarch64-apple-darwin.tar.gz
-tar xzf shortener-server-v1.0.0-aarch64-apple-darwin.tar.gz
+wget https://github.com/jetsung/shortener/releases/download/<version>/shortener-server-<version>-aarch64-apple-darwin.tar.xz
+tar xJf shortener-server-<version>-aarch64-apple-darwin.tar.xz
 sudo mv shortener-server /usr/local/bin/
 ```
 
 ### Windows
 
 ```powershell
-# 下载并解压
-Invoke-WebRequest -Uri "https://github.com/jetsung/shortener/releases/download/v1.0.0/shortener-server-v1.0.0-x86_64-pc-windows-msvc.zip" -OutFile "shortener-server.zip"
+# 下载并解压（将 <version> 替换为实际版本号）
+Invoke-WebRequest -Uri "https://github.com/jetsung/shortener/releases/download/<version>/shortener-server-<version>-x86_64-pc-windows-msvc.zip" -OutFile "shortener-server.zip"
 Expand-Archive -Path "shortener-server.zip" -DestinationPath "C:\Program Files\Shortener"
 
 # 添加到 PATH
@@ -201,14 +203,14 @@ $env:PATH += ";C:\Program Files\Shortener"
 ### 下载并安装
 
 ```bash
-# 下载 DEB 包
-wget https://github.com/jetsung/shortener/releases/download/v1.0.0/shortener-server_1.0.0_amd64.deb
+# 下载 DEB 包（将 <version> 替换为实际版本号）
+wget https://github.com/jetsung/shortener/releases/download/<version>/shortener-server_<version>_amd64.deb
 
 # 安装
-sudo apt install ./shortener-server_1.0.0_amd64.deb
+sudo apt install ./shortener-server_<version>_amd64.deb
 
 # 或使用 dpkg
-sudo dpkg -i shortener-server_1.0.0_amd64.deb
+sudo dpkg -i shortener-server_<version>_amd64.deb
 sudo apt-get install -f  # 修复依赖关系
 ```
 
@@ -235,7 +237,7 @@ sudo journalctl -u shortener-server -f
 - 日志文件: `/var/log/shortener-server/`
 - 服务文件: `/etc/systemd/system/shortener-server.service`
 
-详见 [DEB 打包指南](DEB_PACKAGING_SIMPLIFIED.md)。
+详见 [DEB 打包指南](../deployment/DEB_PACKAGING_SIMPLIFIED.md)。
 
 ## 从源码构建
 
@@ -339,7 +341,7 @@ kill $SERVER_PID
 
 ```bash
 # 错误信息
-error: package `shortener-server v1.0.0` cannot be built because it requires rustc 1.90 or newer
+error: package `shortener-server v0.2.0` cannot be built because it requires rustc 1.90 or newer
 
 # 解决方案
 rustup update stable

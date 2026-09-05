@@ -12,7 +12,7 @@ Shortener Frontend 是一个基于 React 和 Semi Design 的现代化短链接�
 ### 环境要求
 
 - Node.js >= 18.0.0
-- pnpm >= 8.0.0 (推荐) 或 npm
+- pnpm >= 10.0.0 (推荐) 或 npm
 
 ### 安装依赖
 
@@ -53,15 +53,16 @@ pnpm preview
 - 🔧 完整的 TypeScript 支持
 - 🧪 全面的测试覆盖
 - 🌐 国际化支持
+- 🔄 短址列表页一键「刷新缓存」：清空缓存前缀旧键并从数据库重建，便于缓存与数据库不一致时快速恢复
 
 ## 🛠️ 技术栈
 
-- **框架**: React 19.2.0
+- **框架**: React 19.2.8
 - **语言**: TypeScript 5.9.3
-- **UI 库**: Semi Design 2.87.1
-- **路由**: React Router DOM 7.9.4
-- **构建工具**: Vite 7.1.10
-- **测试**: Vitest 3.2.4
+- **UI 库**: Semi Design 2.102.0
+- **路由**: React Router DOM 7.18.3
+- **构建工具**: Vite 7.3.6
+- **测试**: Vitest 4.1.11
 
 ## 📖 详细文档
 

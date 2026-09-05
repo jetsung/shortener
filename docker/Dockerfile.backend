@@ -1,0 +1,73 @@
+# Multi-stage build for shortener-server (scratch-based minimal image)
+# Stage 1: Build the application (statically-linked musl binary)
+ARG RUST_VERSION=1.98
+FROM rust:$RUST_VERSION-alpine AS builder
+
+# Install build dependencies
+#   - musl-dev: libc headers needed by the musl target
+#   - pkgconfig / openssl-dev / openssl-libs-static: statically link OpenSSL
+#   - ca-certificates: CA bundle copied into the scratch runtime later
+RUN apk add --no-cache \
+    musl-dev \
+    pkgconfig \
+    openssl-dev \
+    openssl-libs-static \
+    ca-certificates
+
+# Create a new empty shell project
+WORKDIR /app
+
+# Pre-create data directory (copied into the scratch runtime for writable /app/data)
+RUN mkdir -p /app/data
+
+# Copy manifests
+COPY Cargo.toml Cargo.lock ./
+COPY shortener-server/Cargo.toml ./shortener-server/
+COPY shortener-cli/Cargo.toml ./shortener-cli/
+COPY shortener-common/Cargo.toml ./shortener-common/
+
+# Copy source code
+COPY shortener-server/src ./shortener-server/src
+COPY shortener-cli/src ./shortener-cli/src
+COPY shortener-common/src ./shortener-common/src
+
+# Copy benches (required for Cargo.toml validation, but won't be compiled)
+COPY shortener-server/benches ./shortener-server/benches
+
+# Build for release (skip benches and tests)
+# The musl target produces a fully static binary; force OpenSSL to link statically too.
+ENV OPENSSL_STATIC=1
+RUN cargo build --release -p shortener-server --bins
+
+# Stage 2: Create the runtime image using scratch (empty image)
+# scratch has no shell, no libc, no CA certs and no tools, so everything
+# the binary needs at runtime must be copied in explicitly.
+FROM scratch
+
+# CA certificates (required for TLS connections, e.g. OIDC / Postgres / MySQL)
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+
+# The statically-linked binary
+COPY --from=builder /app/target/release/shortener-server /usr/local/bin/shortener-server
+
+# Configuration file
+COPY config.toml /app/config.toml
+
+# Pre-create the writable data directory (sqlite / geoip)
+COPY --chown=65532:65532 --from=builder /app/data /app/data
+
+# Run as non-root (scratch has no /etc/passwd, so use numeric UID/GID)
+USER 65532:65532
+
+# Set working directory
+WORKDIR /app
+
+# Expose port
+EXPOSE 8080
+
+# Set environment variables
+ENV RUST_LOG=info
+ENV CONFIG_PATH=/app/config.toml
+
+# Run the binary
+CMD ["/usr/local/bin/shortener-server"]

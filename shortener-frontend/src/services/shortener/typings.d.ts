@@ -160,4 +160,11 @@ declare namespace API {
     /** 短码 */
     short_code: string;
   };
+
+  type CacheRefreshResponse = {
+    /** 清除的旧缓存键数量 */
+    cleared_keys?: number;
+    /** 重新缓存的短链数量 */
+    warmed_urls?: number;
+  };
 }

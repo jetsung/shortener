@@ -57,10 +57,10 @@ else
 fi
 
 # Copy configuration if provided
-if [ -f "../../config/config.toml" ]; then
+if [ -f "../../config.toml" ]; then
     if [ ! -f "${CONFIG_DIR}/config.toml" ]; then
         echo -e "${YELLOW}Copying configuration...${NC}"
-        cp ../../config/config.toml ${CONFIG_DIR}/config.toml
+        cp ../../config.toml ${CONFIG_DIR}/config.toml
         chown root:root ${CONFIG_DIR}/config.toml
         chmod 644 ${CONFIG_DIR}/config.toml
     else

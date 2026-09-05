@@ -31,14 +31,11 @@ sudo nano /opt/shortener/config/config.toml
 ```toml
 [server]
 address = ":8080"
-site_url = "http://your-domain.com"
+short_url = "http://s.your-domain.com"   # 短址专用域名（可选，未设置时从监听地址推断，通配地址回退 localhost）
 api_key = "your-secret-key"
 
 [database]
-type = "sqlite"
-
-[database.sqlite]
-path = "/opt/shortener/data/shortener.db"
+url = "sqlite:///opt/shortener/data/shortener.db?mode=rwc"
 
 [geoip]
 enabled = true
@@ -90,8 +87,8 @@ sudo journalctl -u shortener-server -f
 配置文件中设置：
 
 ```toml
-[database.sqlite]
-path = "/opt/shortener/data/shortener.db"
+[database]
+url = "sqlite:///opt/shortener/data/shortener.db?mode=rwc"
 ```
 
 ### GeoIP 数据文件
@@ -317,11 +314,11 @@ cargo deb -p shortener-server
 # target/debian/shortener-server_<version>_<arch>.deb
 ```
 
-详细信息请参考项目的 [安装指南](INSTALLATION.md)。
+详细信息请参考项目的 [安装指南](../general/INSTALLATION.md)。
 
 ## 相关文档
 
-- [安装指南](INSTALLATION.md)
-- [配置指南](CONFIGURATION.md)
+- [安装指南](../general/INSTALLATION.md)
+- [配置指南](../general/CONFIGURATION.md)
 - [部署指南](DEPLOYMENT.md)
-- [API 文档](API.md)
+- [API 文档](../server/API.md)

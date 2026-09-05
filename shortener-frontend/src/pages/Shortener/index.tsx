@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { Button, Form, Typography, Modal } from '@douyinfe/semi-ui-19';
 import { Toast } from '@/utils/notification';
-import { IconPlus, IconCopy } from '@douyinfe/semi-icons';
+import { IconPlus, IconCopy, IconRefresh } from '@douyinfe/semi-icons';
 import { SemiTable, SemiModalForm } from '@/components';
 import type { SemiTableActionRef, SemiTableColumn } from '@/components/SemiTable';
 import {
@@ -10,6 +10,7 @@ import {
   updateShorten,
   deleteShorten,
 } from '@/services/shortener/shorten';
+import { refreshCache } from '@/services/shortener/cache';
 import type { FormValueType } from './components/UpdateForm';
 import UpdateForm from './components/UpdateForm';
 import { useNavigate } from 'react-router-dom';
@@ -24,6 +25,7 @@ const Shortener: React.FC = () => {
   const [currentRow, setCurrentRow] = useState<ShortenResponse>();
   const [selectedRowsState, setSelectedRows] = useState<ShortenResponse[]>([]);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [refreshingCache, setRefreshingCache] = useState<boolean>(false);
   const addFormRef = useRef<any>(null);
   const navigate = useNavigate();
 
@@ -31,6 +33,27 @@ const Shortener: React.FC = () => {
     navigator.clipboard.writeText(text).then(() => {
       Toast.success(messageText);
     });
+  };
+
+  /**
+   * 刷新缓存：清空缓存前缀下的旧键并从数据库重新加载
+   */
+  const handleRefreshCache = async () => {
+    setRefreshingCache(true);
+    Toast.info('正在刷新缓存');
+    try {
+      const res = await refreshCache();
+      const cleared = (res as any).cleared_keys ?? 0;
+      const warmed = (res as any).warmed_urls ?? 0;
+      Toast.update(`缓存已刷新：清除 ${cleared} 个旧键，重新缓存 ${warmed} 条短链`, 'success');
+      actionRef.current?.reload();
+      return true;
+    } catch {
+      Toast.update('缓存刷新失败，请重试！', 'error');
+      return false;
+    } finally {
+      setRefreshingCache(false);
+    }
   };
 
   /**
@@ -247,6 +270,14 @@ const Shortener: React.FC = () => {
           labelWidth: 120,
         }}
         toolBarRender={() => [
+          <Button
+            key="refresh-cache"
+            icon={<IconRefresh />}
+            loading={refreshingCache}
+            onClick={handleRefreshCache}
+          >
+            刷新缓存
+          </Button>,
           <Button
             type="primary"
             key="primary"

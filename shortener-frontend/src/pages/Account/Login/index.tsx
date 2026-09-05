@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, Form, Button, Typography } from '@douyinfe/semi-ui-19';
 import { login } from '@/services/shortener/account';
@@ -10,6 +10,34 @@ const { Title } = Typography;
 const Login: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  // Handle OIDC callback: the server redirects back here with ?token=<jwt>&redirect=<hash path>.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+    if (token) {
+      localStorage.setItem('token', token);
+      // 登录后回跳：redirect 形如 `#/dashboard`，去掉 `#` 前缀交给 react-router
+      const redirect = params.get('redirect');
+      params.delete('token');
+      params.delete('redirect');
+      const newSearch = params.toString();
+      const newHash = `${window.location.pathname}${newSearch ? `?${newSearch}` : ''}${window.location.hash}`;
+      window.history.replaceState(null, '', newHash);
+      Toast.success('登录成功');
+      // 仅回跳到应用内路由（以 #/ 开头的 hash 路径），否则回 dashboard
+      if (redirect && redirect.startsWith('#/')) {
+        navigate(redirect.slice(1));
+      } else {
+        navigate('/dashboard');
+      }
+    }
+  }, [navigate]);
+
+  const handleOidcLogin = () => {
+    // 后端固定跳转 /#/dashboard，无需再传 redirect 参数
+    window.location.href = '/api/oidc/login';
+  };
 
   const handleSubmit = async (values: LoginForm) => {
     setLoading(true);
@@ -114,6 +142,16 @@ const Login: React.FC = () => {
 
             <Button type="primary" htmlType="submit" loading={loading} block size="large">
               登录
+            </Button>
+
+            <div
+              style={{ textAlign: 'center', margin: '16px 0', color: 'var(--semi-color-text-2)' }}
+            >
+              或
+            </div>
+
+            <Button theme="light" block size="large" onClick={handleOidcLogin}>
+              使用 OIDC 登录
             </Button>
           </Form>
         </Card>

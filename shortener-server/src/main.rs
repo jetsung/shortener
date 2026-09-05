@@ -4,13 +4,14 @@ use shortener_server::{
     config::Config,
     db::DbFactory,
     geoip::create_geoip,
+    jwt,
     repositories::{HistoryRepositoryImpl, UrlRepositoryImpl},
     router::{AppState, create_router},
     services::{HistoryService, ShortenService},
 };
 use std::sync::Arc;
 use tokio::signal;
-use tracing::{error, info};
+use tracing::{error, info, warn};
 
 /// Shortener Server
 #[derive(Parser)]
@@ -19,7 +20,7 @@ use tracing::{error, info};
 #[command(version)]
 struct Args {
     /// Configuration file path
-    #[arg(short, long, default_value = "config/config.toml", global = true)]
+    #[arg(short, long, default_value = "config.toml", global = true)]
     config: String,
 
     #[command(subcommand)]
@@ -33,6 +34,13 @@ enum Commands {
         /// Force overwrite if config.toml already exists
         #[arg(short, long)]
         force: bool,
+    },
+    /// Generate an Argon2id password hash (for [admin] password_hash)
+    HashPassword {
+        /// Plaintext password. If omitted, you will be prompted interactively
+        /// (input is not echoed and not stored in shell history).
+        #[arg(short, long)]
+        password: Option<String>,
     },
 }
 
@@ -48,29 +56,29 @@ async fn main() {
                 handle_init_command(force);
                 return;
             }
+            Commands::HashPassword { password } => {
+                handle_hash_password_command(password);
+                return;
+            }
         }
     }
 
-    // Load configuration first (before logging initialization)
-    // Try default path first, fallback to config.toml if not exists
-    let config_path = if std::path::Path::new(&args.config).exists() {
-        args.config.clone()
-    } else if args.config == "config/config.toml" && std::path::Path::new("config.toml").exists() {
-        "config.toml".to_string()
-    } else {
-        args.config.clone()
-    };
+    // JWT secret is required for signing/verifying tokens.
+    if let Err(e) = jwt::resolve_secret() {
+        eprintln!("✗ {}", e);
+        eprintln!("  Set JWT_SECRET to the secret, or JWT_SECRET_FILE to a file containing it.");
+        eprintln!("  Generate one with: openssl rand -base64 48");
+        std::process::exit(1);
+    }
 
-    let config = match Config::from_file(&config_path) {
+    // Load configuration first (before logging initialization)
+    let config = match Config::from_file(&args.config) {
         Ok(cfg) => cfg,
         Err(e) => {
             eprintln!(
                 "✗ Failed to load configuration from '{}': {}",
-                config_path, e
+                args.config, e
             );
-            if config_path != args.config {
-                eprintln!("  (fallback from '{}')", args.config);
-            }
             std::process::exit(1);
         }
     };
@@ -82,7 +90,14 @@ async fn main() {
     }
 
     info!("Shortener Server v{}", env!("CARGO_PKG_VERSION"));
-    info!("Configuration loaded from: {}", config_path);
+    if std::path::Path::new(&args.config).exists() {
+        info!("Configuration loaded from: {}", args.config);
+    } else {
+        info!(
+            "Configuration file '{}' not found, using environment variables only",
+            args.config
+        );
+    }
 
     // 初始化数据库
     let db = match DbFactory::create_connection(&config).await {
@@ -112,12 +127,28 @@ async fn main() {
     // 初始化 services
     let shorten_service = Arc::new(ShortenService::new(
         url_repo,
-        cache,
-        config.shortener.clone(),
-        config.server.site_url.clone(),
+        cache.clone(),
+        config.slug.clone(),
+        config.server.short_url.clone(),
     ));
 
     let history_service = Arc::new(HistoryService::new(history_repo, geoip));
+
+    // 启动时重建缓存：先清空前缀下的旧键，再从数据库预热全量短链，
+    // 保证缓存与数据库内容一致（仅在真实缓存连接成功时执行）
+    if !cache.is_null() {
+        match cache.clear_prefix(&config.cache.prefix).await {
+            Ok(n) => info!(
+                "Cleared {} stale cache keys with prefix '{}'",
+                n, config.cache.prefix
+            ),
+            Err(e) => warn!("Failed to clear stale cache keys: {}", e),
+        }
+        match shorten_service.warm_up_cache().await {
+            Ok(n) => info!("Cache warmed up with {} short URLs", n),
+            Err(e) => warn!("Failed to warm up cache: {}", e),
+        }
+    }
 
     // 创建应用状态
     let state = AppState {
@@ -159,7 +190,7 @@ async fn main() {
     };
 
     info!("Server listening on http://{}", addr);
-    info!("Site URL: {}", config.server.site_url);
+    info!("Short URL: {}", config.server.short_url);
     info!("Admin: {}", config.admin.username);
 
     // 启动服务器并处理优雅关闭
@@ -178,7 +209,7 @@ async fn main() {
 fn handle_init_command(force: bool) {
     const DEFAULT_CONFIG: &str = r#"# Shortener Server Configuration
 # This is the default configuration file
-# For detailed configuration options, see config/config.example.toml
+# Edit this file directly; environment variables (e.g. LOGGING__LEVEL) override values here
 
 # ============================================================================
 # Server Configuration
@@ -190,8 +221,8 @@ address = "0.0.0.0:8080"
 # Trusted platform header for getting real client IP (optional)
 trusted-platform = ""
 
-# Public site URL (used for generating short URLs)
-site_url = "http://localhost:8080"
+# Short URL base (短址专用域名，用于生成短链接；未设置时回退到默认值)
+short_url = ""
 
 # API key for authentication (REQUIRED)
 # Generate with: openssl rand -base64 32
@@ -201,12 +232,12 @@ api_key = "your-secret-api-key-change-me"
 # ============================================================================
 # Shortener Configuration
 # ============================================================================
-[shortener]
-# Length of auto-generated short codes (4-16)
-code_length = 6
+[slug]
+# Length of the generated short slug (4-16)
+length = 6
 
-# Character set for generating short codes
-code_charset = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+# Characters (alphabet) used when generating a short slug
+alphabet = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 # ============================================================================
 # Admin Account Configuration
@@ -215,26 +246,44 @@ code_charset = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 # Admin username (REQUIRED)
 username = "admin"
 
-# Admin password (REQUIRED)
+# Admin password hash (REQUIRED) - Argon2id PHC string.
+# Generate with: shortener-server hash-password "your-secure-password"
 # IMPORTANT: Change this in production!
-password = "your-secure-password-change-me"
+password_hash = ""
+
+# ============================================================================
+# OIDC / OAuth2.0 Configuration (optional, for SSO login)
+# ============================================================================
+[oidc]
+# IdP issuer URL, e.g. "https://keycloak.example.com/realms/main".
+# Leave empty to disable OIDC login.
+issuer = ""
+
+# OAuth2 client credentials registered with the IdP.
+client_id = ""
+# client_secret can also be set via the OIDC__CLIENT_SECRET environment variable.
+client_secret = ""
+
+# Allowlist: only users whose email OR subject (sub) matches may log in.
+# At least one of allow_emails / allow_subjects must be non-empty.
+# The OIDC callback URL is derived from the request Host header, so no
+# redirect_uri needs to be configured here.
+allow_emails = []
+allow_subjects = []
 
 # ============================================================================
 # Database Configuration
 # ============================================================================
 [database]
-# Database type: "sqlite", "postgres", or "mysql"
-type = "sqlite"
+# Database connection string (REQUIRED). The engine is inferred from the scheme:
+#   sqlite://   e.g. "sqlite://data/shortener.db?mode=rwc" or "sqlite::memory:"
+#   postgres:// e.g. "postgres://user:pass@host:5432/shortener?sslmode=disable"
+#   mysql://    e.g. "mysql://user:pass@host:3306/shortener?charset=utf8mb4"
+# Can also be provided via the DATABASE__URL environment variable.
+url = "sqlite://data/shortener.db?mode=rwc"
 
 # Database log level: 1=Silent, 2=Error, 3=Warn, 4=Info
 log_level = 1
-
-# ----------------------------------------------------------------------------
-# SQLite Configuration
-# ----------------------------------------------------------------------------
-[database.sqlite]
-# Database file path
-path = "data/shortener.db"
 
 # ============================================================================
 # Cache Configuration
@@ -243,23 +292,18 @@ path = "data/shortener.db"
 # Enable caching (recommended for production)
 enabled = false
 
-# Cache type: "redis" or "valkey"
-type = "redis"
+# Cache connection string (required when enabled). The engine is inferred from
+# the scheme: "redis://" or "valkey://". Can also be provided via CACHE__URL.
+# Examples:
+#   redis://[:password@]host:port/db
+#   valkey://[:password@]host:port/db
+url = "redis://localhost:6379/0"
 
 # Cache expiration time in seconds (default: 1 hour)
 expire = 3600
 
 # Cache key prefix
 prefix = "shorten:"
-
-# ----------------------------------------------------------------------------
-# Redis Configuration
-# ----------------------------------------------------------------------------
-[cache.redis]
-host = "localhost"
-port = 6379
-password = ""
-db = 0
 
 # ============================================================================
 # GeoIP Configuration
@@ -344,12 +388,57 @@ with_ansi = true
             println!("Next steps:");
             println!("  1. Edit '{}' and update the following:", CONFIG_FILE);
             println!("     - server.api_key (generate with: openssl rand -base64 32)");
-            println!("     - admin.password");
-            println!("     - server.site_url (your public URL)");
-            println!("  2. Run the server: shortener-server");
+            println!("     - admin.password_hash (generate with: shortener-server hash-password \"your-password\")");
+            println!("     - server.short_url (your public URL; optional, defaults to http://localhost:8080)");
+            println!("     - JWT_SECRET environment variable (generate with: openssl rand -base64 48)");
+            println!("       or JWT_SECRET_FILE pointing at a file holding the secret");
+            println!("  2. (Optional) Configure [oidc] for SSO login");
+            println!("  3. Run the server: shortener-server");
         }
         Err(e) => {
             eprintln!("✗ Failed to create '{}': {}", CONFIG_FILE, e);
+            std::process::exit(1);
+        }
+    }
+}
+
+/// Handle the `hash-password` subcommand: generate an Argon2id (PHC) hash.
+fn handle_hash_password_command(password: Option<String>) {
+    use std::io::{IsTerminal, Write};
+
+    let plaintext = match password {
+        Some(p) => p,
+        None => {
+            if !std::io::stdin().is_terminal() {
+                eprintln!("✗ No password provided and stdin is not a terminal");
+                std::process::exit(1);
+            }
+            print!("Enter password: ");
+            let _ = std::io::stdout().flush();
+            let mut buf = String::new();
+            if std::io::stdin().read_line(&mut buf).is_err() {
+                eprintln!("✗ Failed to read password");
+                std::process::exit(1);
+            }
+            buf.trim_end().to_string()
+        }
+    };
+
+    if plaintext.is_empty() {
+        eprintln!("✗ Password must not be empty");
+        std::process::exit(1);
+    }
+
+    match shortener_server::handlers::account::hash_password(&plaintext) {
+        Ok(hash) => {
+            println!("{}", hash);
+            println!(
+                "\nCopy the line above into your config as: password_hash = \"{}\"",
+                hash
+            );
+        }
+        Err(e) => {
+            eprintln!("✗ Failed to hash password: {}", e);
             std::process::exit(1);
         }
     }

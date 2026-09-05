@@ -1,0 +1,59 @@
+# All-In-One 部署：单个镜像同时包含前端（nginx）与后端（shortener-server）
+# 对外仅暴露 80 端口（nginx），/api/* 与短码重定向由 nginx 反代到容器内后端 127.0.0.1:8080
+services:
+  shortener:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: shortener
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    environment:
+      - RUST_LOG=shortener_server=info,sqlx=off
+      - DATABASE__URL=sqlite:///app/data/shortener.db?mode=rwc
+      - CACHE__ENABLED=true
+      - CACHE__URL=redis://redis:6379/0
+      - GEOIP__ENABLED=true
+      - GEOIP__IP2REGION__PATH=/app/data/ip2region.xdb
+    volumes:
+      - ../config.toml:/app/config.toml:ro
+      - ../data:/app/data
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - shortener-network
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/ping"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: shortener-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+    networks:
+      - shortener-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    ports:
+      - "6379:6379"
+
+volumes:
+  redis-data:
+    driver: local
+
+networks:
+  shortener-network:
+    driver: bridge
+    name: shortener-network

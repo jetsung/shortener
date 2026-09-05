@@ -1,4 +1,4 @@
-use crate::config::{Config, DatabaseType};
+use crate::config::{Config, DbKind};
 use crate::migration::Migrator;
 use sea_orm::{ConnectOptions, Database, DatabaseConnection, DbErr};
 use sea_orm_migration::MigratorTrait;
@@ -15,28 +15,30 @@ impl DbFactory {
     pub async fn create_connection(config: &Config) -> Result<DatabaseConnection, DbErr> {
         let database_url = config.get_database_url();
 
-        // For SQLite, ensure the parent directory exists
-        if config.database.db_type == DatabaseType::Sqlite
-            && let Some(path) = config.database.sqlite.as_ref().map(|s| &s.path)
-            && path != ":memory:"
-            && let Some(parent) = Path::new(path).parent()
-            && !parent.exists()
-        {
-            if let Err(e) = fs::create_dir_all(parent) {
-                warn!("Failed to create database directory: {}", e);
-            } else {
-                info!("Created database directory: {:?}", parent);
+        // For SQLite file databases, ensure the parent directory exists.
+        if DbKind::from_url(&database_url) == Some(DbKind::Sqlite) {
+            if let Some(path) = database_url
+                .strip_prefix("sqlite://")
+                .map(|rest| rest.split('?').next().unwrap_or(rest))
+                .filter(|p| *p != ":memory:" && !p.is_empty())
+            {
+                if let Some(parent) = Path::new(path).parent() {
+                    if !parent.as_os_str().is_empty() && !parent.exists() {
+                        if let Err(e) = fs::create_dir_all(parent) {
+                            warn!("Failed to create database directory: {}", e);
+                        } else {
+                            info!("Created database directory: {:?}", parent);
+                        }
+                    }
+                }
             }
         }
 
-        info!(
-            "Connecting to {} database...",
-            match config.database.db_type {
-                DatabaseType::Sqlite => "SQLite",
-                DatabaseType::Postgres => "PostgreSQL",
-                DatabaseType::Mysql => "MySQL",
-            }
-        );
+        let label = match DbKind::from_url(&database_url) {
+            Some(kind) => kind.label(),
+            None => "unknown",
+        };
+        info!("Connecting to {} database...", label);
 
         let mut opt = ConnectOptions::new(database_url);
 
@@ -95,41 +97,35 @@ impl DbFactory {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::config::{Config, DatabaseConfig, DatabaseType, SqliteConfig};
+    use crate::config::{Config, DatabaseConfig};
 
     fn create_test_config() -> Config {
         Config {
             server: crate::config::ServerConfig {
                 address: ":8080".to_string(),
                 trusted_platform: None,
-                site_url: "http://localhost:8080".to_string(),
+                short_url: "http://localhost:8080".to_string(),
                 api_key: "test-key".to_string(),
             },
-            shortener: crate::config::ShortenerConfig {
-                code_length: 6,
-                code_charset: "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+            slug: crate::config::SlugConfig {
+                length: 6,
+                alphabet: "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
                     .to_string(),
             },
             admin: crate::config::AdminConfig {
                 username: "admin".to_string(),
-                password: "admin123".to_string(),
+                password_hash: "".to_string(),
             },
+            oidc: crate::config::OidcConfig::default(),
             database: DatabaseConfig {
-                db_type: DatabaseType::Sqlite,
+                url: Some("sqlite::memory:".to_string()),
                 log_level: 1,
-                sqlite: Some(SqliteConfig {
-                    path: ":memory:".to_string(),
-                }),
-                postgres: None,
-                mysql: None,
             },
             cache: crate::config::CacheConfig {
                 enabled: false,
-                cache_type: crate::config::CacheType::Redis,
                 expire: 3600,
                 prefix: "shorten:".to_string(),
-                redis: None,
-                valkey: None,
+                url: None,
             },
             geoip: crate::config::GeoIpConfig {
                 enabled: false,
@@ -159,9 +155,7 @@ mod tests {
     async fn test_invalid_connection() {
         // Test with an invalid file path (not a valid SQLite database)
         let mut config = create_test_config();
-        config.database.sqlite = Some(SqliteConfig {
-            path: "/dev/null/test.db".to_string(),
-        });
+        config.database.url = Some("/dev/null/test.db".to_string());
 
         // This should fail because /dev/null is not a valid SQLite database location
         let result = DbFactory::create_connection(&config).await;

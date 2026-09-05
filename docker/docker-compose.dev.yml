@@ -1,27 +1,22 @@
-version: '3.8'
-
 services:
   # Shortener Server (Development with SQLite)
   shortener-server:
     build:
       context: ..
-      dockerfile: docker/Dockerfile
+      dockerfile: docker/Dockerfile.backend
     container_name: shortener-server-dev
     restart: unless-stopped
     ports:
       - "8080:8080"
     environment:
       - RUST_LOG=debug
-      - DATABASE_TYPE=sqlite
-      - DATABASE_PATH=/app/data/shortener.db
-      - CACHE_ENABLED=true
-      - CACHE_TYPE=redis
-      - CACHE_HOST=redis
-      - CACHE_PORT=6379
-      - GEOIP_ENABLED=true
-      - GEOIP_DB_PATH=/app/data/ip2region.xdb
+      - DATABASE__URL=sqlite:///app/data/shortener.db?mode=rwc
+      - CACHE__ENABLED=true
+      - CACHE__URL=redis://redis:6379/0
+      - GEOIP__ENABLED=true
+      - GEOIP__IP2REGION__PATH=/app/data/ip2region.xdb
     volumes:
-      - ../config/config.docker.toml:/app/config.toml:ro
+      - ../config.toml:/app/config.toml:ro
       - ../data:/app/data
       - app-logs:/app/logs
     depends_on:

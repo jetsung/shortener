@@ -1,7 +1,7 @@
 use super::{Cache, CacheError, CacheResult};
 use async_trait::async_trait;
 use redis::{AsyncCommands, Client, aio::ConnectionManager};
-use tracing::{debug, error, warn};
+use tracing::{debug, error, info, warn};
 
 /// Valkey cache implementation
 ///
@@ -125,6 +125,47 @@ impl Cache for ValkeyCache {
 
         debug!("Cache key {} exists in Valkey: {}", full_key, exists);
         Ok(exists)
+    }
+
+    async fn clear_prefix(&self, prefix: &str) -> CacheResult<u64> {
+        let pattern = format!("{}*", prefix);
+        debug!("Clearing cache keys in Valkey matching: {}", pattern);
+
+        // Collect matching keys first (SCAN), then delete in batches, so the
+        // iterator borrow is released before issuing DEL commands
+        let mut scan_conn = self.manager.clone();
+        let mut keys: Vec<String> = Vec::new();
+        let mut iter = scan_conn
+            .scan_match::<_, String>(&pattern)
+            .await
+            .map_err(|e| {
+                CacheError::Operation(format!("Failed to scan keys with pattern {}: {}", pattern, e))
+            })?;
+        while let Some(key) = iter.next_item().await {
+            keys.push(key);
+        }
+
+        if keys.is_empty() {
+            debug!("No cache keys found matching: {}", pattern);
+            return Ok(0);
+        }
+
+        const BATCH_SIZE: usize = 500;
+        let mut deleted: u64 = 0;
+        for chunk in keys.chunks(BATCH_SIZE) {
+            let mut conn = self.manager.clone();
+            let n: u64 = conn.del(chunk).await.map_err(|e| {
+                error!("Failed to delete cache keys with pattern {}: {}", pattern, e);
+                CacheError::Operation(format!("Failed to delete keys: {}", e))
+            })?;
+            deleted += n;
+        }
+
+        info!(
+            "Cleared {} cache keys in Valkey matching: {}",
+            deleted, pattern
+        );
+        Ok(deleted)
     }
 }
 
@@ -263,5 +304,46 @@ mod tests {
 
         // Clean up
         cache.delete("test").await.expect("Failed to delete key");
+    }
+
+    #[tokio::test]
+    #[ignore]
+    async fn test_valkey_clear_prefix() {
+        let cache = ValkeyCache::new("redis://localhost:6379/1", "vkclear:".to_string(), 60)
+            .await
+            .expect("Failed to connect to Valkey");
+
+        for i in 0..5 {
+            cache
+                .set(&format!("key{}", i), &format!("value{}", i), 0)
+                .await
+                .expect("Failed to set value");
+        }
+        // A key under another prefix must survive the clear
+        let client = Client::open("redis://localhost:6379/1").unwrap();
+        let mut conn = client.get_connection_manager().await.unwrap();
+        let _: () = conn
+            .set_ex("other:key", "keep", 60)
+            .await
+            .expect("Failed to set foreign key");
+
+        let deleted = cache
+            .clear_prefix("vkclear:")
+            .await
+            .expect("Failed to clear prefix");
+        assert_eq!(deleted, 5);
+
+        for i in 0..5 {
+            let result = cache
+                .get(&format!("key{}", i))
+                .await
+                .expect("Failed to get value");
+            assert_eq!(result, None);
+        }
+        let kept: Option<String> = conn.get("other:key").await.unwrap();
+        assert_eq!(kept, Some("keep".to_string()));
+
+        // Clean up
+        let _: () = conn.del("other:key").await.unwrap();
     }
 }

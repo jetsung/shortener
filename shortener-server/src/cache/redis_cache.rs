@@ -1,7 +1,7 @@
 use super::{Cache, CacheError, CacheResult};
 use async_trait::async_trait;
 use redis::{AsyncCommands, Client, aio::ConnectionManager};
-use tracing::{debug, error, warn};
+use tracing::{debug, error, info, warn};
 
 /// Redis cache implementation
 #[derive(Clone)]
@@ -121,6 +121,44 @@ impl Cache for RedisCache {
 
         debug!("Cache key {} exists: {}", full_key, exists);
         Ok(exists)
+    }
+
+    async fn clear_prefix(&self, prefix: &str) -> CacheResult<u64> {
+        let pattern = format!("{}*", prefix);
+        debug!("Clearing cache keys matching: {}", pattern);
+
+        // Collect matching keys first (SCAN), then delete in batches, so the
+        // iterator borrow is released before issuing DEL commands
+        let mut scan_conn = self.manager.clone();
+        let mut keys: Vec<String> = Vec::new();
+        let mut iter = scan_conn
+            .scan_match::<_, String>(&pattern)
+            .await
+            .map_err(|e| {
+                CacheError::Operation(format!("Failed to scan keys with pattern {}: {}", pattern, e))
+            })?;
+        while let Some(key) = iter.next_item().await {
+            keys.push(key);
+        }
+
+        if keys.is_empty() {
+            debug!("No cache keys found matching: {}", pattern);
+            return Ok(0);
+        }
+
+        const BATCH_SIZE: usize = 500;
+        let mut deleted: u64 = 0;
+        for chunk in keys.chunks(BATCH_SIZE) {
+            let mut conn = self.manager.clone();
+            let n: u64 = conn.del(chunk).await.map_err(|e| {
+                error!("Failed to delete cache keys with pattern {}: {}", pattern, e);
+                CacheError::Operation(format!("Failed to delete keys: {}", e))
+            })?;
+            deleted += n;
+        }
+
+        info!("Cleared {} cache keys matching: {}", deleted, pattern);
+        Ok(deleted)
     }
 }
 

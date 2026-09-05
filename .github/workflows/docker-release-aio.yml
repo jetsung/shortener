@@ -1,4 +1,4 @@
-name: Docker-Release-Server-Debian
+name: Docker-Release-AIO
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
 env:
   branch: latest
   image_org: jetsung
-  package_name: shortener-server
+  package_name: shortener
   acr_registry: registry.cn-guangzhou.aliyuncs.com
   hcr_registry: swr.ap-southeast-3.myhuaweicloud.com
   tcr_registry: sgccr.ccs.tencentyun.com
@@ -25,7 +25,7 @@ jobs:
       tag: ${{ steps.set_tag.outputs.tag }}
     steps:
       - name: Checkout Source Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set tag without prefix
         id: set_tag
@@ -37,36 +37,37 @@ jobs:
             echo "tag=$ref_tag" >> $GITHUB_OUTPUT
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v4
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       - name: Docker meta
         id: meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: ${{ env.package_name }}
           labels: |
-            org.opencontainers.image.title=${{ env.package_name }}
+            org.opencontainers.image.title=Shortener All-In-One
+            org.opencontainers.image.description=All-in-one image with frontend and backend for URL shortener
             org.opencontainers.image.vendor=Jetsung Chan
           tags:
             latest
 
-      - name: Build Debian variant with Bake
-        uses: docker/bake-action@v6
+      - name: Build AIO with Bake
+        uses: docker/bake-action@v7
         with:
           files: |
-            ./docker-bake.hcl
+            ./docker/docker-bake.hcl
             cwd://${{ steps.meta.outputs.bake-file }}
-          targets: release
+          targets: aio-release
           push: false
           provenance: false
           set: |
             *.output=type=oci,dest=./image.tar
 
       - name: Upload image as artifact
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: docker-image
           path: ./image.tar
@@ -94,13 +95,13 @@ jobs:
         skopeo --version
     - name: Login to Docker Hub
       if: steps.check_dockerhub.outputs.skip != 'true'
-      uses: docker/login-action@v3
+      uses: docker/login-action@v4
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
     - name: Download image artifact
       if: steps.check_dockerhub.outputs.skip != 'true'
-      uses: actions/download-artifact@v6
+      uses: actions/download-artifact@v8
       with:
         name: docker-image
         path: .
@@ -124,13 +125,13 @@ jobs:
         sudo apt-get install -y skopeo
         skopeo --version
     - name: Login to GitHub Container Registry (ghcr.io)
-      uses: docker/login-action@v3
+      uses: docker/login-action@v4
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
     - name: Download image artifact
-      uses: actions/download-artifact@v6
+      uses: actions/download-artifact@v8
       with:
         name: docker-image
         path: .
@@ -171,14 +172,14 @@ jobs:
         sudo apt-get install -y skopeo
     - name: Login to Aliyun
       if: steps.check_aliyun.outputs.skip != 'true'
-      uses: docker/login-action@v3
+      uses: docker/login-action@v4
       with:
         registry: ${{ env.acr_registry }}
         username: ${{ secrets.ALIYUN_USERNAME }}
         password: ${{ secrets.ALIYUN_TOKEN }}
     - name: Download image artifact
       if: steps.check_aliyun.outputs.skip != 'true'
-      uses: actions/download-artifact@v6
+      uses: actions/download-artifact@v8
       with:
         name: docker-image
         path: .
@@ -213,14 +214,14 @@ jobs:
         sudo apt-get install -y skopeo
     - name: Login to Tencent
       if: steps.check_tencent.outputs.skip != 'true'
-      uses: docker/login-action@v3
+      uses: docker/login-action@v4
       with:
         registry: ${{ env.tcr_registry }}
         username: ${{ secrets.TENCENT_USERNAME }}
         password: ${{ secrets.TENCENT_TOKEN }}
     - name: Download image artifact
       if: steps.check_tencent.outputs.skip != 'true'
-      uses: actions/download-artifact@v6
+      uses: actions/download-artifact@v8
       with:
         name: docker-image
         path: .

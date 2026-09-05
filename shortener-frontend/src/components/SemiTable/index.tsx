@@ -190,8 +190,10 @@ function SemiTable<T extends Record<string, any> = any, P = any>(props: SemiTabl
   // 确保分页参数变化时重新加载数据
   useEffect(() => {
     if (request) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- 挂载或参数变化时需立即拉取首屏数据
       loadData();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- request 已被 useCallback 稳定引用，无需列入依赖
   }, [loadData]);
 
   // 暴露方法给 actionRef

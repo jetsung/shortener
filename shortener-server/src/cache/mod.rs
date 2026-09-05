@@ -62,13 +62,31 @@ pub trait Cache: Send + Sync {
     /// Check if a key exists in cache
     ///
     /// # Arguments
-    /// * `key` - The cache key to check
+    /// * `key` - The cache key
     ///
     /// # Returns
     /// * `Ok(true)` - Key exists
     /// * `Ok(false)` - Key does not exist
     /// * `Err(CacheError)` - Operation failed
     async fn exists(&self, key: &str) -> CacheResult<bool>;
+
+    /// Whether this is the no-op NullCache implementation
+    ///
+    /// Returns `false` by default; only `NullCache` overrides it. Used to
+    /// distinguish "caching disabled / connection failed" from a real cache.
+    fn is_null(&self) -> bool {
+        false
+    }
+
+    /// Delete all keys under the given prefix (SCAN + batched DEL)
+    ///
+    /// # Arguments
+    /// * `prefix` - The key prefix to clear (e.g. "shorten:")
+    ///
+    /// # Returns
+    /// * `Ok(u64)` - Number of keys deleted
+    /// * `Err(CacheError)` - Operation failed
+    async fn clear_prefix(&self, prefix: &str) -> CacheResult<u64>;
 }
 
 // Re-export cache implementations
@@ -80,7 +98,7 @@ pub use null_cache::NullCache;
 pub use redis_cache::RedisCache;
 pub use valkey_cache::ValkeyCache;
 
-use crate::config::{CacheConfig, CacheType};
+use crate::config::{CacheConfig, CacheKind};
 use std::sync::Arc;
 use tracing::{info, warn};
 
@@ -97,84 +115,43 @@ pub async fn create_cache(config: &CacheConfig) -> Arc<dyn Cache> {
         return Arc::new(NullCache::new());
     }
 
-    match config.cache_type {
-        CacheType::Redis => {
-            if let Some(redis_config) = &config.redis {
-                let url = if redis_config.password.is_empty() {
-                    format!(
-                        "redis://{}:{}/{}",
-                        redis_config.host, redis_config.port, redis_config.db
-                    )
-                } else {
-                    format!(
-                        "redis://:{}@{}:{}/{}",
-                        redis_config.password,
-                        redis_config.host,
-                        redis_config.port,
-                        redis_config.db
-                    )
-                };
+    let url = match &config.url {
+        Some(url) if !url.trim().is_empty() => url.trim().to_string(),
+        _ => {
+            warn!("Cache enabled but no URL provided, using NullCache");
+            return Arc::new(NullCache::new());
+        }
+    };
 
-                match RedisCache::new(&url, config.prefix.clone(), config.expire).await {
-                    Ok(cache) => {
-                        info!("Successfully connected to Redis cache");
-                        Arc::new(cache)
-                    }
-                    Err(e) => {
-                        warn!(
-                            "Failed to connect to Redis: {}, falling back to NullCache",
-                            e
-                        );
-                        Arc::new(NullCache::new())
-                    }
+    match CacheKind::from_url(&url) {
+        CacheKind::Valkey => {
+            match ValkeyCache::new(&url, config.prefix.clone(), config.expire).await {
+                Ok(cache) => {
+                    info!("Successfully connected to Valkey cache");
+                    Arc::new(cache)
                 }
-            } else {
-                warn!("Redis cache enabled but no configuration provided, using NullCache");
-                Arc::new(NullCache::new())
+                Err(e) => {
+                    warn!(
+                        "Failed to connect to Valkey: {}, falling back to NullCache",
+                        e
+                    );
+                    Arc::new(NullCache::new())
+                }
             }
         }
-        CacheType::Valkey => {
-            if let Some(valkey_config) = &config.valkey {
-                let url = if valkey_config.password.is_empty() {
-                    format!(
-                        "redis://{}:{}/{}",
-                        valkey_config.host, valkey_config.port, valkey_config.db
-                    )
-                } else if valkey_config.username.is_empty() {
-                    format!(
-                        "redis://:{}@{}:{}/{}",
-                        valkey_config.password,
-                        valkey_config.host,
-                        valkey_config.port,
-                        valkey_config.db
-                    )
-                } else {
-                    format!(
-                        "redis://{}:{}@{}:{}/{}",
-                        valkey_config.username,
-                        valkey_config.password,
-                        valkey_config.host,
-                        valkey_config.port,
-                        valkey_config.db
-                    )
-                };
-
-                match ValkeyCache::new(&url, config.prefix.clone(), config.expire).await {
-                    Ok(cache) => {
-                        info!("Successfully connected to Valkey cache");
-                        Arc::new(cache)
-                    }
-                    Err(e) => {
-                        warn!(
-                            "Failed to connect to Valkey: {}, falling back to NullCache",
-                            e
-                        );
-                        Arc::new(NullCache::new())
-                    }
+        CacheKind::Redis => {
+            match RedisCache::new(&url, config.prefix.clone(), config.expire).await {
+                Ok(cache) => {
+                    info!("Successfully connected to Redis cache");
+                    Arc::new(cache)
                 }
-            } else {
-                warn!("Valkey cache enabled but no configuration provided, using NullCache");
-                Arc::new(NullCache::new())
+                Err(e) => {
+                    warn!(
+                        "Failed to connect to Redis: {}, falling back to NullCache",
+                        e
+                    );
+                    Arc::new(NullCache::new())
+                }
             }
         }
     }
@@ -183,17 +160,14 @@ pub async fn create_cache(config: &CacheConfig) -> Arc<dyn Cache> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::config::{RedisConfig, ValkeyConfig};
 
     #[tokio::test]
     async fn test_create_cache_disabled() {
         let config = CacheConfig {
             enabled: false,
-            cache_type: CacheType::Redis,
             expire: 60,
             prefix: "test:".to_string(),
-            redis: None,
-            valkey: None,
+            url: None,
         };
 
         let cache = create_cache(&config).await;
@@ -202,14 +176,12 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_create_cache_redis_no_config() {
+    async fn test_create_cache_redis_no_url() {
         let config = CacheConfig {
             enabled: true,
-            cache_type: CacheType::Redis,
             expire: 60,
             prefix: "test:".to_string(),
-            redis: None,
-            valkey: None,
+            url: None,
         };
 
         let cache = create_cache(&config).await;
@@ -222,16 +194,9 @@ mod tests {
     async fn test_create_cache_redis_invalid_connection() {
         let config = CacheConfig {
             enabled: true,
-            cache_type: CacheType::Redis,
             expire: 60,
             prefix: "test:".to_string(),
-            redis: Some(RedisConfig {
-                host: "localhost".to_string(),
-                port: 9999,
-                password: "".to_string(),
-                db: 0,
-            }),
-            valkey: None,
+            url: Some("redis://localhost:9999/0".to_string()),
         };
 
         // Use timeout to prevent hanging (10 seconds should be enough)
@@ -254,14 +219,12 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_create_cache_valkey_no_config() {
+    async fn test_create_cache_valkey_no_url() {
         let config = CacheConfig {
             enabled: true,
-            cache_type: CacheType::Valkey,
             expire: 60,
             prefix: "test:".to_string(),
-            redis: None,
-            valkey: None,
+            url: None,
         };
 
         let cache = create_cache(&config).await;
@@ -274,17 +237,9 @@ mod tests {
     async fn test_create_cache_valkey_invalid_connection() {
         let config = CacheConfig {
             enabled: true,
-            cache_type: CacheType::Valkey,
             expire: 60,
             prefix: "test:".to_string(),
-            redis: None,
-            valkey: Some(ValkeyConfig {
-                host: "localhost".to_string(),
-                port: 9999,
-                username: "".to_string(),
-                password: "".to_string(),
-                db: 0,
-            }),
+            url: Some("valkey://localhost:9999/0".to_string()),
         };
 
         // Use timeout to prevent hanging (10 seconds should be enough)
@@ -311,16 +266,9 @@ mod tests {
     async fn test_create_cache_redis_valid_connection() {
         let config = CacheConfig {
             enabled: true,
-            cache_type: CacheType::Redis,
             expire: 60,
             prefix: "test:".to_string(),
-            redis: Some(RedisConfig {
-                host: "localhost".to_string(),
-                port: 6379,
-                password: "".to_string(),
-                db: 0,
-            }),
-            valkey: None,
+            url: Some("redis://localhost:6379/0".to_string()),
         };
 
         let cache = create_cache(&config).await;

@@ -44,6 +44,17 @@ impl Cache for NullCache {
         debug!("NullCache: exists({}) -> false", key);
         Ok(false)
     }
+
+    /// NullCache is always the null implementation
+    fn is_null(&self) -> bool {
+        true
+    }
+
+    /// Does nothing, always succeeds with 0 keys deleted
+    async fn clear_prefix(&self, prefix: &str) -> CacheResult<u64> {
+        debug!("NullCache: clear_prefix({}) -> no-op", prefix);
+        Ok(0)
+    }
 }
 
 #[cfg(test)]

@@ -81,11 +81,11 @@ cargo run -p shortener-cli -- create https://example.com
 ### 本地查看文档
 
 ```bash
-# 安装依赖
-pip install -r requirements.txt
+# 安装 Zensical（推荐 uv，独立 venv；也可用 pip install zensical）
+uv tool install zensical
 
 # 启动文档服务器
-mkdocs serve
+zensical serve
 
 # 访问 http://127.0.0.1:8000
 ```
@@ -132,7 +132,7 @@ pnpm test
 
 ## 📄 许可证
 
-本项目采用 Apache-2.0 许可证 - 详见 [LICENSE](LICENSE) 文件。
+本项目采用 Apache-2.0 许可证 - 详见 [LICENSE](../LICENSE) 文件。
 
 ## 👤 作者
 

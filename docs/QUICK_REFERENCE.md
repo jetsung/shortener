@@ -111,8 +111,14 @@ shortener-cli delete <code>
 ## 🔧 配置
 
 ```bash
-# 服务器配置
-vim config/config.toml
+# 服务器配置（config.toml 可选；不提供时纯环境变量启动，env 优先于文件）
+vim config.toml
+
+# 纯环境变量最小配置
+export SERVER__API_KEY="$(openssl rand -base64 32)"
+export ADMIN__PASSWORD_HASH='$argon2id$...'   # shortener-server hash-password --password "..."
+export DATABASE__URL="sqlite://data/shortener.db?mode=rwc"
+export JWT_SECRET="$(openssl rand -base64 48)"
 
 # CLI 配置
 shortener-cli init
@@ -135,6 +141,10 @@ curl -X POST http://localhost:8080/api/shortens \
 
 # 获取短链接
 curl http://localhost:8080/api/shortens/<code> \
+  -H "X-API-KEY: your-api-key"
+
+# 刷新缓存（清空前缀旧键并从数据库重载）
+curl -X POST http://localhost:8080/api/cache/refresh \
   -H "X-API-KEY: your-api-key"
 ```
 
@@ -168,7 +178,7 @@ sudo ./install.sh
 sudo systemctl start shortener-server
 
 # Docker
-docker-compose -f docker/docker-compose.yml up -d
+docker compose -f docker/docker-compose.yml up -d
 
 # 交叉编译
 ./scripts/build-cross.sh --all

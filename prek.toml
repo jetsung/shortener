@@ -1,6 +1,6 @@
 [[repos]]
 repo = "https://github.com/pre-commit/pre-commit-hooks"
-rev = "v5.0.0"
+rev = "v6.0.0"
 
 [[repos.hooks]]
 id = "check-merge-conflict"
@@ -10,7 +10,6 @@ id = "trailing-whitespace"
 
 [[repos.hooks]]
 id = "check-yaml"
-exclude = "^mkdocs\\.yml$"
 
 [[repos.hooks]]
 id = "check-added-large-files"
@@ -40,21 +39,24 @@ language = "system"
 files = "\\.rs$"
 pass_filenames = false
 
+# 本地 pre-commit 只增量格式化本次变更的文件；全量 prettier:check 由 CI 负责
+# （frontend-ci.yml 中 pnpm prettier:check，glob 与下方 files 保持一致）
 [[repos.hooks]]
 id = "frontend-prettier"
 name = "Frontend Prettier Format"
-entry = "bash -c 'cd shortener-frontend && pnpm prettier'"
+entry = "bash -c 'cd shortener-frontend && pnpm exec prettier --write \"${@#shortener-frontend/}\"' --"
 language = "system"
 files = "^shortener-frontend/src/.*\\.(js|jsx|ts|tsx|json|css|md)$"
-pass_filenames = false
+pass_filenames = true
 
+# 本地 pre-commit 只增量 lint 本次变更的文件；全量 pnpm lint 由 CI 负责
 [[repos.hooks]]
 id = "frontend-eslint"
 name = "Frontend ESLint Fix"
-entry = "bash -c 'cd shortener-frontend && pnpm lint:fix'"
+entry = "bash -c 'cd shortener-frontend && pnpm exec eslint --fix \"${@#shortener-frontend/}\"' --"
 language = "system"
 files = "^shortener-frontend/src/.*\\.(js|jsx|ts|tsx)$"
-pass_filenames = false
+pass_filenames = true
 
 [[repos.hooks]]
 id = "frontend-type-check"
@@ -62,4 +64,12 @@ name = "Frontend TypeScript Type Check"
 entry = "bash -c 'cd shortener-frontend && pnpm type-check'"
 language = "system"
 files = "^shortener-frontend/.*\\.(ts|tsx)$"
+pass_filenames = false
+
+[[repos.hooks]]
+id = "frontend-test"
+name = "Frontend Test (CI, non-blocking)"
+entry = "bash -c 'cd shortener-frontend && pnpm test || true'"
+language = "system"
+files = "^shortener-frontend/src/.*\\.(test|spec)\\.(ts|tsx)$"
 pass_filenames = false

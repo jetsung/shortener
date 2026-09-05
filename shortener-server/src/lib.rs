@@ -4,6 +4,7 @@ pub mod db;
 pub mod errors;
 pub mod geoip;
 pub mod handlers;
+pub mod jwt;
 pub mod logging;
 pub mod middleware;
 pub mod migration;

@@ -1,6 +1,9 @@
 # Justfile for shortener project
 # https://github.com/casey/just
 
+# Current version read from Cargo.toml (workspace.package.version)
+current_version := `sed -n 's/^version = "\(.*\)"/\1/p' Cargo.toml | head -1`
+
 # Default recipe to display help
 default:
     @just --list
@@ -166,15 +169,15 @@ ci-frontend:
 
 # Build Docker image (Debian)
 docker-build:
-    docker build -f docker/Dockerfile -t shortener-server:latest .
-
-# Build Docker image (Alpine)
-docker-build-alpine:
-    docker build -f docker/Dockerfile.alpine -t shortener-server:alpine .
+    docker build -f docker/Dockerfile.backend -t shortener-server:latest .
 
 # Build frontend Docker image
 docker-build-frontend:
     docker build -f docker/Dockerfile.frontend -t shortener-frontend:latest .
+
+# Build All-In-One Docker image (frontend + backend)
+docker-build-aio:
+    docker build -f docker/Dockerfile -t shortener:latest .
 
 # Run with docker compose
 docker-run:
@@ -188,11 +191,16 @@ docker-run-dev:
 docker-run-frontend:
     docker compose -f docker/docker-compose.frontend.yml up -d
 
+# Run All-In-One with docker compose
+docker-run-aio:
+    docker compose -f docker/docker-compose.aio.yml up -d
+
 # Stop Docker containers
 docker-stop:
     docker compose -f docker/docker-compose.yml down
     docker compose -f docker/docker-compose.dev.yml down
     docker compose -f docker/docker-compose.frontend.yml down
+    docker compose -f docker/docker-compose.aio.yml down
 
 # View Docker logs
 docker-logs:
@@ -226,11 +234,19 @@ cross-list:
 # Release
 # ============================================================================
 
+# Show versions in Cargo.toml / openapi.yml / shortener-frontend/package.json
+version:
+    ./scripts/bump-version.sh
+
+# Sync version across Cargo.toml / openapi.yml / shortener-frontend/package.json
+bump-version VERSION=current_version:
+    ./scripts/bump-version.sh {{VERSION}}
+
 # Create a new release
 release VERSION:
     @echo "Creating release {{VERSION}}"
-    @echo "{{VERSION}}" > version.txt
-    git add version.txt
+    just bump-version {{VERSION}}
+    git add Cargo.toml openapi.yml shortener-frontend/package.json
     git commit -m "Release {{VERSION}}"
     git tag -a "v{{VERSION}}" -m "Release {{VERSION}}"
     @echo "Push with: git push origin main --tags"
@@ -302,25 +318,23 @@ install-tools:
 
 # Serve documentation locally
 docs:
-    @echo "Installing documentation dependencies..."
-    @pip install -q -r docs/requirements.txt
+    # 优先 uv tool install，回退 pip
+    @command -v zensical >/dev/null 2>&1 || { command -v uv >/dev/null 2>&1 && uv tool install -q zensical || pip install -q zensical; }
     @echo "Starting documentation server at http://127.0.0.1:8000"
-    @mkdocs serve
+    @zensical serve
 
 # Build documentation
 docs-build:
-    @echo "Installing documentation dependencies..."
-    @pip install -q -r docs/requirements.txt
+    # 优先 uv tool install，回退 pip
+    @command -v zensical >/dev/null 2>&1 || { command -v uv >/dev/null 2>&1 && uv tool install -q zensical || pip install -q zensical; }
     @echo "Building documentation..."
-    @mkdocs build
+    @zensical build --clean
     @echo "Documentation built to site/"
 
 # Deploy documentation to GitHub Pages
 docs-deploy:
-    @echo "Installing documentation dependencies..."
-    @pip install -q -r docs/requirements.txt
     @echo "Deploying documentation to GitHub Pages..."
-    @mkdocs gh-deploy --force
+    @echo "Documentation is deployed by .github/workflows/docs.yml on push to main"
 
 # ============================================================================
 # Utilities

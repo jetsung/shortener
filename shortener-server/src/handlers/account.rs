@@ -50,9 +50,8 @@ pub async fn login(
         return Err(AppError::Unauthorized("Invalid credentials".to_string()));
     }
 
-    // For now, use simple string comparison for password
-    // TODO: In production, store hashed passwords in config and verify against hash
-    if req.password != config.password {
+    // Verify password against the Argon2id hash stored in config
+    if !verify_password(&req.password, &config.password_hash)? {
         return Err(AppError::Unauthorized("Invalid credentials".to_string()));
     }
 
@@ -92,10 +91,8 @@ pub async fn current_user(
     }))
 }
 
-/// Hash a password using argon2
-/// TODO: Use this for production password hashing
-#[allow(dead_code)]
-fn hash_password(password: &str) -> Result<String, AppError> {
+/// Hash a password using argon2 (Argon2id, PHC string format)
+pub fn hash_password(password: &str) -> Result<String, AppError> {
     use argon2::{
         Argon2,
         password_hash::{PasswordHasher, SaltString, rand_core::OsRng},
@@ -112,10 +109,8 @@ fn hash_password(password: &str) -> Result<String, AppError> {
     Ok(password_hash)
 }
 
-/// Verify a password against a hash using argon2
-/// TODO: Use this for production password verification
-#[allow(dead_code)]
-fn verify_password(password: &str, hash: &str) -> Result<bool, AppError> {
+/// Verify a password against an argon2 hash (PHC string format)
+pub fn verify_password(password: &str, hash: &str) -> Result<bool, AppError> {
     use argon2::{
         Argon2,
         password_hash::{PasswordHash, PasswordVerifier},
@@ -131,84 +126,16 @@ fn verify_password(password: &str, hash: &str) -> Result<bool, AppError> {
         .is_ok())
 }
 
-/// Generate a simple token for a user (only lowercase letters and numbers)
+/// Generate a JWT for a user (replaces the old in-memory pseudo token)
 pub fn generate_token(username: &str) -> Result<String, AppError> {
-    use std::time::{SystemTime, UNIX_EPOCH};
-
-    // Character set: lowercase letters and numbers only
-    const CHARSET: &str = "0123456789abcdefghijklmnopqrstuvwxyz";
-    const TOKEN_LENGTH: usize = 32;
-
-    // Generate random token using timestamp and username as seed for simplicity
-    let timestamp = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .unwrap()
-        .as_nanos();
-
-    // Create a simple pseudo-random generator
-    let mut seed = timestamp as u64;
-    seed ^= username.len() as u64;
-    for byte in username.bytes() {
-        seed = seed.wrapping_mul(31).wrapping_add(byte as u64);
-    }
-
-    let token: String = (0..TOKEN_LENGTH)
-        .map(|i| {
-            seed = seed.wrapping_mul(1103515245).wrapping_add(12345);
-            let idx = (seed as usize + i) % CHARSET.len();
-            CHARSET.chars().nth(idx).unwrap()
-        })
-        .collect();
-
-    // Store token with user info and expiration (24 hours)
-    let expiration = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .unwrap()
-        .as_secs()
-        + 86400; // 24 hours
-
-    // Store in global token store
-    get_token_store()
-        .lock()
-        .unwrap()
-        .insert(token.clone(), (username.to_string(), expiration));
-
-    Ok(token)
+    let claims = crate::jwt::build_claims(username, None, None);
+    crate::jwt::encode(&claims)
 }
 
-/// Verify a token and extract the username
+/// Verify a JWT and extract the username (subject)
 pub fn verify_token(token: &str) -> Result<String, AppError> {
-    use std::time::{SystemTime, UNIX_EPOCH};
-
-    let mut store = get_token_store().lock().unwrap();
-
-    if let Some((username, expiration)) = store.get(token) {
-        // Check if token is expired
-        let current_time = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .unwrap()
-            .as_secs();
-
-        if current_time > *expiration {
-            // Token expired, remove it
-            store.remove(token);
-            return Err(AppError::Unauthorized("Token expired".to_string()));
-        }
-
-        return Ok(username.clone());
-    }
-
-    Err(AppError::Unauthorized("Invalid token".to_string()))
-}
-
-/// Get the global token store
-fn get_token_store() -> &'static std::sync::Mutex<std::collections::HashMap<String, (String, u64)>>
-{
-    use std::collections::HashMap;
-    use std::sync::{Mutex, OnceLock};
-
-    static TOKEN_STORE: OnceLock<Mutex<HashMap<String, (String, u64)>>> = OnceLock::new();
-    TOKEN_STORE.get_or_init(|| Mutex::new(HashMap::new()))
+    let claims = crate::jwt::decode(token)?;
+    Ok(claims.sub)
 }
 
 #[cfg(test)]
@@ -227,15 +154,16 @@ mod tests {
     #[test]
     fn test_generate_and_verify_token() {
         let username = "testuser";
-        let token = generate_token(username).unwrap();
+        let claims = crate::jwt::build_claims(username, None, None);
+        let token = crate::jwt::encode_impl(&claims, "test-secret").unwrap();
 
-        let verified_username = verify_token(&token).unwrap();
-        assert_eq!(verified_username, username);
+        let claims = crate::jwt::decode_impl(&token, "test-secret").unwrap();
+        assert_eq!(claims.sub, username);
     }
 
     #[test]
     fn test_verify_invalid_token() {
-        let result = verify_token("invalid.token.here");
+        let result = crate::jwt::decode_impl("invalid.token.here", "test-secret");
         assert!(result.is_err());
     }
 
@@ -243,7 +171,7 @@ mod tests {
     async fn test_login_handler() {
         let config = Arc::new(AdminConfig {
             username: "admin".to_string(),
-            password: "admin123".to_string(),
+            password_hash: hash_password("admin123").unwrap(),
         });
 
         let req = LoginRequest {
@@ -264,7 +192,7 @@ mod tests {
     async fn test_login_invalid_username() {
         let config = Arc::new(AdminConfig {
             username: "admin".to_string(),
-            password: "admin123".to_string(),
+            password_hash: hash_password("admin123").unwrap(),
         });
 
         let req = LoginRequest {

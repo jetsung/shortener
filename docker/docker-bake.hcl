@@ -34,20 +34,10 @@ target "_common" {
         "org.opencontainers.image.licenses" = "Apache-2.0"
     }
     context = "."
-    dockerfile = "./docker/Dockerfile"
+    dockerfile = "./docker/Dockerfile.backend"
     platforms = ["linux/amd64"]
     args = {
         RUST_VERSION = "1.93"
-    }
-}
-
-## Alpine-based configuration
-target "_alpine" {
-    inherits = ["_common"]
-    dockerfile = "docker/Dockerfile.alpine"
-    labels = {
-        "org.opencontainers.image.title" = "Shortener Server (Alpine)"
-        "org.opencontainers.image.description" = "High-performance URL shortener service written in Rust (Alpine Linux)"
     }
 }
 
@@ -57,16 +47,6 @@ target "default" {
     tags = [
         "shortener-server:local",
         "shortener-server:dev"
-    ]
-    output = ["type=docker"]
-}
-
-## Alpine default target
-target "default-alpine" {
-    inherits = ["_alpine"]
-    tags = [
-        "shortener-server:local-alpine",
-        "shortener-server:dev-alpine"
     ]
     output = ["type=docker"]
 }
@@ -106,44 +86,9 @@ target "dev-arm64" {
     ]
 }
 
-## Alpine development builds group
-group "dev-alpine" {
-    targets = ["dev-alpine-amd64", "dev-alpine-arm64"]
-}
-
-## Alpine development build (all platforms)
-target "dev-alpine" {
-    inherits = ["_alpine", "_image"]
-    platforms = ["linux/amd64", "linux/arm64"]
-    tags = [
-        "${REGISTRY}/${IMAGE_NAME}:dev-alpine",
-        "${REGISTRY}/${IMAGE_NAME}:dev-alpine-${VERSION}"
-    ]
-}
-
-## Alpine development build (amd64)
-target "dev-alpine-amd64" {
-    inherits = ["_alpine", "_image"]
-    platforms = ["linux/amd64"]
-    tags = [
-        "${REGISTRY}/${IMAGE_NAME}:dev-alpine-amd64",
-        "${REGISTRY}/${IMAGE_NAME}:dev-alpine-amd64-${VERSION}"
-    ]
-}
-
-## Alpine development build (arm64)
-target "dev-alpine-arm64" {
-    inherits = ["_alpine", "_image"]
-    platforms = ["linux/arm64"]
-    tags = [
-        "${REGISTRY}/${IMAGE_NAME}:dev-alpine-arm64",
-        "${REGISTRY}/${IMAGE_NAME}:dev-alpine-arm64-${VERSION}"
-    ]
-}
-
-## Release builds group (for CI/CD - builds both debian and alpine)
+## Release builds group (for CI/CD)
 group "release-all" {
-    targets = ["release-debian", "release-alpine"]
+    targets = ["release-debian"]
 }
 
 ## CI Release build - Debian-based (main/latest tag)
@@ -152,15 +97,6 @@ target "release" {
     platforms = ["linux/amd64", "linux/arm64"]
     tags = [
         "${REGISTRY}/${IMAGE_NAME}:latest"
-    ]
-}
-
-## CI Release build - Alpine variant
-target "release-alpine" {
-    inherits = ["_alpine", "_image"]
-    platforms = ["linux/amd64", "linux/arm64"]
-    tags = [
-        "${REGISTRY}/${IMAGE_NAME}:alpine"
     ]
 }
 
@@ -196,27 +132,9 @@ target "release-debian-arm64" {
     ]
 }
 
-## Release build (Alpine, amd64 only)
-target "release-alpine-amd64" {
-    inherits = ["_alpine", "_image"]
-    platforms = ["linux/amd64"]
-    tags = [
-        "${REGISTRY}/${IMAGE_NAME}:alpine-${VERSION}-amd64"
-    ]
-}
-
-## Release build (Alpine, arm64 only)
-target "release-alpine-arm64" {
-    inherits = ["_alpine", "_image"]
-    platforms = ["linux/arm64"]
-    tags = [
-        "${REGISTRY}/${IMAGE_NAME}:alpine-${VERSION}-arm64"
-    ]
-}
-
 ## All builds group (for CI/CD)
 group "all" {
-    targets = ["release-debian", "release-alpine"]
+    targets = ["release-debian"]
 }
 
 ## ============================================================================
@@ -311,5 +229,111 @@ target "frontend-release-arm64" {
     platforms = ["linux/arm64"]
     tags = [
         "${REGISTRY}/${FRONTEND_IMAGE_NAME}:${VERSION}-arm64"
+    ]
+}
+
+## ============================================================================
+## All-In-One Configuration (frontend + backend in a single image)
+## ============================================================================
+
+variable "AIO_IMAGE_NAME" {
+    default = "shortener"
+}
+
+## Common configuration for AIO targets
+## nginx (port 80) serves the frontend and proxies /api/* + short codes to
+## the in-container backend at 127.0.0.1:8080 (see docker/nginx-aio.conf)
+target "_aio_common" {
+    labels = {
+        "org.opencontainers.image.title" = "Shortener All-In-One"
+        "org.opencontainers.image.description" = "All-in-one image with frontend and backend for URL shortener"
+        "org.opencontainers.image.source" = "https://github.com/jetsung/shortener"
+        "org.opencontainers.image.documentation" = "https://github.com/jetsung/shortener/blob/main/README.md"
+        "org.opencontainers.image.authors" = "Jetsung Chan <i@jetsung.com>"
+        "org.opencontainers.image.licenses" = "Apache-2.0"
+    }
+    context = "."
+    dockerfile = "./docker/Dockerfile"
+    platforms = ["linux/amd64"]
+    args = {
+        RUST_VERSION = "1.93"
+    }
+}
+
+## Default target for local development
+target "aio-default" {
+    inherits = ["_aio_common"]
+    tags = [
+        "shortener:local",
+        "shortener:dev"
+    ]
+    output = ["type=docker"]
+}
+
+## Development builds group
+group "aio-dev" {
+    targets = ["aio-dev-amd64", "aio-dev-arm64"]
+}
+
+## Development build (all platforms)
+target "aio-dev" {
+    inherits = ["_aio_common", "_image"]
+    platforms = ["linux/amd64", "linux/arm64"]
+    tags = [
+        "${REGISTRY}/${AIO_IMAGE_NAME}:dev",
+        "${REGISTRY}/${AIO_IMAGE_NAME}:dev-${VERSION}"
+    ]
+}
+
+## Development build (amd64)
+target "aio-dev-amd64" {
+    inherits = ["_aio_common", "_image"]
+    platforms = ["linux/amd64"]
+    tags = [
+        "${REGISTRY}/${AIO_IMAGE_NAME}:dev-amd64",
+        "${REGISTRY}/${AIO_IMAGE_NAME}:dev-amd64-${VERSION}"
+    ]
+}
+
+## Development build (arm64)
+target "aio-dev-arm64" {
+    inherits = ["_aio_common", "_image"]
+    platforms = ["linux/arm64"]
+    tags = [
+        "${REGISTRY}/${AIO_IMAGE_NAME}:dev-arm64",
+        "${REGISTRY}/${AIO_IMAGE_NAME}:dev-arm64-${VERSION}"
+    ]
+}
+
+## Release builds group (for CI/CD)
+group "aio-release-all" {
+    targets = ["aio-release"]
+}
+
+## CI Release build
+target "aio-release" {
+    inherits = ["_aio_common", "_image"]
+    platforms = ["linux/amd64", "linux/arm64"]
+    tags = [
+        "${REGISTRY}/${AIO_IMAGE_NAME}:latest",
+        "${REGISTRY}/${AIO_IMAGE_NAME}:${VERSION}"
+    ]
+}
+
+## Release build (amd64 only)
+target "aio-release-amd64" {
+    inherits = ["_aio_common", "_image"]
+    platforms = ["linux/amd64"]
+    tags = [
+        "${REGISTRY}/${AIO_IMAGE_NAME}:${VERSION}-amd64"
+    ]
+}
+
+## Release build (arm64 only)
+target "aio-release-arm64" {
+    inherits = ["_aio_common", "_image"]
+    platforms = ["linux/arm64"]
+    tags = [
+        "${REGISTRY}/${AIO_IMAGE_NAME}:${VERSION}-arm64"
     ]
 }

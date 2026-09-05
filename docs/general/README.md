@@ -6,6 +6,10 @@
 
 - [安装指南](INSTALLATION.md) - 详细的安装说明和多种安装方式
 - [配置说明](CONFIGURATION.md) - 服务器和 CLI 配置选项
+- [配置文件说明](CONFIG_FILES.md) - 配置文件与加载机制
+- [环境变量参考](ENVIRONMENT_VARIABLES.md) - 完整的环境变量参数说明
+- [GeoIP 配置指南](GEOIP.md) - 地理位置追踪配置
+- [OIDC 对接部署](OIDC.md) - OIDC / OAuth2.0 单点登录接入指南
 
 ## 快速开始
 
@@ -25,6 +29,16 @@
 - 数据库配置
 - 缓存配置
 - GeoIP 配置
+
+完整的环境变量清单（含 JWT_SECRET）请参阅 [环境变量参考](ENVIRONMENT_VARIABLES.md)。
+
+### OIDC 登录
+
+查看 [OIDC 对接部署](OIDC.md) 了解：
+- IdP 客户端创建
+- `JWT_SECRET` 与 `[oidc]` 配置
+- 允许列表（邮箱 / sub）
+- 密码哈希生成与双通道登录
 
 ## 相关文档
 

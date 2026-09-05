@@ -37,8 +37,8 @@ sudo apt install ./target/debian/shortener-server_*.deb
 sudo nano /opt/shortener/config/config.toml
 
 # 配置数据库路径（SQLite 示例）
-# [database.sqlite]
-# path = "/opt/shortener/data/shortener.db"
+# [database]
+# url = "sqlite:///opt/shortener/data/shortener.db?mode=rwc"
 
 # 启动服务
 sudo systemctl start shortener-server
@@ -67,7 +67,7 @@ maintainer = "Jetsung Chan <i@jetsung.com>"
 depends = "$auto, systemd"
 assets = [
     ["target/release/shortener-server", "usr/local/bin/", "755"],
-    ["../config/config.toml", "opt/shortener/config.toml.example", "644"],
+    ["../config.toml", "opt/shortener/config.toml.example", "644"],
     ["../deploy/systemd/shortener-server.service", "lib/systemd/system/", "644"],
     ["../README.md", "usr/share/doc/shortener-server/", "644"],
 ]
@@ -87,15 +87,17 @@ maintainer-scripts = "../scripts/"
 
 ## 维护脚本
 
-项目包含 4 个维护脚本（位于 `scripts/` 目录）：
+项目包含 4 个维护脚本（位于 `scripts/` 目录，采用 dpkg 约定命名，
+由 `maintainer-scripts = "../scripts/"` 自动打入 DEB 包；RPM 包则通过
+`generate-rpm` 的 `*_script` 字段直接引用同一批文件）：
 
-- `preinstall.sh`: 创建用户和组，备份配置
-- `postinstall.sh`: 创建目录，设置权限，启用服务
-- `preremove.sh`: 停止并禁用服务
-- `postremove.sh`: 清理文件（仅在 purge 时）
+- `preinst`: 创建用户和组，备份配置
+- `postinst`: 创建目录，设置权限，启用服务
+- `prerm`: 停止并禁用服务
+- `postrm`: 清理文件（仅在 purge 时）
 
 ## 详细文档
 
 更多信息请参考：
-- [DEB 打包完整指南](docs/DEB_PACKAGING.md)
-- [DEB 打包简化指南](docs/DEB_PACKAGING_SIMPLIFIED.md)
+- [DEB 打包指南](DEB_PACKAGING_SIMPLIFIED.md)
+- [RPM 包构建](BUILD_RPM.md)

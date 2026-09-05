@@ -16,7 +16,7 @@ cargo build --release -p shortener-server
 cargo run --release -p shortener-server
 
 # 使用配置文件
-cargo run --release -p shortener-server -- --config config/config.local.toml
+cargo run --release -p shortener-server -- --config config.toml
 ```
 
 ## 🛠️ 技术栈

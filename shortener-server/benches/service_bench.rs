@@ -1,6 +1,6 @@
 use criterion::{BenchmarkId, Criterion, criterion_group, criterion_main};
 use shortener_server::cache::NullCache;
-use shortener_server::config::{Config, DatabaseConfig, DatabaseType, SqliteConfig};
+use shortener_server::config::{Config, DatabaseConfig};
 use shortener_server::db::DbFactory;
 use shortener_server::repositories::url_repository::UrlRepositoryImpl;
 use shortener_server::services::{CreateShortenRequest, ShortenService, UpdateShortenRequest};
@@ -14,34 +14,27 @@ async fn setup_test_service() -> ShortenService {
         server: shortener_server::config::ServerConfig {
             address: ":8080".to_string(),
             trusted_platform: None,
-            site_url: "http://localhost:8080".to_string(),
+            short_url: "http://localhost:8080".to_string(),
             api_key: "test-key".to_string(),
         },
-        shortener: shortener_server::config::ShortenerConfig {
-            code_length: 6,
-            code_charset: "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        slug: shortener_server::config::SlugConfig {
+            length: 6,
+            alphabet: "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
                 .to_string(),
         },
         admin: shortener_server::config::AdminConfig {
             username: "admin".to_string(),
-            password: "admin123".to_string(),
+            password_hash: "$argon2id$v=19$m=19456,t=2,p=1$c2FsdHNhbHQ$hash".to_string(),
         },
         database: DatabaseConfig {
-            db_type: DatabaseType::Sqlite,
+            url: Some("sqlite::memory:".to_string()),
             log_level: 0,
-            sqlite: Some(SqliteConfig {
-                path: ":memory:".to_string(),
-            }),
-            postgres: None,
-            mysql: None,
         },
         cache: shortener_server::config::CacheConfig {
             enabled: false,
-            cache_type: shortener_server::config::CacheType::Redis,
             expire: 3600,
             prefix: "shorten:".to_string(),
-            redis: None,
-            valkey: None,
+            url: None,
         },
         geoip: shortener_server::config::GeoIpConfig {
             enabled: false,
@@ -49,6 +42,7 @@ async fn setup_test_service() -> ShortenService {
             ip2region: None,
         },
         logging: shortener_server::logging::LoggingConfig::default(),
+        oidc: shortener_server::config::OidcConfig::default(),
     };
 
     let db = DbFactory::create_connection(&config).await.unwrap();
@@ -60,8 +54,8 @@ async fn setup_test_service() -> ShortenService {
     ShortenService::new(
         url_repo,
         cache,
-        config.shortener.clone(),
-        config.server.site_url.clone(),
+        config.slug.clone(),
+        config.server.short_url.clone(),
     )
 }
 

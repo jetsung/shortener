@@ -1,4 +1,4 @@
-name: Docker-Release-Server-Alpine
+name: Docker-Release-Server-Debian
 
 on:
   push:
@@ -25,7 +25,7 @@ jobs:
       tag: ${{ steps.set_tag.outputs.tag }}
     steps:
       - name: Checkout Source Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set tag without prefix
         id: set_tag
@@ -37,38 +37,38 @@ jobs:
             echo "tag=$ref_tag" >> $GITHUB_OUTPUT
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v4
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       - name: Docker meta
         id: meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: ${{ env.package_name }}
           labels: |
-            org.opencontainers.image.title=${{ env.package_name }} (Alpine)
+            org.opencontainers.image.title=${{ env.package_name }}
             org.opencontainers.image.vendor=Jetsung Chan
           tags:
-            alpine
+            latest
 
-      - name: Build Alpine variant with Bake
-        uses: docker/bake-action@v6
+      - name: Build Debian variant with Bake
+        uses: docker/bake-action@v7
         with:
           files: |
-            ./docker-bake.hcl
+            ./docker/docker-bake.hcl
             cwd://${{ steps.meta.outputs.bake-file }}
-          targets: release-alpine
+          targets: release
           push: false
           provenance: false
           set: |
             *.output=type=oci,dest=./image.tar
 
       - name: Upload image as artifact
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
-          name: docker-image-alpine
+          name: docker-image
           path: ./image.tar
           retention-days: 1
 
@@ -94,15 +94,15 @@ jobs:
         skopeo --version
     - name: Login to Docker Hub
       if: steps.check_dockerhub.outputs.skip != 'true'
-      uses: docker/login-action@v3
+      uses: docker/login-action@v4
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
     - name: Download image artifact
       if: steps.check_dockerhub.outputs.skip != 'true'
-      uses: actions/download-artifact@v6
+      uses: actions/download-artifact@v8
       with:
-        name: docker-image-alpine
+        name: docker-image
         path: .
     - name: Sync to Docker Hub
       if: steps.check_dockerhub.outputs.skip != 'true'
@@ -111,8 +111,8 @@ jobs:
         DEST_REPO: ${{ env.image_org }}/${{ env.package_name }}
         DEST_TAG: ${{ needs.build.outputs.tag }}
       run: |
-          skopeo copy --all $SRC_IMAGE docker://$DEST_REPO:alpine-$DEST_TAG
-          skopeo copy --all $SRC_IMAGE docker://$DEST_REPO:alpine
+          skopeo copy --all $SRC_IMAGE docker://$DEST_REPO:$DEST_TAG
+          skopeo copy --all $SRC_IMAGE docker://$DEST_REPO:latest
 
   sync-to-ghcr:
     needs: build
@@ -124,15 +124,15 @@ jobs:
         sudo apt-get install -y skopeo
         skopeo --version
     - name: Login to GitHub Container Registry (ghcr.io)
-      uses: docker/login-action@v3
+      uses: docker/login-action@v4
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
     - name: Download image artifact
-      uses: actions/download-artifact@v6
+      uses: actions/download-artifact@v8
       with:
-        name: docker-image-alpine
+        name: docker-image
         path: .
     - name: Sync to GitHub Container Registry (ghcr.io)
       env:
@@ -140,8 +140,15 @@ jobs:
         DEST_REPO: ghcr.io/${{ github.repository_owner }}/${{ env.package_name }}
         DEST_TAG: ${{ needs.build.outputs.tag }}
       run: |
-          skopeo copy --all $SRC_IMAGE docker://$DEST_REPO:alpine-$DEST_TAG
-          skopeo copy --all $SRC_IMAGE docker://$DEST_REPO:alpine
+          skopeo copy --all $SRC_IMAGE docker://$DEST_REPO:$DEST_TAG
+          skopeo copy --all $SRC_IMAGE docker://$DEST_REPO:latest
+    - uses: actions/delete-package-versions@v5
+      continue-on-error: true
+      with:
+        package-name: ${{ env.package_name }}
+        package-type: 'container'
+        min-versions-to-keep: 2
+        delete-only-untagged-versions: 'true'
 
   sync-to-aliyun:
     needs: build
@@ -164,16 +171,16 @@ jobs:
         sudo apt-get install -y skopeo
     - name: Login to Aliyun
       if: steps.check_aliyun.outputs.skip != 'true'
-      uses: docker/login-action@v3
+      uses: docker/login-action@v4
       with:
         registry: ${{ env.acr_registry }}
         username: ${{ secrets.ALIYUN_USERNAME }}
         password: ${{ secrets.ALIYUN_TOKEN }}
     - name: Download image artifact
       if: steps.check_aliyun.outputs.skip != 'true'
-      uses: actions/download-artifact@v6
+      uses: actions/download-artifact@v8
       with:
-        name: docker-image-alpine
+        name: docker-image
         path: .
     - name: Sync to Aliyun
       if: steps.check_aliyun.outputs.skip != 'true'
@@ -182,8 +189,8 @@ jobs:
         DEST_REPO: ${{ env.acr_registry }}/${{ env.image_org }}/${{ env.package_name }}
         DEST_TAG: ${{ needs.build.outputs.tag }}
       run: |
-          skopeo copy --all $SRC_IMAGE docker://$DEST_REPO:alpine-$DEST_TAG
-          skopeo copy --all $SRC_IMAGE docker://$DEST_REPO:alpine
+          skopeo copy --all $SRC_IMAGE docker://$DEST_REPO:$DEST_TAG
+          skopeo copy --all $SRC_IMAGE docker://$DEST_REPO:latest
 
   sync-to-tencent:
     needs: build
@@ -206,16 +213,16 @@ jobs:
         sudo apt-get install -y skopeo
     - name: Login to Tencent
       if: steps.check_tencent.outputs.skip != 'true'
-      uses: docker/login-action@v3
+      uses: docker/login-action@v4
       with:
         registry: ${{ env.tcr_registry }}
         username: ${{ secrets.TENCENT_USERNAME }}
         password: ${{ secrets.TENCENT_TOKEN }}
     - name: Download image artifact
       if: steps.check_tencent.outputs.skip != 'true'
-      uses: actions/download-artifact@v6
+      uses: actions/download-artifact@v8
       with:
-        name: docker-image-alpine
+        name: docker-image
         path: .
     - name: Sync to Tencent
       if: steps.check_tencent.outputs.skip != 'true'
@@ -224,5 +231,5 @@ jobs:
         DEST_REPO: ${{ env.tcr_registry }}/${{ env.image_org }}/${{ env.package_name }}
         DEST_TAG: ${{ needs.build.outputs.tag }}
       run: |
-          skopeo copy --all $SRC_IMAGE docker://$DEST_REPO:alpine-$DEST_TAG
-          skopeo copy --all $SRC_IMAGE docker://$DEST_REPO:alpine
+          skopeo copy --all $SRC_IMAGE docker://$DEST_REPO:$DEST_TAG
+          skopeo copy --all $SRC_IMAGE docker://$DEST_REPO:latest

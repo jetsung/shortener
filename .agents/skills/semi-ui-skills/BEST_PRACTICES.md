@@ -108,14 +108,14 @@ class CustomSelect extends Select {
       </div>
     );
   }
-
+  
   // 覆盖选项选择处理，添加额外逻辑
   onSelect(option, optionIndex, e) {
     console.log('自定义选择逻辑', option);
     // 调用原始逻辑
     super.onSelect(option, optionIndex, e);
   }
-
+  
   // 覆盖生命周期方法
   componentDidMount() {
     super.componentDidMount();
@@ -129,7 +129,7 @@ class CustomSelect extends Select {
 ```jsx
 import { CustomSelect } from './components';
 
-<CustomSelect
+<CustomSelect 
   label="请选择"
   dataSource={[
     { value: 'apple', label: '苹果' },

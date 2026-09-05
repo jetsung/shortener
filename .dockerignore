@@ -54,9 +54,6 @@ Thumbs.db
 # Kiro specs
 .kiro/
 
-# Go implementation (not needed for Rust build)
-shortener-go/
-
 # Frontend
 **/node_modules/
 shortener-frontend/dist/

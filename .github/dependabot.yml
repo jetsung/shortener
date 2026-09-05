@@ -1,9 +1,74 @@
-# Docs: https://git.io/JCUAY
+# 依赖自动更新配置
+# 文档: https://docs.github.com/zh/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+#
+# 调度默认使用 UTC 时间；请根据实际需要调整。
+# 提交信息遵循项目的 Conventional Commits 规范（prefix 为 type，prefix-development 为 dev 依赖专用）。
+
 version: 2
 updates:
-  - package-ecosystem: "rust-toolchain"
+  # ============ Rust workspace (cargo) ============
+  - package-ecosystem: "cargo"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "03:00"
+      timezone: "Asia/Shanghai"
+    open-pull-requests-limit: 10
+    versioning-strategy: "auto"
+    labels:
+      - "dependencies"
+      - "rust"
+    groups:
+      # 一组内只升不降的次要/补丁更新，合并为一个 PR 减少噪音
+      minor-and-patch:
+        applies-to: version-updates
+        update-types:
+          - "minor"
+          - "patch"
+    commit-message:
+      prefix: "build"
+      prefix-development: "build"
+      include: "scope"
+
+  # ============ 前端 (pnpm) ============
+  # 注意：Dependabot 没有独立的 pnpm ecosystem，pnpm 项目统一使用 "npm" 类型，
+  # 它会自动检测并读写根目录下的 pnpm-lock.yaml。
+  - package-ecosystem: "npm"
+    directory: "/shortener-frontend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "03:00"
+      timezone: "Asia/Shanghai"
+    open-pull-requests-limit: 10
+    versioning-strategy: "increase"
+    labels:
+      - "dependencies"
+      - "javascript"
+    groups:
+      # 前端主运行时依赖（react、semi 等）分组
+      runtime-dependencies:
+        dependency-type: "production"
+      dev-dependencies:
+        dependency-type: "development"
+    commit-message:
+      prefix: "build"
+      prefix-development: "build"
+      include: "scope"
+
+  # ============ Docker 镜像 ============
+  - package-ecosystem: "docker"
     directory: "/"
     schedule:
       interval: "monthly"
+      day: "monday"
+      time: "03:00"
+      timezone: "Asia/Shanghai"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "docker"
     commit-message:
-      prefix: "mod:"
+      prefix: "build"
+      include: "scope"

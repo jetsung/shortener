@@ -28,6 +28,39 @@ thiserror = { workspace = true }
 anyhow = { workspace = true }
 crossterm = { workspace = true }
 chrono = { workspace = true }
+argon2 = { workspace = true }
 
 # Local dependencies
-shortener-common = { path = "../shortener-common", version = "0.1.3" }
+shortener-common = { workspace = true }
+shortener-server = { path = "../shortener-server" }
+
+[package.metadata.deb]
+maintainer = "Jetsung Chan <i@jetsung.com>"
+copyright = "2025, Jetsung Chan <i@jetsung.com>"
+license-file = ["../LICENSE", "0"]
+extended-description = """\
+Command-line management tool for the Shortener service. \
+Create, retrieve, and list shortened URLs; manage the server \
+over its RESTful API."""
+section = "web"
+priority = "optional"
+assets = [
+    ["target/release/shortener-cli", "usr/local/bin/", "755"],
+    ["../README.md", "usr/share/doc/shortener-cli/", "644"],
+]
+
+[package.metadata.generate-rpm]
+vendor = "Jetsung Chan <i@jetsung.com>"
+release = "1"
+summary = "Command-line management tool for the Shortener service"
+
+[[package.metadata.generate-rpm.assets]]
+source = "target/release/shortener-cli"
+dest = "/usr/local/bin/shortener-cli"
+mode = "755"
+
+[[package.metadata.generate-rpm.assets]]
+source = "../README.md"
+dest = "/usr/share/doc/shortener-cli/README.md"
+mode = "644"
+doc = true

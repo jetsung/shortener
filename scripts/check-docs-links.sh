@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 文档链接检查脚本
-# 检查 docs 目录中的内部链接是否有效
+# 递归检查 docs 目录中所有 .md 文件的内部相对链接是否有效
 
 set -e
 
@@ -33,60 +33,48 @@ cd "$(dirname "$0")/.."
 
 print_info "检查文档链接..."
 
-# 检查的文档文件
-docs_files=(
-    "docs/index.md"
-    "docs/INSTALLATION.md"
-    "docs/CONFIGURATION.md"
-    "docs/API.md"
-    "docs/DEPLOYMENT.md"
-    "docs/DOCKER.md"
-    "docs/DEB_PACKAGING_SIMPLIFIED.md"
-    "docs/README.md"
-)
-
-# 存在的文档文件
-existing_docs=(
-    "API.md"
-    "CONFIGURATION.md"
-    "DEB_PACKAGING_SIMPLIFIED.md"
-    "DEPLOYMENT.md"
-    "DOCKER.md"
-    "index.md"
-    "INSTALLATION.md"
-    "README.md"
-)
-
 error_count=0
+checked_count=0
 
-# 检查每个文档文件
-for doc_file in "${docs_files[@]}"; do
-    if [[ ! -f "$doc_file" ]]; then
-        print_warning "文件不存在: $doc_file"
-        continue
-    fi
+# 递归检查 docs 下所有 .md 文件
+while IFS= read -r doc_file; do
+    # 获取文件所在目录（相对于项目根）
+    doc_dir=$(dirname "$doc_file")
 
-    print_info "检查文件: $doc_file"
+    # 提取所有指向 .md 的相对链接
+    while IFS= read -r raw; do
+        [ -z "$raw" ] && continue
 
-    # 提取所有 .md 文件的链接
-    while IFS= read -r line; do
-        if [[ -n "$line" ]]; then
-            # 提取文件名
-            filename=$(echo "$line" | sed 's/.*](\([^)]*\.md\)).*/\1/')
+        # raw 形如 "](deployment/DOCKER.md)"，剥离前缀 ]( 与尾部 )
+        target=$(sed 's/^](//; s/)$//' <<< "$raw")
 
-            # 检查是否是相对路径的 .md 文件
-            if [[ "$filename" == *.md ]] && [[ "$filename" != http* ]] && [[ "$filename" != https* ]]; then
-                # 检查文件是否存在
-                if [[ ! " ${existing_docs[@]} " =~ " ${filename} " ]]; then
-                    print_error "死链接发现在 $doc_file: $filename"
-                    ((error_count++))
-                fi
+        # 去掉锚点(#...)和查询参数(?...)
+        target="${target%%#*}"
+        target="${target%%\?*}"
+
+        # 跳过外部链接
+        case "$target" in
+            http://*|https://*|mailto:*|ftp://*) continue ;;
+        esac
+        # 跳过纯锚点
+        [ -z "$target" ] && continue
+
+        checked_count=$((checked_count + 1))
+
+        # 相对于当前文件所在目录解析
+        if [ ! -f "$doc_dir/$target" ]; then
+            # 尝试去掉 ./ 前缀
+            t2="${target#./}"
+            if [ ! -f "$doc_dir/$t2" ]; then
+                print_error "死链接: $doc_file -> $target"
+                error_count=$((error_count + 1))
             fi
         fi
-    done < <(grep -o '\[.*\]([^)]*\.md)' "$doc_file" 2>/dev/null || true)
-done
+    done < <(grep -oE "\]\([^)]*\.md([#?][^)]*)?\)" "$doc_file" 2>/dev/null || true)
+done < <(find docs -name "*.md" -type f)
 
 echo ""
+print_info "共检查 $checked_count 个内部链接"
 if [[ $error_count -eq 0 ]]; then
     print_success "所有文档链接检查通过！"
 else

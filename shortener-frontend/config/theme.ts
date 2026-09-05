@@ -77,7 +77,8 @@ export const semiDesignTokens = {
   '--semi-shadow-small': '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
   '--semi-shadow-medium': '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
   '--semi-shadow-large': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-  '--semi-shadow-extra-large': '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+  '--semi-shadow-extra-large':
+    '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
 
   // 布局配置
   '--semi-layout-header-height': '64px',
@@ -106,7 +107,8 @@ export const semiTheme: SemiThemeConfig = {
 
   // 字体配置
   typography: {
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"',
+    fontFamily:
+      '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"',
     fontSize: {
       small: '12px',
       regular: '14px',

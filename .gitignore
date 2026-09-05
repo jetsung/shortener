@@ -42,7 +42,7 @@ target/
 *.xdb
 *.mmdb
 
-# MkDocs
+# Zensical
 site/
 .cache/
 
@@ -62,3 +62,5 @@ site/
 .secrets
 event.json
 
+# env
+.env

@@ -22,16 +22,16 @@
 [server]
 address = ":8080"                          # 服务器监听地址
 trusted-platform = ""                      # 可信平台头（可选）
-site_url = "http://localhost:8080"        # 公共站点 URL
+short_url = "https://s.example.com"      # 短址专用域名（可选，未设置时从监听地址推断，通配地址回退 localhost）
 api_key = "your-secret-api-key"           # 用于认证的 API 密钥（必需）
 ```
 
 ### 短链接配置
 
 ```toml
-[shortener]
-code_length = 6                           # 生成的短代码长度（4-16）
-code_charset = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+[slug]
+length = 6                           # 生成的短代码长度（4-16）
+alphabet = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 ```
 
 ### 管理员配置
@@ -44,86 +44,41 @@ password = "secure-password"              # 管理员密码（必需）
 
 ### 数据库配置
 
-#### SQLite
+数据库连接通过单个 URL 配置，引擎类型（sqlite / postgres / postgresql / mysql）由 URL 的 scheme 自动推断。
 
 ```toml
 [database]
-type = "sqlite"
-log_level = 1                             # 1=静默, 2=错误, 3=警告, 4=信息
-
-[database.sqlite]
-path = "data/shortener.db"
+url = "sqlite://data/shortener.db?mode=rwc"  # 连接 URL（必需）
+log_level = 1                                # 1=静默, 2=错误, 3=警告, 4=信息
 ```
 
-#### PostgreSQL
+不同引擎的 `url` 示例：
 
-```toml
-[database]
-type = "postgres"
-log_level = 1
-
-[database.postgres]
-host = "localhost"
-port = 5432
-user = "postgres"
-password = "postgres"
-database = "shortener"
-sslmode = "disable"
-timezone = "Asia/Shanghai"
-```
-
-#### MySQL
-
-```toml
-[database]
-type = "mysql"
-log_level = 1
-
-[database.mysql]
-host = "localhost"
-port = 3306
-user = "root"
-password = "root"
-database = "shortener"
-charset = "utf8mb4"
-parse_time = true
-loc = "Local"
-```
+| 引擎 | URL 示例 |
+| --- | --- |
+| SQLite（文件） | `sqlite://data/shortener.db?mode=rwc` |
+| SQLite（内存，仅测试） | `sqlite::memory:` |
+| PostgreSQL | `postgres://user:pass@localhost:5432/shortener?sslmode=disable` |
+| MySQL | `mysql://user:pass@localhost:3306/shortener?charset=utf8mb4` |
 
 ### 缓存配置
 
-#### Redis
+缓存连接同样通过 URL 配置，引擎（redis / valkey）由 scheme 推断。
 
 ```toml
 [cache]
 enabled = true
-type = "redis"
-expire = 3600                             # 缓存过期时间（秒）
-prefix = "shorten:"                       # 缓存键前缀
-
-[cache.redis]
-host = "localhost"
-port = 6379
-password = ""
-db = 0
+url = "redis://:password@localhost:6379/0"   # 连接 URL
+expire = 3600                                # 缓存过期时间（秒）
+prefix = "shorten:"                          # 缓存键前缀
 ```
 
-#### Valkey
+缓存 URL 示例：
 
-```toml
-[cache]
-enabled = true
-type = "valkey"
-expire = 3600
-prefix = "shorten:"
-
-[cache.valkey]
-host = "localhost"
-port = 6379
-username = ""
-password = ""
-db = 0
-```
+| 引擎 | URL 示例 |
+| --- | --- |
+| Redis | `redis://:password@localhost:6379/0` |
+| Valkey | `valkey://:password@localhost:6379/0` |
 
 ### GeoIP 配置
 
@@ -145,7 +100,7 @@ version = "4"                             # "4" 表示 IPv4，"6" 表示 IPv6
 ```rust
 use config::Config;
 
-// 从默认位置加载（config/config.toml）
+// 从默认位置加载（config.toml）
 let config = Config::load()?;
 
 // 从指定文件加载
@@ -154,17 +109,20 @@ let config = Config::from_file("path/to/config.toml")?;
 
 ### 环境变量
 
-可以使用前缀为 `SHORTENER__` 的环境变量覆盖配置：
+可以使用环境变量覆盖配置（双下划线 `__` 分隔嵌套键，无前缀）：
 
 ```bash
 # 覆盖服务器地址
-export SHORTENER__SERVER__ADDRESS=":9090"
+export SERVER__ADDRESS=":9090"
 
-# 覆盖数据库类型
-export SHORTENER__DATABASE__TYPE="postgres"
+# 通过环境变量设置数据库连接 URL
+export DATABASE__URL="postgres://user:pass@localhost:5432/shortener?sslmode=require"
+
+# 通过环境变量设置缓存连接 URL
+export CACHE__URL="redis://:password@localhost:6379/0"
 
 # 覆盖缓存启用
-export SHORTENER__CACHE__ENABLED="true"
+export CACHE__ENABLED="true"
 ```
 
 注意：使用双下划线（`__`）分隔嵌套的配置键。
@@ -195,15 +153,12 @@ if let Some(cache_url) = config.get_cache_url() {
    - `admin.password` 不能为空
 
 2. **值范围**：
-   - `shortener.code_length` 必须在 4 到 16 之间
-   - `shortener.code_charset` 不能为空
+   - `slug.length` 必须在 4 到 16 之间
+   - `slug.alphabet` 不能为空
 
 3. **条件要求**：
-   - 当 `database.type = "sqlite"` 时，需要 `database.sqlite` 部分
-   - 当 `database.type = "postgres"` 时，需要 `database.postgres` 部分
-   - 当 `database.type = "mysql"` 时，需要 `database.mysql` 部分
-   - 当 `cache.enabled = true` 且 `cache.type = "redis"` 时，需要 `cache.redis` 部分
-   - 当 `cache.enabled = true` 且 `cache.type = "valkey"` 时，需要 `cache.valkey` 部分
+   - `database.url` 不能为空（通过 `[database] url` 或 `DATABASE__URL` 设置）
+   - 当 `cache.enabled = true` 时，`cache.url` 不能为空（通过 `[cache] url` 或 `CACHE__URL` 设置）
    - 当 `geoip.enabled = true` 时，需要 `geoip.ip2region` 部分
 
 ## 默认值
@@ -211,9 +166,9 @@ if let Some(cache_url) = config.get_cache_url() {
 如果未指定，将应用以下默认值：
 
 - `server.address`: `:8080`
-- `server.site_url`: `http://localhost:8080`
-- `shortener.code_length`: `6`
-- `shortener.code_charset`: `0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ`
+- `server.short_url`: 空（从监听地址推断，通配地址回退 localhost）
+- `slug.length`: `6`
+- `slug.alphabet`: `0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ`
 - `cache.expire`: `3600`
 - `cache.prefix`: `shorten:`
 - `database.log_level`: `1`
@@ -261,6 +216,62 @@ match Config::load() {
 cargo test -p shortener-server
 ```
 
+## 迁移指南（结构化配置 → URL）
+
+旧版本使用 `type` + 子段（如 `[database.sqlite]`、`[cache.redis]`）描述连接。现已统一为单个 URL，引擎由 scheme 推断：
+
+**数据库**
+
+```toml
+# 旧写法
+[database]
+type = "postgres"
+[database.postgres]
+host = "localhost"
+port = 5432
+user = "shortener"
+password = "secret"
+database = "shortener"
+sslmode = "require"
+
+# 新写法（等价）
+[database]
+url = "postgres://shortener:secret@localhost:5432/shortener?sslmode=require"
+```
+
+```toml
+# 旧写法
+[database]
+type = "sqlite"
+[database.sqlite]
+path = "data/shortener.db"
+
+# 新写法（等价）
+[database]
+url = "sqlite://data/shortener.db?mode=rwc"
+```
+
+**缓存**
+
+```toml
+# 旧写法
+[cache]
+enabled = true
+type = "redis"
+[cache.redis]
+host = "localhost"
+port = 6379
+password = "secret"
+db = 0
+
+# 新写法（等价）
+[cache]
+enabled = true
+url = "redis://:secret@localhost:6379/0"
+```
+
+环境变量同样适用：`DATABASE__URL` / `CACHE__URL` 会覆盖配置文件中的 `url` 字段。
+
 ## 示例配置文件
 
-请参阅项目根目录中的 `config/config.toml` 以获取完整的示例配置文件。
+请参阅项目根目录中的 `config.toml` 以获取完整的示例配置文件。

@@ -1,0 +1,84 @@
+name: Docker-AIO-Dev
+
+on:
+  push:
+    branches:
+      - dev*
+    paths:
+      - "docker/Dockerfile"
+      - "docker/nginx-aio.conf"
+      - "docker/entrypoint-aio.sh"
+      - ".github/workflows/docker-dev-aio.yml"
+      - "docker/docker-bake.hcl"
+      - "shortener-server/Cargo.toml"
+      - "shortener-server/src/**"
+      - "shortener-frontend/**"
+      - "config.toml"
+
+env:
+  package_name: shortener
+  DOCKER_SLUG: ghcr.io/${{ github.repository_owner }}/shortener
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        arch: [amd64, arm64]
+        include:
+          - arch: amd64
+            runner: ubuntu-24.04
+            tag: dev-amd64
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+            tag: dev-arm64
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v7
+
+      - name: Login to GitHub Container Registry (ghcr.io)
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: ./docker/Dockerfile
+          platforms: linux/${{ matrix.arch }}
+          push: true
+          tags: ${{ env.DOCKER_SLUG }}:${{ matrix.tag }}
+          provenance: false
+
+  manifest:
+    needs: build
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Login to GitHub Container Registry (ghcr.io)
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create and push multi-arch manifests (dev + latest)
+        run: |
+          docker manifest create ${{ env.DOCKER_SLUG }}:dev \
+            --amend ${{ env.DOCKER_SLUG }}:dev-amd64 \
+            --amend ${{ env.DOCKER_SLUG }}:dev-arm64
+          docker manifest push ${{ env.DOCKER_SLUG }}:dev
+          docker manifest create ${{ env.DOCKER_SLUG }}:latest \
+            --amend ${{ env.DOCKER_SLUG }}:dev-amd64 \
+            --amend ${{ env.DOCKER_SLUG }}:dev-arm64
+          docker manifest push ${{ env.DOCKER_SLUG }}:latest
+        shell: bash

@@ -82,7 +82,7 @@ ls -lh data/ip2region.xdb
 
 ### 3. 配置 Shortener
 
-编辑配置文件 `config/config.toml`：
+编辑配置文件 `config.toml`：
 
 ```toml
 [geoip]
@@ -164,13 +164,18 @@ path = "/var/lib/shortener/ip2region.xdb"
 ```yaml
 # docker-compose.yml
 services:
-  shortener:
-    image: ghcr.io/jetsung/shortener:latest
+  shortener-server:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.backend
     volumes:
-      - ./data/ip2region.xdb:/var/lib/shortener/ip2region.xdb:ro
+      - ./data:/app/data
     environment:
-      - GEOIP_ENABLED=true
+      - GEOIP__ENABLED=true
+      - GEOIP__IP2REGION__PATH=/app/data/ip2region.xdb
 ```
+
+> 注意：环境变量使用双下划线 `__` 分隔嵌套键（`GEOIP__ENABLED` 对应 `[geoip] enabled`，`GEOIP__IP2REGION__PATH` 对应 `[geoip.ip2region] path`）。
 
 #### 方法 2：在容器启动时下载
 
@@ -197,13 +202,13 @@ USER shortener
 
 ```bash
 # 启用 GeoIP
-export SHORTENER__GEOIP__ENABLED=true
+export GEOIP__ENABLED=true
 
 # 设置数据库路径
-export SHORTENER__GEOIP__IP2REGION__PATH=/path/to/ip2region.xdb
+export GEOIP__IP2REGION__PATH=/path/to/ip2region.xdb
 
 # 设置搜索模式
-export SHORTENER__GEOIP__IP2REGION__MODE=vector
+export GEOIP__IP2REGION__MODE=vector
 ```
 
 ### 验证配置
@@ -237,12 +242,8 @@ mode = "vector"
 ```toml
 [cache]
 enabled = true
-type = "redis"
+url = "redis://localhost:6379/0"
 expire = 3600  # 缓存 1 小时
-
-[cache.redis]
-host = "localhost"
-port = 6379
 ```
 
 ### 3. 定期更新数据库

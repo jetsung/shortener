@@ -84,6 +84,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_hybrid_auth_with_valid_jwt() {
+        unsafe { std::env::set_var("JWT_SECRET", "test-secret") };
         let api_key = "test-api-key-123".to_string();
         let username = "testuser";
         let token = generate_token(username).unwrap();
@@ -128,6 +129,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_hybrid_auth_jwt_priority_over_api_key() {
+        unsafe { std::env::set_var("JWT_SECRET", "test-secret") };
         let api_key = "test-api-key-123".to_string();
         let username = "testuser";
         let token = generate_token(username).unwrap();

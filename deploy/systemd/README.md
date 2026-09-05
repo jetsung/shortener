@@ -185,8 +185,7 @@ sudo systemctl restart shortener-server
 ```ini
 [Service]
 Environment="RUST_LOG=debug"
-Environment="DATABASE_TYPE=postgres"
-Environment="DATABASE_HOST=localhost"
+Environment="DATABASE__URL=postgres://shortener:password@localhost:5432/shortener"
 ```
 
 或使用环境文件：
@@ -200,9 +199,7 @@ EnvironmentFile=/etc/shortener/environment
 
 ```bash
 RUST_LOG=info
-DATABASE_TYPE=postgres
-DATABASE_HOST=localhost
-DATABASE_PORT=5432
+DATABASE__URL=postgres://shortener:password@localhost:5432/shortener
 ```
 
 ## 故障排除

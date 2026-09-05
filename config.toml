@@ -1,6 +1,6 @@
 # Shortener Server Configuration
 # This is the default configuration file
-# For detailed configuration options, see config/config.example.toml
+# Edit this file directly; environment variables (e.g. LOGGING__LEVEL) override values here
 
 # ============================================================================
 # Server Configuration
@@ -12,8 +12,8 @@ address = "0.0.0.0:8080"
 # Trusted platform header for getting real client IP (optional)
 trusted-platform = ""
 
-# Public site URL (used for generating short URLs)
-site_url = "http://localhost:8080"
+# Short URL base (短址专用域名，用于生成短链接；未设置时从监听地址推断，通配地址回退 localhost)
+short_url = ""
 
 # API key for authentication (REQUIRED)
 # Generate with: openssl rand -base64 32
@@ -23,12 +23,12 @@ api_key = "your-secret-api-key-change-me"
 # ============================================================================
 # Shortener Configuration
 # ============================================================================
-[shortener]
-# Length of auto-generated short codes (4-16)
-code_length = 6
+[slug]
+# Length of the generated short slug (4-16)
+length = 6
 
-# Character set for generating short codes
-code_charset = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+# Characters (alphabet) used when generating a short slug
+alphabet = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 # ============================================================================
 # Admin Account Configuration
@@ -37,26 +37,47 @@ code_charset = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 # Admin username (REQUIRED)
 username = "admin"
 
-# Admin password (REQUIRED)
+# Admin password hash (REQUIRED) - Argon2id PHC string.
+# Generate with: shortener-server hash-password "your-secure-password"
 # IMPORTANT: Change this in production!
-password = "your-secure-password-change-me"
+password_hash = ""
+
+# ============================================================================
+# OIDC / OAuth2.0 Configuration (optional, for SSO login)
+# ============================================================================
+[oidc]
+# Master switch for OIDC login. Set to true to enable OIDC login.
+enabled = false
+
+# IdP issuer URL, e.g. "https://keycloak.example.com/realms/main".
+# Required when enabled = true.
+issuer = ""
+
+# OAuth2 client credentials registered with the IdP.
+client_id = ""
+# client_secret can also be set via the OIDC__CLIENT_SECRET environment variable.
+client_secret = ""
+
+# Allowlist: only users whose email OR subject (sub) matches may log in.
+# At least one of allow_emails / allow_subjects must be non-empty when enabled.
+# The OIDC callback URL is derived from the request Host header, so no
+# redirect_uri needs to be configured here.
+allow_emails = []
+allow_subjects = []
 
 # ============================================================================
 # Database Configuration
 # ============================================================================
 [database]
-# Database type: "sqlite", "postgres", or "mysql"
-type = "sqlite"
+# Database connection string (REQUIRED). The engine is inferred from the scheme:
+#   sqlite://   e.g. "sqlite://data/shortener.db?mode=rwc" or "sqlite::memory:"
+#   postgres:// e.g. "postgres://user:pass@host:5432/shortener?sslmode=disable"
+#   mysql://    e.g. "mysql://user:pass@host:3306/shortener?charset=utf8mb4"
+# Can also be provided via the DATABASE__URL environment variable.
+url = "sqlite://data/shortener.db?mode=rwc"
 
 # Database log level: 1=Silent, 2=Error, 3=Warn, 4=Info
 log_level = 1
-
-# ----------------------------------------------------------------------------
-# SQLite Configuration
-# ----------------------------------------------------------------------------
-[database.sqlite]
-# Database file path
-path = "data/shortener.db"
 
 # ============================================================================
 # Cache Configuration
@@ -65,23 +86,18 @@ path = "data/shortener.db"
 # Enable caching (recommended for production)
 enabled = false
 
-# Cache type: "redis" or "valkey"
-type = "redis"
+# Cache connection string (required when enabled). The engine is inferred from
+# the scheme: "redis://" or "valkey://". Can also be provided via CACHE__URL.
+# Examples:
+#   redis://[:password@]host:port/db
+#   valkey://[:password@]host:port/db
+url = "redis://localhost:6379/0"
 
 # Cache expiration time in seconds (default: 1 hour)
 expire = 3600
 
 # Cache key prefix
 prefix = "shorten:"
-
-# ----------------------------------------------------------------------------
-# Redis Configuration
-# ----------------------------------------------------------------------------
-[cache.redis]
-host = "localhost"
-port = 6379
-password = ""
-db = 0
 
 # ============================================================================
 # GeoIP Configuration

@@ -7,7 +7,8 @@
 ## 特性
 
 - **类型安全配置**：所有配置值都是强类型的
-- **多数据源**：从 TOML 文件和环境变量加载
+- **多数据源**：从 TOML 文件和环境变量加载（**文件可选**：文件不存在时以纯环境变量启动）
+- **加载优先级**：环境变量（`__` 形式）> 平铺别名（`DATABASE_URL` 等）> 配置文件 > 缺省值
 - **验证**：自动验证必需字段和值范围
 - **默认值**：可选配置的合理默认值
 - **多数据库支持**：SQLite、PostgreSQL 和 MySQL
@@ -22,108 +23,111 @@
 [server]
 address = ":8080"                          # 服务器监听地址
 trusted-platform = ""                      # 可信平台头（可选）
-site_url = "http://localhost:8080"        # 公共站点 URL
+short_url = "https://s.example.com"      # 短址专用域名（可选，未设置时从监听地址推断，通配地址回退 localhost）
 api_key = "your-secret-api-key"           # 用于认证的 API 密钥（必需）
 ```
 
 ### 短链接配置
 
 ```toml
-[shortener]
-code_length = 6                           # 生成的短代码长度（4-16）
-code_charset = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+[slug]
+length = 6                           # 生成的短代码长度（4-16）
+alphabet = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 ```
 
 ### 管理员配置
 
+管理员账号用于密码登录通道。口令以 **Argon2id 哈希**（PHC 字符串格式）存储，不以明文保存。
+
 ```toml
 [admin]
-username = "admin"                        # 管理员用户名（必需）
-password = "secure-password"              # 管理员密码（必需）
+username = "admin"                        # 管理员用户名（可选，默认 "admin"）
+password_hash = "$argon2id$v=19$m=19456,t=2,p=1$..."  # 口令 Argon2id 哈希（必需）
 ```
+
+生成哈希（任选其一，交互式输入可在 shell 历史中不留痕）：
+
+```bash
+# 服务端自带的子命令（推荐，无需额外安装 CLI）
+shortener-server hash-password --password "your-secure-password"
+# 或使用命令行工具
+shortener-cli hash-password --password "your-secure-password"
+```
+
+将输出的整行（`$argon2id$...`）粘贴为 `password_hash` 的值。
+
+### OIDC 配置
+
+对接任意标准 OIDC / OAuth2.0 身份提供方（IdP），仅白名单内的 IdP 用户可登录。`enabled` 为 OIDC 登录的总开关，`issuer` 为空时视为未配置。
+
+```toml
+[oidc]
+enabled = false                                          # OIDC 总开关（false 时登录不可用）
+issuer = "https://keycloak.example.com/realms/shortener"  # IdP 的 issuer 地址（enabled 时必填）
+client_id = "shortener-app"                                 # 在 IdP 注册的客户端 ID
+client_secret = ""                                          # 客户端密钥（可留空或用 OIDC__CLIENT_SECRET 注入）
+# 回调地址由请求 Host 自动推导为 https://<域名>/api/oidc/callback，无需配置
+allow_emails = ["admin@example.com"]                        # 允许的邮箱白名单（至少配置一项）
+allow_subjects = []                                          # 允许的 sub 白名单
+```
+
+敏感配置优先使用环境变量注入（双下划线 `__` 分隔嵌套键）：
+
+```bash
+export OIDC__CLIENT_SECRET="your-client-secret"
+export JWT_SECRET="$(openssl rand -base64 48)"
+# 或以文件形式挂载时：
+export JWT_SECRET_FILE=/run/secrets/jwt_secret
+```
+
+详细说明请参阅 [OIDC 对接部署](../general/OIDC.md)。
 
 ### 数据库配置
 
-#### SQLite
+数据库连接通过单个 URL 配置，引擎类型（sqlite / postgres / postgresql / mysql）由 URL 的 scheme 自动推断。
 
 ```toml
 [database]
-type = "sqlite"
-log_level = 1                             # 1=静默, 2=错误, 3=警告, 4=信息
-
-[database.sqlite]
-path = "data/shortener.db"
+url = "sqlite://data/shortener.db?mode=rwc"  # 连接 URL（必需）
+log_level = 1                                # 1=静默, 2=错误, 3=警告, 4=信息
 ```
 
-#### PostgreSQL
+不同引擎的 `url` 示例：
 
-```toml
-[database]
-type = "postgres"
-log_level = 1
-
-[database.postgres]
-host = "localhost"
-port = 5432
-user = "postgres"
-password = "postgres"
-database = "shortener"
-sslmode = "disable"
-timezone = "Asia/Shanghai"
-```
-
-#### MySQL
-
-```toml
-[database]
-type = "mysql"
-log_level = 1
-
-[database.mysql]
-host = "localhost"
-port = 3306
-user = "root"
-password = "root"
-database = "shortener"
-charset = "utf8mb4"
-parse_time = true
-loc = "Local"
-```
+| 引擎 | URL 示例 |
+| --- | --- |
+| SQLite（文件） | `sqlite://data/shortener.db?mode=rwc` |
+| SQLite（内存，仅测试） | `sqlite::memory:` |
+| PostgreSQL | `postgres://user:pass@localhost:5432/shortener?sslmode=disable` |
+| MySQL | `mysql://user:pass@localhost:3306/shortener?charset=utf8mb4` |
 
 ### 缓存配置
 
-#### Redis
+缓存连接同样通过 URL 配置，引擎（redis / valkey）由 scheme 推断。
 
 ```toml
 [cache]
 enabled = true
-type = "redis"
-expire = 3600                             # 缓存过期时间（秒）
-prefix = "shorten:"                       # 缓存键前缀
-
-[cache.redis]
-host = "localhost"
-port = 6379
-password = ""
-db = 0
+url = "redis://:password@localhost:6379/0"   # 连接 URL
+expire = 3600                                # 缓存过期时间（秒）
+prefix = "shorten:"                          # 缓存键前缀
 ```
 
-#### Valkey
+缓存 URL 示例：
 
-```toml
-[cache]
-enabled = true
-type = "valkey"
-expire = 3600
-prefix = "shorten:"
+| 引擎 | URL 示例 |
+| --- | --- |
+| Redis | `redis://:password@localhost:6379/0` |
+| Valkey | `valkey://:password@localhost:6379/0` |
 
-[cache.valkey]
-host = "localhost"
-port = 6379
-username = ""
-password = ""
-db = 0
-```
+#### 缓存行为
+
+- **键结构**：`{prefix}url:{short_code}`（前缀默认 `shorten:`），值为短链 JSON，写入即带 TTL
+- **写入时机**：创建、更新短链时写入；访问短链时未命中则查库并回填（惰性回填）
+- **删除同步**：删除单条或批量删除短链时，同步删除对应缓存键
+- **启动重建**：服务启动时先清空前缀下的所有旧键，再从数据库预热全量短链，保证缓存与数据库一致；该过程完成前服务不对外监听
+- **手动刷新**：调用 `POST /api/cache/refresh` 可随时清空并重建缓存（管理界面「短址列表」页也有「刷新缓存」按钮）
+- **隔离性**：清空操作仅影响本服务前缀开头的键，同一 Redis/Valkey 实例中其他应用的键不受影响
 
 ### GeoIP 配置
 
@@ -145,7 +149,7 @@ version = "4"                             # "4" 表示 IPv4，"6" 表示 IPv6
 ```rust
 use config::Config;
 
-// 从默认位置加载（config/config.toml）
+// 从默认位置加载（config.toml）
 let config = Config::load()?;
 
 // 从指定文件加载
@@ -154,17 +158,20 @@ let config = Config::from_file("path/to/config.toml")?;
 
 ### 环境变量
 
-可以使用前缀为 `SHORTENER__` 的环境变量覆盖配置：
+可以使用环境变量覆盖配置（双下划线 `__` 分隔嵌套键，无前缀），**环境变量优先于配置文件**；配置文件不存在时以纯环境变量启动：
 
 ```bash
 # 覆盖服务器地址
-export SHORTENER__SERVER__ADDRESS=":9090"
+export SERVER__ADDRESS=":9090"
 
-# 覆盖数据库类型
-export SHORTENER__DATABASE__TYPE="postgres"
+# 通过环境变量设置数据库连接 URL
+export DATABASE__URL="postgres://user:pass@localhost:5432/shortener?sslmode=require"
+
+# 通过环境变量设置缓存连接 URL
+export CACHE__URL="redis://:password@localhost:6379/0"
 
 # 覆盖缓存启用
-export SHORTENER__CACHE__ENABLED="true"
+export CACHE__ENABLED="true"
 ```
 
 注意：使用双下划线（`__`）分隔嵌套的配置键。
@@ -192,18 +199,15 @@ if let Some(cache_url) = config.get_cache_url() {
 1. **必需字段**：
    - `server.api_key` 不能为空
    - `admin.username` 不能为空
-   - `admin.password` 不能为空
+   - `admin.password_hash` 不能为空
 
 2. **值范围**：
-   - `shortener.code_length` 必须在 4 到 16 之间
-   - `shortener.code_charset` 不能为空
+   - `slug.length` 必须在 4 到 16 之间
+   - `slug.alphabet` 不能为空
 
 3. **条件要求**：
-   - 当 `database.type = "sqlite"` 时，需要 `database.sqlite` 部分
-   - 当 `database.type = "postgres"` 时，需要 `database.postgres` 部分
-   - 当 `database.type = "mysql"` 时，需要 `database.mysql` 部分
-   - 当 `cache.enabled = true` 且 `cache.type = "redis"` 时，需要 `cache.redis` 部分
-   - 当 `cache.enabled = true` 且 `cache.type = "valkey"` 时，需要 `cache.valkey` 部分
+   - `database.url` 不能为空（通过 `[database] url` 或 `DATABASE__URL` 设置）
+   - 当 `cache.enabled = true` 时，`cache.url` 不能为空（通过 `[cache] url` 或 `CACHE__URL` 设置）
    - 当 `geoip.enabled = true` 时，需要 `geoip.ip2region` 部分
 
 ## 默认值
@@ -211,12 +215,31 @@ if let Some(cache_url) = config.get_cache_url() {
 如果未指定，将应用以下默认值：
 
 - `server.address`: `:8080`
-- `server.site_url`: `http://localhost:8080`
-- `shortener.code_length`: `6`
-- `shortener.code_charset`: `0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ`
+- `server.short_url`: 空（从监听地址推断，通配地址回退 localhost）
+- `slug.length`: `6`
+- `slug.alphabet`: `0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ`
+- `cache.enabled`: `false`
 - `cache.expire`: `3600`
 - `cache.prefix`: `shorten:`
 - `database.log_level`: `1`
+- `geoip.enabled`: `false`
+- `logging.level`: `info`
+- `logging.format`: `json`
+
+## 日志配置
+
+```toml
+[logging]
+level = "info"              # error / warn / info / debug / trace
+format = "json"             # json / pretty / compact
+with_timestamp = true
+with_target = true
+with_thread_ids = false
+with_thread_names = false
+with_file = false
+with_line_number = false
+with_ansi = true
+```
 
 ## 错误处理
 
@@ -263,4 +286,4 @@ cargo test -p shortener-server
 
 ## 示例配置文件
 
-请参阅项目根目录中的 `config/config.toml` 以获取完整的示例配置文件。
+请参阅项目根目录中的 `config.toml` 以获取完整的示例配置文件。

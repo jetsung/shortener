@@ -31,11 +31,14 @@ chrono = { workspace = true }
 uuid = { workspace = true }
 argon2 = { workspace = true }
 jsonwebtoken = { workspace = true }
+openidconnect = { workspace = true }
+oauth2 = { workspace = true }
+reqwest = { workspace = true }
 async-trait = { workspace = true }
 futures-util = { workspace = true }
 
 # Local dependencies
-shortener-common = { path = "../shortener-common", version = "0.1.3" }
+shortener-common = { workspace = true }
 
 [dev-dependencies]
 tokio-test = "0.4"
@@ -77,9 +80,40 @@ section = "web"
 priority = "optional"
 assets = [
     ["target/release/shortener-server", "usr/local/bin/", "755"],
-    ["../config/config.toml", "opt/shortener/config.toml.example", "644"],
+    ["../config.toml", "opt/shortener/config.toml.example", "644"],
     ["../deploy/systemd/shortener-server.service", "lib/systemd/system/", "644"],
     ["../README.md", "usr/share/doc/shortener-server/", "644"],
 ]
 maintainer-scripts = "../scripts/"
 conf-files = ["/opt/shortener/config/config.toml"]
+
+[package.metadata.generate-rpm]
+vendor = "Jetsung Chan <i@jetsung.com>"
+release = "1"
+summary = "High-performance URL shortener service written in Rust"
+pre_install_script = "../scripts/preinst"
+post_install_script = "../scripts/postinst"
+pre_uninstall_script = "../scripts/prerm"
+requires = { systemd = "" }
+
+[[package.metadata.generate-rpm.assets]]
+source = "target/release/shortener-server"
+dest = "/usr/local/bin/shortener-server"
+mode = "755"
+
+[[package.metadata.generate-rpm.assets]]
+source = "../config.toml"
+dest = "/opt/shortener/config.toml.example"
+mode = "644"
+config = true
+
+[[package.metadata.generate-rpm.assets]]
+source = "../deploy/systemd/shortener-server.service"
+dest = "/lib/systemd/system/shortener-server.service"
+mode = "644"
+
+[[package.metadata.generate-rpm.assets]]
+source = "../README.md"
+dest = "/usr/share/doc/shortener-server/README.md"
+mode = "644"
+doc = true

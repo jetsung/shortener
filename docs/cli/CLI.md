@@ -70,6 +70,19 @@ shortener-cli --version
 shortener-cli env
 ```
 
+#### 生成口令哈希
+
+生成用于 `[admin] password_hash` 的 Argon2id（PHC）口令哈希。
+
+```bash
+# 以参数形式传入口令
+shortener-cli hash-password --password "your-secure-password"
+# 交互式输入（不回声、不入 shell 历史）
+shortener-cli hash-password
+```
+
+将输出的整行（`$argon2id$...`）粘贴为配置中的 `password_hash` 值。
+
 ### 短链接管理
 
 #### 创建短链接
@@ -167,6 +180,12 @@ shortener-cli delete mylink
 
 - `-u, --url <URL>`: 服务器 URL（也可通过 `SHORTENER_URL` 环境变量设置）
 - `-k, --key <KEY>`: API 密钥（也可通过 `SHORTENER_KEY` 环境变量设置）
+
+### hash-password 命令
+
+- `-p, --password <PASSWORD>`: 明文口令（可选；省略时交互式提示输入）
+
+该命令不需要连接服务器，可离线使用。
 
 ### create 命令
 
@@ -428,4 +447,4 @@ RUST_LOG=debug shortener-cli <command>
 
 ## 许可证
 
-本项目采用 Apache-2.0 许可证。详见 [LICENSE](../LICENSE) 文件。
+本项目采用 Apache-2.0 许可证。详见 [LICENSE](../../LICENSE) 文件。

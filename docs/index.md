@@ -50,6 +50,9 @@ cargo build --release -p shortener-server
 - [安装指南](general/INSTALLATION.md) - 详细的安装说明
 - [配置指南](general/CONFIGURATION.md) - 配置选项说明
 - [配置文件](general/CONFIG_FILES.md) - 配置文件详解
+- [环境变量参考](general/ENVIRONMENT_VARIABLES.md) - 完整的环境变量参数说明
+- [GeoIP 配置指南](general/GEOIP.md) - 地理位置追踪配置
+- [OIDC 对接部署](general/OIDC.md) - OIDC / OAuth2.0 登录接入指南
 
 ### 组件文档
 
@@ -62,14 +65,25 @@ cargo build --release -p shortener-server
 - [部署概述](deployment/README.md) - 部署方式总览
 - [Docker 后端部署](deployment/DOCKER.md) - 使用 Docker 部署后端服务
 - [Docker 前端部署](deployment/DOCKER_FRONTEND.md) - 使用 Docker 部署前端应用
+- [Docker 完整指南](deployment/DOCKER_FULL.md) - Docker 部署完整流程
+- [Docker All-In-One](deployment/DOCKER_AIO.md) - 前端 + 后端单镜像部署
+- [Docker 高级配置](deployment/DOCKER_ADVANCED.md) - Docker 高级配置和优化
 - [前端部署指南](frontend/DEPLOYMENT.md) - 前端部署详细说明
 - [生产部署](deployment/DEPLOYMENT.md) - 生产环境部署
+- [Systemd 服务](deployment/SYSTEMD.md) - 使用 Systemd 管理服务
 - [DEB 打包](deployment/DEB_PACKAGING_SIMPLIFIED.md) - Debian 包制作
 
 ### API 参考
 
 - [API 文档](server/API.md) - RESTful API 完整参考
+- [配置模块文档](server/CONFIG.md) - 配置结构与验证规则
 - [性能基准](server/BENCHMARKS.md) - 性能测试结果
+
+### 开发
+
+- [快速参考](QUICK_REFERENCE.md) - 常用命令速查
+- [贡献指南](CONTRIBUTING.md) - 如何贡献代码
+- [ADR 记录](adr/0001-oidc-and-password-login.md) - 架构决策记录
 
 ## ✨ 主要特性
 
@@ -98,6 +112,8 @@ cargo build --release -p shortener-server
 
 - API 密钥认证
 - JWT 令牌支持
+- OIDC / OAuth2.0 单点登录
+- Argon2id 密码哈希存储
 - 类型安全的代码
 - 全面的测试覆盖
 
@@ -159,7 +175,7 @@ curl http://localhost:8080/api/shortens/abc123 \
 shortener-cli list --all
 
 # 使用 API
-curl "http://localhost:8080/api/shortens?page=1&page_size=10" \
+curl "http://localhost:8080/api/shortens?page=1&per_page=10" \
   -H "X-API-KEY: your-api-key"
 ```
 

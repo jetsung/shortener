@@ -1,7 +1,8 @@
 use crate::config::Config;
 use crate::handlers::{
     create_shorten, current_user, delete_batch, delete_histories, delete_shorten, get_shorten,
-    list_histories, list_shortens, login, logout, redirect_to_url, update_shorten,
+    list_histories, list_shortens, login, logout, oidc_callback, oidc_login, redirect_to_url,
+    refresh_cache, update_shorten,
 };
 use crate::middleware::{HybridAuth, error_handler_middleware, logging_middleware};
 use crate::services::{HistoryService, ShortenService};
@@ -45,11 +46,17 @@ pub fn create_router(state: AppState) -> Router {
         .route("/api/account/logout", post(logout))
         .route("/api/users/current", get(current_user));
 
+    // Create cache API routes (protected)
+    let cache_api = Router::new()
+        .route("/api/cache/refresh", post(refresh_cache))
+        .with_state(state.clone());
+
     // Combine protected API routes
     let protected_api = Router::new()
         .merge(shortener_api)
         .merge(history_api)
         .merge(account_api)
+        .merge(cache_api)
         // Apply hybrid authentication middleware (supports both API key and JWT token)
         .layer(middleware::from_fn(move |headers, req, next| {
             let api_key = api_key.clone();
@@ -57,9 +64,16 @@ pub fn create_router(state: AppState) -> Router {
         }));
 
     // Create public API routes (no authentication required)
-    let public_api = Router::new()
+    let login_api = Router::new()
         .route("/api/account/login", post(login))
         .with_state(Arc::new(state.config.admin.clone()));
+
+    let oidc_api = Router::new()
+        .route("/api/oidc/login", get(oidc_login))
+        .route("/api/oidc/callback", get(oidc_callback))
+        .with_state(Arc::new(state.config.oidc.clone()));
+
+    let public_api = Router::new().merge(login_api).merge(oidc_api);
 
     // Create redirect routes (public, for short URL redirection)
     let redirect_routes = Router::new()
@@ -110,8 +124,8 @@ mod tests {
     use super::*;
     use crate::cache::NullCache;
     use crate::config::{
-        AdminConfig, CacheConfig, CacheType, DatabaseConfig, DatabaseType, GeoIpConfig, GeoIpType,
-        ServerConfig, ShortenerConfig, SqliteConfig,
+        AdminConfig, CacheConfig, DatabaseConfig, GeoIpConfig, GeoIpType, OidcConfig,
+        ServerConfig, SlugConfig,
     };
     use crate::db::DbFactory;
     use crate::geoip::NullGeoIp;
@@ -125,34 +139,28 @@ mod tests {
             server: ServerConfig {
                 address: ":8080".to_string(),
                 trusted_platform: None,
-                site_url: "http://localhost:8080".to_string(),
+                short_url: "http://localhost:8080".to_string(),
                 api_key: "test-api-key".to_string(),
             },
-            shortener: ShortenerConfig {
-                code_length: 6,
-                code_charset: "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+            slug: SlugConfig {
+                length: 6,
+                alphabet: "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
                     .to_string(),
             },
             admin: AdminConfig {
                 username: "admin".to_string(),
-                password: "admin123".to_string(),
+                password_hash: "".to_string(),
             },
+            oidc: OidcConfig::default(),
             database: DatabaseConfig {
-                db_type: DatabaseType::Sqlite,
+                url: Some("sqlite::memory:".to_string()),
                 log_level: 0,
-                sqlite: Some(SqliteConfig {
-                    path: ":memory:".to_string(),
-                }),
-                postgres: None,
-                mysql: None,
             },
             cache: CacheConfig {
                 enabled: false,
-                cache_type: CacheType::Redis,
                 expire: 3600,
                 prefix: "shorten:".to_string(),
-                redis: None,
-                valkey: None,
+                url: None,
             },
             geoip: GeoIpConfig {
                 enabled: false,
@@ -173,8 +181,8 @@ mod tests {
         let shorten_service = Arc::new(ShortenService::new(
             url_repo,
             cache,
-            config.shortener.clone(),
-            config.server.site_url.clone(),
+            config.slug.clone(),
+            config.server.short_url.clone(),
         ));
 
         let history_service = Arc::new(HistoryService::new(history_repo, geoip));

@@ -36,6 +36,19 @@ a:hover {
 /* 导航标签样式 */
 .md-tabs {
   background-color: var(--md-primary-fg-color);
+  color: var(--md-primary-bg-color);
+}
+
+.md-tabs__link {
+  color: var(--md-primary-bg-color);
+  opacity: .85;
+}
+
+.md-tabs__link--active,
+.md-tabs__link:hover,
+.md-tabs__link:focus {
+  color: var(--md-primary-bg-color);
+  opacity: 1;
 }
 
 /* 代码复制按钮 */

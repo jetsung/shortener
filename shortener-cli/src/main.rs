@@ -48,6 +48,13 @@ enum Commands {
     Env,
     /// Show version information
     Version,
+    /// Generate an Argon2id password hash (for [admin] password_hash)
+    HashPassword {
+        /// Plaintext password. If omitted, you will be prompted interactively
+        /// (input is not echoed and not stored in shell history).
+        #[arg(short, long)]
+        password: Option<String>,
+    },
     /// Create a new short URL
     Create {
         /// Original URL to shorten
@@ -148,6 +155,7 @@ async fn main() {
             println!("shortener-cli version {}", env!("CARGO_PKG_VERSION"));
             Ok(())
         }
+        Some(Commands::HashPassword { password }) => handle_hash_password(password),
         Some(Commands::Create {
             original_url,
             code,
@@ -197,6 +205,38 @@ async fn main() {
         eprintln!("Error: {}", e);
         std::process::exit(1);
     }
+}
+
+/// Generate an Argon2id (PHC) password hash, mirroring the server's
+/// `hash-password` subcommand. Does not require a server connection.
+fn handle_hash_password(password: Option<String>) -> anyhow::Result<()> {
+    use std::io::{IsTerminal, Write};
+
+    let plaintext = match password {
+        Some(p) => p,
+        None => {
+            if !std::io::stdin().is_terminal() {
+                anyhow::bail!("no password provided and stdin is not a terminal");
+            }
+            print!("Enter password: ");
+            std::io::stdout().flush()?;
+            let mut buf = String::new();
+            std::io::stdin().read_line(&mut buf)?;
+            buf.trim_end().to_string()
+        }
+    };
+
+    if plaintext.is_empty() {
+        anyhow::bail!("password must not be empty");
+    }
+
+    let hash = shortener_server::handlers::account::hash_password(&plaintext)?;
+    println!("{}", hash);
+    println!(
+        "\nCopy the line above into your config as: password_hash = \"{}\"",
+        hash
+    );
+    Ok(())
 }
 
 fn handle_init(url: Option<String>, key: Option<String>) -> anyhow::Result<()> {
@@ -464,7 +504,7 @@ async fn handle_delete(
 // ============================================================================
 
 use client::ShortenResponse;
-use tabled::{Table, Tabled, settings::Style};
+use tabled::{builder::Builder, settings::Style};
 
 /// Print detailed information about a single short URL
 fn print_shorten_details(shorten: &ShortenResponse) {
@@ -505,67 +545,49 @@ fn print_shorten_table_with_format(shortens: &[ShortenResponse], format: Option<
 
 /// Print a full table of short URLs (for wide terminals)
 fn print_shorten_table_full(shortens: &[ShortenResponse]) {
-    #[derive(Tabled)]
-    struct ShortenRow {
-        #[tabled(rename = "ID")]
-        id: i64,
-        #[tabled(rename = "Code")]
-        code: String,
-        #[tabled(rename = "Short URL")]
-        short_url: String,
-        #[tabled(rename = "Original URL")]
-        original_url: String,
-        #[tabled(rename = "Description")]
-        description: String,
-        #[tabled(rename = "Status")]
-        status: String,
-        #[tabled(rename = "Created")]
-        created_at: String,
+    let mut builder = Builder::default();
+    builder.push_record([
+        "ID",
+        "Code",
+        "Short URL",
+        "Original URL",
+        "Description",
+        "Status",
+        "Created",
+    ]);
+
+    for s in shortens {
+        builder.push_record([
+            s.id.to_string(),
+            s.code.clone(),
+            s.short_url.clone(),
+            truncate_url_smart(&s.original_url, 40),
+            truncate_string(s.describe.as_deref().unwrap_or("-"), 15),
+            status_name(s.status).to_string(),
+            format_datetime(&s.created_at),
+        ]);
     }
 
-    let rows: Vec<ShortenRow> = shortens
-        .iter()
-        .map(|s| ShortenRow {
-            id: s.id,
-            code: s.code.clone(),
-            short_url: s.short_url.clone(),
-            original_url: truncate_url_smart(&s.original_url, 40),
-            description: truncate_string(s.describe.as_deref().unwrap_or("-"), 15),
-            status: status_name(s.status).to_string(),
-            created_at: format_datetime(&s.created_at),
-        })
-        .collect();
-
-    let mut table = Table::new(rows);
+    let mut table = builder.build();
     table.with(Style::rounded());
     println!("{}", table);
 }
 
 /// Print a compact table of short URLs (for narrow terminals)
 fn print_shorten_table_compact(shortens: &[ShortenResponse]) {
-    #[derive(Tabled)]
-    struct ShortenRowCompact {
-        #[tabled(rename = "Code")]
-        code: String,
-        #[tabled(rename = "Short URL")]
-        short_url: String,
-        #[tabled(rename = "Original URL")]
-        original_url: String,
-        #[tabled(rename = "Status")]
-        status: String,
+    let mut builder = Builder::default();
+    builder.push_record(["Code", "Short URL", "Original URL", "Status"]);
+
+    for s in shortens {
+        builder.push_record([
+            s.code.clone(),
+            s.short_url.clone(),
+            s.original_url.clone(), // 显示完整 URL
+            status_name(s.status).to_string(),
+        ]);
     }
 
-    let rows: Vec<ShortenRowCompact> = shortens
-        .iter()
-        .map(|s| ShortenRowCompact {
-            code: s.code.clone(),
-            short_url: s.short_url.clone(),
-            original_url: s.original_url.clone(), // 显示完整 URL
-            status: status_name(s.status).to_string(),
-        })
-        .collect();
-
-    let mut table = Table::new(rows);
+    let mut table = builder.build();
     table.with(Style::rounded());
     println!("{}", table);
 }

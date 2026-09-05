@@ -1,5 +1,5 @@
 use crate::cache::Cache;
-use crate::config::ShortenerConfig;
+use crate::config::SlugConfig;
 use crate::errors::ServiceError;
 use crate::models::url::{Model as UrlModel, UrlStatus};
 use crate::repositories::url_repository::{CreateUrlDto, ListParams, UpdateUrlDto, UrlRepository};
@@ -39,11 +39,11 @@ pub struct ShortenResponse {
 
 impl ShortenResponse {
     /// Convert URL model to response DTO
-    pub fn from_model(model: UrlModel, site_url: &str) -> Self {
+    pub fn from_model(model: UrlModel, short_url: &str) -> Self {
         Self {
             id: model.id,
             short_code: model.short_code.clone(),
-            short_url: format!("{}/{}", site_url.trim_end_matches('/'), model.short_code),
+            short_url: format!("{}/{}", short_url.trim_end_matches('/'), model.short_code),
             original_url: model.original_url,
             description: model.description,
             status: model.status,
@@ -74,8 +74,8 @@ pub struct PagedResponse<T> {
 pub struct ShortenService {
     url_repo: Arc<dyn UrlRepository>,
     cache: Arc<dyn Cache>,
-    config: ShortenerConfig,
-    site_url: String,
+    config: SlugConfig,
+    short_url: String,
 }
 
 impl ShortenService {
@@ -83,14 +83,14 @@ impl ShortenService {
     pub fn new(
         url_repo: Arc<dyn UrlRepository>,
         cache: Arc<dyn Cache>,
-        config: ShortenerConfig,
-        site_url: String,
+        config: SlugConfig,
+        short_url: String,
     ) -> Self {
         Self {
             url_repo,
             cache,
             config,
-            site_url,
+            short_url,
         }
     }
 
@@ -165,7 +165,7 @@ impl ShortenService {
             // Don't fail the request if caching fails
         }
 
-        Ok(ShortenResponse::from_model(url_model, &self.site_url))
+        Ok(ShortenResponse::from_model(url_model, &self.short_url))
     }
 
     /// Get a short URL by code
@@ -182,7 +182,7 @@ impl ShortenService {
         // Try to get from cache first
         if let Ok(Some(cached_url)) = self.get_cached_url(code).await {
             debug!("Cache hit for code: {}", code);
-            return Ok(ShortenResponse::from_model(cached_url, &self.site_url));
+            return Ok(ShortenResponse::from_model(cached_url, &self.short_url));
         }
 
         debug!("Cache miss for code: {}", code);
@@ -198,7 +198,7 @@ impl ShortenService {
             warn!("Failed to cache URL {}: {}", code, e);
         }
 
-        Ok(ShortenResponse::from_model(url_model, &self.site_url))
+        Ok(ShortenResponse::from_model(url_model, &self.short_url))
     }
 
     /// List short URLs with pagination
@@ -219,7 +219,7 @@ impl ShortenService {
 
         let data: Vec<ShortenResponse> = urls
             .into_iter()
-            .map(|url| ShortenResponse::from_model(url, &self.site_url))
+            .map(|url| ShortenResponse::from_model(url, &self.short_url))
             .collect();
 
         let total_pages = (total as f64 / params.page_size as f64).ceil() as u64;
@@ -277,7 +277,7 @@ impl ShortenService {
             warn!("Failed to update cache for URL {}: {}", code, e);
         }
 
-        Ok(ShortenResponse::from_model(url_model, &self.site_url))
+        Ok(ShortenResponse::from_model(url_model, &self.short_url))
     }
 
     /// Delete a short URL
@@ -338,6 +338,65 @@ impl ShortenService {
         Ok(deleted_count)
     }
 
+    /// Warm up the cache by loading all short URLs from the database
+    ///
+    /// Called at startup after the cache has been cleared, so the cache
+    /// reflects exactly the current database contents. Individual failures
+    /// are logged and skipped; they will be re-cached on the next access.
+    ///
+    /// # Returns
+    ///
+    /// * `Ok(usize)` - Number of URLs successfully written to the cache
+    /// * `Err(ServiceError)` - Failed to list URLs from the database
+    pub async fn warm_up_cache(&self) -> Result<usize, ServiceError> {
+        let urls = self.url_repo.list_all().await?;
+        info!("Warming up cache with {} short URLs from database", urls.len());
+
+        let mut cached = 0;
+        for url in &urls {
+            match self.cache_url(url).await {
+                Ok(()) => cached += 1,
+                Err(e) => warn!("Failed to cache URL {} during warm-up: {}", url.short_code, e),
+            }
+        }
+
+        info!("Cache warm-up finished: {}/{} URLs cached", cached, urls.len());
+        Ok(cached)
+    }
+
+    /// Refresh the cache: clear all keys under the given prefix, then reload
+    /// all short URLs from the database
+    ///
+    /// # Arguments
+    ///
+    /// * `prefix` - Cache key prefix to clear (e.g. "shorten:")
+    ///
+    /// # Returns
+    ///
+    /// * `Ok((u64, usize))` - (keys cleared, URLs re-cached)
+    /// * `Err(ServiceError)` - Cache not connected or operation failed
+    pub async fn refresh_cache(&self, prefix: &str) -> Result<(u64, usize), ServiceError> {
+        if self.cache.is_null() {
+            return Err(ServiceError::Cache(
+                "Cache is not enabled or not connected".to_string(),
+            ));
+        }
+
+        let cleared = self
+            .cache
+            .clear_prefix(prefix)
+            .await
+            .map_err(|e| ServiceError::Cache(e.to_string()))?;
+
+        info!(
+            "Cache refresh: cleared {} keys with prefix '{}'",
+            cleared, prefix
+        );
+
+        let warmed = self.warm_up_cache().await?;
+        Ok((cleared, warmed))
+    }
+
     /// Generate a random short code
     ///
     /// # Returns
@@ -345,10 +404,10 @@ impl ShortenService {
     /// * `String` - Generated short code
     fn generate_code(&self) -> String {
         let mut rng = rand::rng();
-        let chars: Vec<char> = self.config.code_charset.chars().collect();
+        let chars: Vec<char> = self.config.alphabet.chars().collect();
         let charset_len = chars.len();
 
-        (0..self.config.code_length)
+        (0..self.config.length)
             .map(|_| chars[rng.random_range(0..charset_len)])
             .collect()
     }
@@ -399,7 +458,7 @@ impl ShortenService {
         }
 
         // Check if all characters are in the charset
-        let charset: std::collections::HashSet<char> = self.config.code_charset.chars().collect();
+        let charset: std::collections::HashSet<char> = self.config.alphabet.chars().collect();
         code.chars().all(|c| charset.contains(&c))
     }
 
@@ -413,7 +472,7 @@ impl ShortenService {
             .set(
                 &cache_key,
                 &cache_value,
-                self.config.code_length as u64 * 3600,
+                self.config.length as u64 * 3600,
             )
             .await
             .map_err(|e| ServiceError::Cache(e.to_string()))?;
@@ -457,7 +516,7 @@ impl ShortenService {
 mod tests {
     use super::*;
     use crate::cache::NullCache;
-    use crate::config::{Config, DatabaseConfig, DatabaseType, SqliteConfig};
+    use crate::config::{Config, DatabaseConfig};
     use crate::db::DbFactory;
     use crate::repositories::url_repository::UrlRepositoryImpl;
 
@@ -466,34 +525,28 @@ mod tests {
             server: crate::config::ServerConfig {
                 address: ":8080".to_string(),
                 trusted_platform: None,
-                site_url: "http://localhost:8080".to_string(),
+                short_url: "http://localhost:8080".to_string(),
                 api_key: "test-key".to_string(),
             },
-            shortener: crate::config::ShortenerConfig {
-                code_length: 6,
-                code_charset: "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+            slug: crate::config::SlugConfig {
+                length: 6,
+                alphabet: "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
                     .to_string(),
             },
             admin: crate::config::AdminConfig {
                 username: "admin".to_string(),
-                password: "admin123".to_string(),
+                password_hash: "".to_string(),
             },
+            oidc: crate::config::OidcConfig::default(),
             database: DatabaseConfig {
-                db_type: DatabaseType::Sqlite,
+                url: Some("sqlite::memory:".to_string()),
                 log_level: 0,
-                sqlite: Some(SqliteConfig {
-                    path: ":memory:".to_string(),
-                }),
-                postgres: None,
-                mysql: None,
             },
             cache: crate::config::CacheConfig {
                 enabled: false,
-                cache_type: crate::config::CacheType::Redis,
                 expire: 3600,
                 prefix: "shorten:".to_string(),
-                redis: None,
-                valkey: None,
+                url: None,
             },
             geoip: crate::config::GeoIpConfig {
                 enabled: false,
@@ -512,8 +565,8 @@ mod tests {
         ShortenService::new(
             url_repo,
             cache,
-            config.shortener.clone(),
-            config.server.site_url.clone(),
+            config.slug.clone(),
+            config.server.short_url.clone(),
         )
     }
 
@@ -813,7 +866,7 @@ mod tests {
 
         // Check all characters are from charset
         let charset: std::collections::HashSet<char> =
-            service.config.code_charset.chars().collect();
+            service.config.alphabet.chars().collect();
         assert!(code.chars().all(|c| charset.contains(&c)));
     }
 
