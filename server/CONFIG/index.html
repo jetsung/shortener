@@ -2153,6 +2153,15 @@
 </tr>
 </tbody>
 </table>
+<h4 id="缓存行为">缓存行为<a class="headerlink" href="#缓存行为" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>键结构</strong>：<code>{prefix}url:{short_code}</code>（前缀默认 <code>shorten:</code>），值为短链 JSON，写入即带 TTL</li>
+<li><strong>写入时机</strong>：创建、更新短链时写入；访问短链时未命中则查库并回填（惰性回填）</li>
+<li><strong>删除同步</strong>：删除单条或批量删除短链时，同步删除对应缓存键</li>
+<li><strong>启动重建</strong>：服务启动时先清空前缀下的所有旧键，再从数据库预热全量短链，保证缓存与数据库一致；该过程完成前服务不对外监听</li>
+<li><strong>手动刷新</strong>：调用 <code>POST /api/cache/refresh</code> 可随时清空并重建缓存（管理界面「短址列表」页也有「刷新缓存」按钮）</li>
+<li><strong>隔离性</strong>：清空操作仅影响本服务前缀开头的键，同一 Redis/Valkey 实例中其他应用的键不受影响</li>
+</ul>
 <h3 id="geoip-配置">GeoIP 配置<a class="headerlink" href="#geoip-配置" title="Permanent link">&para;</a></h3>
 <div class="language-toml highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="k">[geoip]</span>
 </span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="n">enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
