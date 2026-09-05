@@ -43,7 +43,7 @@ shortener-common = { workspace = true }
 [dev-dependencies]
 tokio-test = "0.4"
 mockall = "0.13"
-criterion = "0.7"
+criterion = "0.8"
 tempfile = "3.8"
 
 [[bench]]
