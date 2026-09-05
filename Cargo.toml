@@ -41,7 +41,7 @@ sea-orm-migration = { version = "2.0", features = [
 ] }
 
 # 缓存
-redis = { version = "0.32", features = ["tokio-comp", "connection-manager"] }
+redis = { version = "1.6", features = ["tokio-comp", "connection-manager"] }
 
 # 配置
 config = "0.15"
