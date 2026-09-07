@@ -41,7 +41,7 @@ RUN cargo build --release -p shortener-server --bins
 # ============================================================================
 # Stage 2: 构建前端（Vite 产物）
 # ============================================================================
-FROM node:24-alpine AS builder-frontend
+FROM node:26-alpine AS builder-frontend
 
 WORKDIR /app
 
