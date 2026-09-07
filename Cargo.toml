@@ -71,7 +71,7 @@ chrono = "0.4"
 uuid = { version = "1.11", features = ["v4"] }
 
 # 密码哈希
-argon2 = "0.5"
+argon2 = "0.6"
 
 # JWT
 jsonwebtoken = "11.0"
