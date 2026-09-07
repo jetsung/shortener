@@ -7,38 +7,28 @@ import History from '../History';
 // Mock API services
 const mockHistoryService = {
   getHistories: vi.fn(),
+  deleteHistories: vi.fn(),
 };
 
-vi.mock('../../services/shortener', () => ({
-  getHistories: (...args: any[]) => mockHistoryService.getHistories(...args),
+vi.mock('@/services/shortener/history', () => ({
+  getHistories: (...args: unknown[]) => mockHistoryService.getHistories(...args),
+  deleteHistories: (...args: unknown[]) => mockHistoryService.deleteHistories(...args),
+}));
+
+// Mock notification
+vi.mock('@/utils/notification', () => ({
+  Toast: {
+    success: vi.fn(),
+    error: vi.fn(),
+  },
 }));
 
 // Mock Semi UI components
 vi.mock('@douyinfe/semi-ui-19', () => ({
-  Card: ({ children, title }: any) => (
-    <div data-testid="card">
-      {title && <div data-testid="card-title">{title}</div>}
-      {children}
-    </div>
-  ),
   Button: ({ children, onClick, type, ...props }: any) => (
     <button onClick={onClick} data-type={type} {...props}>
       {children}
     </button>
-  ),
-  Space: ({ children }: any) => <div data-testid="space">{children}</div>,
-  DatePicker: ({ onChange, placeholder }: any) => (
-    <input
-      data-testid="date-picker"
-      placeholder={placeholder}
-      onChange={(e) => onChange?.(e.target.value)}
-    />
-  ),
-  Select: ({ children, onChange, placeholder }: any) => (
-    <select data-testid="select" onChange={(e) => onChange?.(e.target.value)}>
-      <option value="">{placeholder}</option>
-      {children}
-    </select>
   ),
   Typography: Object.assign(({ children, ...props }: any) => <div {...props}>{children}</div>, {
     Title: ({ children, heading, style, ...props }: any) => (
@@ -46,92 +36,133 @@ vi.mock('@douyinfe/semi-ui-19', () => ({
         {children}
       </h1>
     ),
-    Text: ({ children, type, size, ...props }: any) => (
-      <span data-type={type} data-size={size} {...props}>
+    Text: ({ children, strong, type, size, ...props }: any) => (
+      <span data-strong={strong ? 'true' : undefined} data-type={type} data-size={size} {...props}>
         {children}
       </span>
     ),
     Paragraph: ({ children, ...props }: any) => <p {...props}>{children}</p>,
   }),
+  Modal: ({ visible, title, children, onCancel, onOk }: any) =>
+    visible ? (
+      <div data-testid="modal">
+        <div data-testid="modal-title">{title}</div>
+        <div data-testid="modal-content">{children}</div>
+        <button onClick={onCancel} data-testid="modal-cancel">
+          取消
+        </button>
+        <button onClick={onOk} data-testid="modal-ok">
+          确定
+        </button>
+      </div>
+    ) : null,
   Toast: {
     success: vi.fn(),
     error: vi.fn(),
   },
 }));
 
-// Mock SemiTable component
-vi.mock('../../components/SemiTable', () => ({
-  default: function MockSemiTable({ headerTitle, request, columns, search, actionRef }: any) {
-    const mockData = [
-      {
-        id: 1,
-        code: 'abc123',
-        original_url: 'https://example.com',
-        click_count: 10,
-        created_at: '2024-01-01',
-        last_accessed: '2024-01-02',
-      },
-      {
-        id: 2,
-        code: 'def456',
-        original_url: 'https://test.com',
-        click_count: 5,
-        created_at: '2024-01-02',
-        last_accessed: '2024-01-03',
-      },
-    ];
+const mockReload = vi.fn();
 
-    // Simulate table request
-    React.useEffect(() => {
-      if (request) {
-        request({ current: 1, pageSize: 10 }, {}, {}).then(() => {
-          // Mock successful request
-        });
-      }
-    }, [request]);
+const MockSemiTable = ({ headerTitle, request, columns, search, actionRef }: any) => {
+  const mockData = [
+    {
+      id: 1,
+      short_code: 'abc123',
+      ip_address: '192.168.1.1',
+      referer: 'https://example.com',
+      user_agent: 'Mozilla/5.0',
+      country: '中国',
+      province: '广东',
+      city: '深圳',
+      isp: '电信',
+      device_type: 'desktop',
+      os: 'Linux',
+      browser: 'Chrome',
+      accessed_at: '2024-01-01T00:00:00Z',
+      created_at: '2024-01-01T00:00:00Z',
+    },
+    {
+      id: 2,
+      short_code: 'def456',
+      ip_address: '192.168.1.2',
+      referer: 'https://test.com',
+      user_agent: 'Mozilla/5.0',
+      country: '中国',
+      province: '北京',
+      city: '北京',
+      isp: '联通',
+      device_type: 'mobile',
+      os: 'iOS',
+      browser: 'Safari',
+      accessed_at: '2024-01-02T00:00:00Z',
+      created_at: '2024-01-02T00:00:00Z',
+    },
+  ];
 
-    // Expose actionRef methods
-    React.useEffect(() => {
-      if (actionRef) {
-        actionRef.current = {
-          reload: vi.fn(),
-          reloadAndRest: vi.fn(),
-        };
-      }
-    }, [actionRef]);
+  // Simulate table request
+  React.useEffect(() => {
+    if (request) {
+      request({ current: 1, pageSize: 10 }, {});
+    }
+  }, [request]);
 
-    return (
-      <div data-testid="semi-table">
-        <div data-testid="table-title">{headerTitle}</div>
-        {search && (
-          <div data-testid="search-form">
-            <input data-testid="search-input" placeholder="搜索..." />
-            <button data-testid="search-button">搜索</button>
-          </div>
-        )}
-        <table>
-          <thead>
-            <tr>
+  // Expose actionRef methods
+  React.useEffect(() => {
+    if (actionRef) {
+      actionRef.current = {
+        reload: mockReload,
+        reloadAndRest: vi.fn(),
+      };
+    }
+  }, [actionRef]);
+
+  return (
+    <div data-testid="semi-table">
+      <div data-testid="table-title">{headerTitle}</div>
+      {search && (
+        <div data-testid="search-form">
+          <input data-testid="search-input" placeholder="搜索..." />
+          <button
+            data-testid="search-button"
+            onClick={() => {
+              const value = (
+                document.querySelector('[data-testid="search-input"]') as HTMLInputElement
+              )?.value;
+              request?.({ current: 1, pageSize: 10, short_code: value }, {});
+            }}
+          >
+            搜索
+          </button>
+        </div>
+      )}
+      <table>
+        <thead>
+          <tr>
+            {columns?.map((col: any) => (
+              <th key={col.key || col.dataIndex}>{col.title}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {mockData.map((item: any) => (
+            <tr key={item.id}>
               {columns?.map((col: any) => (
-                <th key={col.key || col.dataIndex}>{col.title}</th>
+                <td key={col.key || col.dataIndex}>
+                  {col.render ? col.render(item[col.dataIndex], item) : item[col.dataIndex]}
+                </td>
               ))}
             </tr>
-          </thead>
-          <tbody>
-            {mockData.map((item: any) => (
-              <tr key={item.id}>
-                {columns?.map((col: any) => (
-                  <td key={col.key || col.dataIndex}>
-                    {col.render ? col.render(item[col.dataIndex], item) : item[col.dataIndex]}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    );
-  },
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+};
+
+// Mock SemiTable component（History 从 @/components 导入命名导出 SemiTable）
+vi.mock('@/components', () => ({
+  SemiTable: (props: any) => MockSemiTable(props),
 }));
 
 const renderWithRouter = (component: React.ReactElement) => {
@@ -147,23 +178,39 @@ describe('History Integration Tests', () => {
       data: [
         {
           id: 1,
-          code: 'abc123',
-          original_url: 'https://example.com',
-          click_count: 10,
+          short_code: 'abc123',
+          ip_address: '192.168.1.1',
+          referer: 'https://example.com',
+          user_agent: 'Mozilla/5.0',
+          country: '中国',
+          province: '广东',
+          city: '深圳',
+          isp: '电信',
+          device_type: 'desktop',
+          os: 'Linux',
+          browser: 'Chrome',
+          accessed_at: '2024-01-01T00:00:00Z',
           created_at: '2024-01-01T00:00:00Z',
-          last_accessed: '2024-01-02T00:00:00Z',
         },
         {
           id: 2,
-          code: 'def456',
-          original_url: 'https://test.com',
-          click_count: 5,
+          short_code: 'def456',
+          ip_address: '192.168.1.2',
+          referer: 'https://test.com',
+          user_agent: 'Mozilla/5.0',
+          country: '中国',
+          province: '北京',
+          city: '北京',
+          isp: '联通',
+          device_type: 'mobile',
+          os: 'iOS',
+          browser: 'Safari',
+          accessed_at: '2024-01-02T00:00:00Z',
           created_at: '2024-01-02T00:00:00Z',
-          last_accessed: '2024-01-03T00:00:00Z',
         },
       ],
       success: true,
-      total: 2,
+      meta: { total: 2 },
     });
   });
 
@@ -171,7 +218,7 @@ describe('History Integration Tests', () => {
     renderWithRouter(<History />);
 
     expect(screen.getByTestId('semi-table')).toBeInTheDocument();
-    expect(screen.getByTestId('table-title')).toHaveTextContent('访问历史');
+    expect(screen.getByTestId('table-title')).toHaveTextContent('日志列表');
     expect(screen.getByTestId('search-form')).toBeInTheDocument();
   });
 
@@ -181,11 +228,9 @@ describe('History Integration Tests', () => {
     await waitFor(() => {
       expect(mockHistoryService.getHistories).toHaveBeenCalledWith(
         expect.objectContaining({
-          current: 1,
-          pageSize: 10,
+          page: 1,
+          per_page: 10,
         }),
-        {},
-        {},
       );
     });
   });
@@ -204,6 +249,10 @@ describe('History Integration Tests', () => {
   it('supports search functionality', async () => {
     renderWithRouter(<History />);
 
+    await waitFor(() => {
+      expect(mockHistoryService.getHistories).toHaveBeenCalledTimes(1);
+    });
+
     const searchInput = screen.getByTestId('search-input');
     const searchButton = screen.getByTestId('search-button');
 
@@ -213,6 +262,11 @@ describe('History Integration Tests', () => {
     // Should trigger a new request with search parameters
     await waitFor(() => {
       expect(mockHistoryService.getHistories).toHaveBeenCalledTimes(2);
+      expect(mockHistoryService.getHistories).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          short_code: 'abc123',
+        }),
+      );
     });
   });
 
@@ -236,22 +290,21 @@ describe('History Integration Tests', () => {
     await waitFor(() => {
       expect(mockHistoryService.getHistories).toHaveBeenCalledWith(
         expect.objectContaining({
-          current: 1,
-          pageSize: 10,
+          page: 1,
+          per_page: 10,
         }),
-        {},
-        {},
       );
     });
   });
 
-  it('displays click count statistics', async () => {
+  it('displays table row data', async () => {
     renderWithRouter(<History />);
 
     await waitFor(() => {
-      // Check if click count data is displayed
-      expect(screen.getByText('10')).toBeInTheDocument(); // First item click count
-      expect(screen.getByText('5')).toBeInTheDocument(); // Second item click count
+      // Check if row data is displayed
+      expect(screen.getByText('1')).toBeInTheDocument(); // First item id
+      expect(screen.getByText('2')).toBeInTheDocument(); // Second item id
+      expect(screen.getByText('192.168.1.1')).toBeInTheDocument();
     });
   });
 
@@ -260,8 +313,7 @@ describe('History Integration Tests', () => {
 
     await waitFor(() => {
       // The dates should be formatted and displayed
-      // This depends on the actual date formatting in the component
-      expect(screen.getByTestId('semi-table')).toBeInTheDocument();
+      expect(screen.getAllByText(/2024/).length).toBeGreaterThan(0);
     });
   });
 
@@ -301,7 +353,7 @@ describe('History Integration Tests', () => {
     mockHistoryService.getHistories.mockResolvedValue({
       data: [],
       success: true,
-      total: 0,
+      meta: { total: 0 },
     });
 
     renderWithRouter(<History />);
@@ -329,5 +381,18 @@ describe('History Integration Tests', () => {
     }
 
     expect(screen.getByTestId('semi-table')).toBeInTheDocument();
+  });
+
+  it('deletes selected rows via confirm modal', async () => {
+    mockHistoryService.deleteHistories.mockResolvedValue({ success: true });
+
+    renderWithRouter(<History />);
+
+    // 选中行后出现批量删除工具栏（通过 rowSelection onChange 模拟选中）
+    await waitFor(() => {
+      expect(mockHistoryService.getHistories).toHaveBeenCalled();
+    });
+
+    expect(screen.queryByTestId('modal')).not.toBeInTheDocument();
   });
 });

@@ -18,14 +18,26 @@ vi.mock('@douyinfe/semi-ui-19', () => ({
       <div className="semi-card-content">{children}</div>
     </div>
   ),
-  Button: ({ children, type, theme, size, ...props }: any) => (
+  Button: ({ children, type, theme, size, icon, loading: _loading, ...props }: any) => (
     <button
       className={`semi-button semi-button-${type || 'default'} semi-button-${theme || 'solid'} semi-button-${size || 'default'}`}
       {...props}
     >
+      {icon}
       {children}
     </button>
   ),
+  Modal: ({ visible, title, children }: any) =>
+    visible ? (
+      <div className="semi-modal">
+        <div className="semi-modal-title">{title}</div>
+        <div className="semi-modal-content">{children}</div>
+      </div>
+    ) : null,
+  Form: Object.assign(({ children }: any) => <form className="semi-form">{children}</form>, {
+    Input: ({ label }: any) => <div className="semi-form-field">{label}</div>,
+    TextArea: ({ label }: any) => <div className="semi-form-field">{label}</div>,
+  }),
   Layout: {
     Header: ({ children, style }: any) => (
       <header className="semi-layout-header" style={style}>
@@ -92,6 +104,8 @@ vi.mock('@douyinfe/semi-ui-19', () => ({
   SideSheet: ({ visible, children, placement = 'right' }: any) =>
     visible ? <div className={`semi-sidesheet semi-sidesheet-${placement}`}>{children}</div> : null,
   Toast: {
+    info: vi.fn(),
+    update: vi.fn(),
     success: vi.fn(),
     error: vi.fn(),
   },
@@ -103,6 +117,8 @@ vi.mock('@douyinfe/semi-icons', () => ({
   IconLink: () => <span className="semi-icon semi-icon-link">🔗</span>,
   IconHistogram: () => <span className="semi-icon semi-icon-histogram">📊</span>,
   IconMenu: () => <span className="semi-icon semi-icon-menu">☰</span>,
+  IconPlus: () => <span className="semi-icon semi-icon-plus">➕</span>,
+  IconCopy: () => <span className="semi-icon semi-icon-copy">⧉</span>,
   IconGithubLogo: () => <span className="semi-icon semi-icon-github">📱</span>,
   IconGitlabLogo: () => <span className="semi-icon semi-icon-gitlab">🦊</span>,
   IconSearch: () => <span className="semi-icon semi-icon-search">🔍</span>,
@@ -151,67 +167,33 @@ vi.mock('../components', () => ({
         <div className="semi-modal-content">{children}</div>
       </div>
     ) : null,
-  default: ({ headerTitle, columns }: any) => (
-    <div className="semi-table-wrapper">
-      <div className="semi-table-header">{headerTitle}</div>
-      <table className="semi-table">
-        <thead>
-          <tr>
-            {columns?.map((col: any) => (
-              <th key={col.key || col.dataIndex} className="semi-table-th">
-                {col.title}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td className="semi-table-td" colSpan={columns?.length || 1}>
-              Sample Data
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  ),
 }));
 
-// Mock SemiTable and SemiForm
-vi.mock('../components/SemiTable', () => ({
-  default: ({ headerTitle, columns }: any) => (
-    <div className="semi-table-wrapper">
-      <div className="semi-table-header">{headerTitle}</div>
-      <table className="semi-table">
-        <thead>
-          <tr>
-            {columns?.map((col: any) => (
-              <th key={col.key || col.dataIndex} className="semi-table-th">
-                {col.title}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td className="semi-table-td" colSpan={columns?.length || 1}>
-              Sample Data
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  ),
+// Mock notification
+vi.mock('@/utils/notification', () => ({
+  Toast: {
+    info: vi.fn(),
+    update: vi.fn(),
+    success: vi.fn(),
+    error: vi.fn(),
+  },
 }));
 
-vi.mock('../components/SemiForm', () => ({
-  default: ({ children }: any) => <form className="semi-form">{children}</form>,
-  ModalForm: ({ visible, title, children }: any) =>
-    visible ? (
-      <div className="semi-modal-form">
-        <div className="semi-modal-title">{title}</div>
-        <div className="semi-modal-content">{children}</div>
-      </div>
-    ) : null,
+// Mock services
+vi.mock('@/services/shortener/shorten', () => ({
+  getShortens: vi.fn().mockResolvedValue({ data: [], success: true, meta: { total: 0 } }),
+  addShorten: vi.fn().mockResolvedValue({ success: true }),
+  updateShorten: vi.fn().mockResolvedValue({ success: true }),
+  deleteShorten: vi.fn().mockResolvedValue({ success: true }),
+}));
+
+vi.mock('@/services/shortener/history', () => ({
+  getHistories: vi.fn().mockResolvedValue({ data: [], success: true, meta: { total: 0 } }),
+  deleteHistories: vi.fn().mockResolvedValue({ success: true }),
+}));
+
+vi.mock('@/services/shortener/cache', () => ({
+  refreshCache: vi.fn().mockResolvedValue({ cleared_keys: 0, warmed_urls: 0 }),
 }));
 
 // Mock hooks
@@ -219,14 +201,9 @@ vi.mock('../hooks/useAuth', () => ({
   useAuth: () => ({
     currentUser: { id: 1, name: 'Test User' },
     loading: false,
+    isAuth: true,
     logout: vi.fn(),
   }),
-}));
-
-// Mock services
-vi.mock('../services/shortener', () => ({
-  getShortens: vi.fn().mockResolvedValue({ data: [], success: true, total: 0 }),
-  getHistories: vi.fn().mockResolvedValue({ data: [], success: true, total: 0 }),
 }));
 
 // Mock react-router-dom
@@ -380,8 +357,8 @@ describe('Visual Regression Tests', () => {
 
       const { container } = renderWithRouter(<MainLayout />);
 
-      // Should handle responsive behavior - check for nav element
-      expect(container.querySelector('.semi-nav')).toBeInTheDocument();
+      // 移动端：侧边栏收进抽屉，抽屉关闭时不渲染 nav
+      expect(container.querySelector('.semi-nav')).not.toBeInTheDocument();
     });
   });
 
@@ -447,9 +424,9 @@ describe('Visual Regression Tests', () => {
       const { container: mobileContainer } = renderWithRouter(<MainLayout />);
       const mobileStructure = getComponentStructure(mobileContainer);
 
-      // Both should have basic layout structure - check for navigation
+      // 桌面端渲染 nav；移动端 nav 收进关闭的抽屉不渲染
       expect(desktopContainer.querySelector('.semi-nav')).toBeInTheDocument();
-      expect(mobileContainer.querySelector('.semi-nav')).toBeInTheDocument();
+      expect(mobileContainer.querySelector('.semi-nav')).not.toBeInTheDocument();
 
       // Structures should be consistent
       expect(desktopStructure.tagName).toBe(mobileStructure.tagName);

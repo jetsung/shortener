@@ -60,7 +60,8 @@ export interface GetShortensParams {
   original_url?: string;
 }
 
-export interface HistoryResponse {
+// 用 type 而非 interface：作为 SemiTable 泛型参数时需要隐式索引签名
+export type HistoryResponse = {
   /** 访问记录 ID */
   id: number;
   /** 短链接 ID */
@@ -93,11 +94,11 @@ export interface HistoryResponse {
   accessed_at: string;
   /** 记录创建时间 (ISO 8601 格式) */
   created_at: string;
-}
+};
 
 export interface ItemList {
   /** 数据列表 */
-  data?: Record<string, any>[];
+  data?: Record<string, unknown>[];
   meta?: PageMeta;
 }
 
@@ -152,7 +153,7 @@ export interface PageQuery {
 
 export interface RespList {
   /** 数据列表 */
-  data?: Record<string, any>[];
+  data?: Record<string, unknown>[];
   /** 请求是否成功 */
   success?: boolean;
   /** 总条目数 */
@@ -168,7 +169,8 @@ export interface Shorten {
   description?: string;
 }
 
-export interface ShortenResponse {
+// 用 type 而非 interface：作为 SemiTable 泛型参数时需要隐式索引签名
+export type ShortenResponse = {
   /** ID */
   id?: number;
   /** 短码 */
@@ -185,7 +187,7 @@ export interface ShortenResponse {
   created_at?: string;
   /** 更新时间 (ISO 8601 格式) */
   updated_at?: string;
-}
+};
 
 export interface ShortenUpdate {
   /** 原始长网址 */

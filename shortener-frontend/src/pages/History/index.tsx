@@ -5,34 +5,9 @@ import { SemiTable } from '@/components';
 import type { SemiTableActionRef, SemiTableColumn } from '@/components/SemiTable';
 import { getHistories, deleteHistories } from '@/services/shortener/history';
 import { useNavigate } from 'react-router-dom';
+import type { GetHistoriesParams, HistoryResponse } from '@/types/api';
 
 const { Text } = Typography;
-
-interface HistoryResponse {
-  id: number;
-  short_code: string;
-  ip_address: string;
-  referer?: string;
-  user_agent?: string;
-  country?: string;
-  province?: string;
-  city?: string;
-  isp?: string;
-  device_type?: string;
-  os?: string;
-  browser?: string;
-  accessed_at: string;
-  created_at: string;
-}
-
-interface GetHistoriesParams {
-  page?: number;
-  per_page?: number;
-  short_code?: string;
-  ip_address?: string;
-  sort_by?: string;
-  order?: 'asc' | 'desc';
-}
 
 /**
  * 删除节点
@@ -181,8 +156,8 @@ const History = () => {
               query.order = orderBy[1] === 'ascend' ? 'asc' : 'desc';
             }
             const res = await getHistories(query);
-            data = ((res as any).data || []) as HistoryResponse[];
-            total = (res as any).meta?.total || 0;
+            data = (res.data || []) as HistoryResponse[];
+            total = res.meta?.total || 0;
             success = true;
           } catch (error: unknown) {
             const err = error as { response?: { data?: { errinfo?: string }; status?: number } };

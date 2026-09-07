@@ -65,9 +65,10 @@ const UpdateForm: React.FC<UpdateFormProps> = (props) => {
       ref={formRef}
       title="更新短链"
       visible={updateModalOpen}
-      onFinish={async (formValues: FormValueType) => {
+      onFinish={async (formValues: Record<string, unknown>) => {
+        const value = formValues as FormValueType;
         try {
-          const success = await onSubmit(formValues);
+          const success = await onSubmit(value);
           if (success) {
             onCancel(false);
           }

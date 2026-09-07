@@ -59,7 +59,7 @@ updates:
 
   # ============ Docker 镜像 ============
   - package-ecosystem: "docker"
-    directory: "/"
+    directory: "/docker"
     schedule:
       interval: "monthly"
       day: "monday"

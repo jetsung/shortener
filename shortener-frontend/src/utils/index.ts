@@ -85,7 +85,7 @@ export const copyToClipboard = async (text: string): Promise<boolean> => {
  * @param wait 等待时间
  * @returns 防抖后的函数
  */
-export const debounce = <T extends (...args: any[]) => any>(
+export const debounce = <T extends (...args: never[]) => unknown>(
   func: T,
   wait: number,
 ): ((...args: Parameters<T>) => void) => {
@@ -103,7 +103,7 @@ export const debounce = <T extends (...args: any[]) => any>(
  * @param limit 限制时间
  * @returns 节流后的函数
  */
-export const throttle = <T extends (...args: any[]) => any>(
+export const throttle = <T extends (...args: never[]) => unknown>(
   func: T,
   limit: number,
 ): ((...args: Parameters<T>) => void) => {

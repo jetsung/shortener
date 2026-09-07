@@ -29,7 +29,7 @@ const SemiModalForm = forwardRef<SemiFormRef, SemiModalFormProps>((props, ref) =
     submit: () => internalFormRef.current?.submit() || Promise.resolve(),
     validate: () => internalFormRef.current?.validate() || Promise.resolve({}),
     reset: () => internalFormRef.current?.reset(),
-    setValues: (values: any) => internalFormRef.current?.setValues(values),
+    setValues: (values: Record<string, unknown>) => internalFormRef.current?.setValues(values),
     getValues: () => internalFormRef.current?.getValues() || {},
   }));
 

@@ -55,11 +55,11 @@ declare namespace API {
     original_url?: string;
   };
 
-  type HistoryResponse = Record<string, any>;
+  type HistoryResponse = Record<string, unknown>;
 
   type ItemList = {
     /** 数据列表 */
-    data?: Record<string, any>[];
+    data?: Record<string, unknown>[];
     meta?: PageMeta;
   };
 

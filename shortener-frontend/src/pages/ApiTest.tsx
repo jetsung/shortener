@@ -6,7 +6,7 @@ const { Title, Text } = Typography;
 
 const ApiTest: React.FC = () => {
   const [loading, setLoading] = useState(false);
-  const [response, setResponse] = useState<any>(null);
+  const [response, setResponse] = useState<unknown>(null);
   const [error, setError] = useState<string | null>(null);
 
   const testLogin = async () => {
@@ -21,7 +21,7 @@ const ApiTest: React.FC = () => {
       });
 
       // 检查可能的token字段
-      const resultData = result as any;
+      const resultData = result as Record<string, unknown> & { data?: Record<string, unknown> };
       const possibleTokens = {
         token: resultData?.token,
         access_token: resultData?.access_token,
@@ -37,9 +37,9 @@ const ApiTest: React.FC = () => {
         keys: result && typeof result === 'object' ? Object.keys(result) : [],
       });
       Toast.success('API调用成功');
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('登录API错误:', err);
-      setError(err.message || '未知错误');
+      setError(err instanceof Error ? err.message : '未知错误');
       Toast.error('API调用失败');
     } finally {
       setLoading(false);
@@ -73,9 +73,9 @@ const ApiTest: React.FC = () => {
       });
 
       Toast.success('Fetch调用成功');
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Fetch错误:', err);
-      setError(err.message || '未知错误');
+      setError(err instanceof Error ? err.message : '未知错误');
       Toast.error('Fetch调用失败');
     } finally {
       setLoading(false);
@@ -142,7 +142,7 @@ const ApiTest: React.FC = () => {
           </Button>
         </Space>
 
-        {response && (
+        {response != null && (
           <Card style={{ marginTop: 16, backgroundColor: '#f8f9fa' }}>
             <Title heading={4}>响应数据:</Title>
             <pre

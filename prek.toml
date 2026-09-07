@@ -43,11 +43,22 @@ pass_filenames = false
 # （frontend-ci.yml 中 pnpm prettier:check，glob 与下方 files 保持一致）
 [[repos.hooks]]
 id = "frontend-prettier"
-name = "Frontend Prettier Format"
+name = "Frontend Prettier Format (incremental)"
 entry = "bash -c 'cd shortener-frontend && pnpm exec prettier --write \"${@#shortener-frontend/}\"' --"
 language = "system"
 files = "^shortener-frontend/src/.*\\.(js|jsx|ts|tsx|json|css|md)$"
 pass_filenames = true
+
+# 全量格式化：直接调用 package.json 中的 pnpm run prettier
+# （即 prettier --write "src/**/*.{js,jsx,ts,tsx,json,css,md}"），与 justfile fmt-frontend 保持一致；
+# 正常情况幂等无改动，仅兜底处理历史遗留的未格式化文件
+[[repos.hooks]]
+id = "frontend-prettier-full"
+name = "Frontend Prettier Format (pnpm run prettier)"
+entry = "bash -c 'cd shortener-frontend && pnpm run prettier'"
+language = "system"
+files = "^shortener-frontend/src/.*\\.(js|jsx|ts|tsx|json|css|md)$"
+pass_filenames = false
 
 # 本地 pre-commit 只增量 lint 本次变更的文件；全量 pnpm lint 由 CI 负责
 [[repos.hooks]]
