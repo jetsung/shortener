@@ -74,7 +74,7 @@ uuid = { version = "1.11", features = ["v4"] }
 argon2 = "0.5"
 
 # JWT
-jsonwebtoken = "9.3"
+jsonwebtoken = "11.0"
 
 # OIDC / OAuth2
 openidconnect = { version = "3", default-features = false, features = ["reqwest", "rustls-tls"] }
