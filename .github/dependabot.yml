@@ -46,6 +46,15 @@ updates:
     labels:
       - "dependencies"
       - "javascript"
+    # 依赖发布冷却期：Dependabot 默认对版本更新应用 3 天冷却（供应链安全默认）。
+    # eslint 已被手动升级至刚发布的 10.10.0（2026-09-04 发布，处于默认冷却窗口内），
+    # 若不在 exclude 中豁免，Dependabot 更新同组其他依赖时，pnpm 解析 eslint 会被
+    # minimumReleaseAge 拦截，抛出 ERR_PNPM_NO_MATCHING_VERSION，导致整个
+    # dev-dependencies 组的 PR 更新失败（dependabot/dependabot-core#15937）。
+    cooldown:
+      default-days: 3
+      exclude:
+        - "eslint"
     groups:
       # 前端主运行时依赖（react、semi 等）分组
       runtime-dependencies:
