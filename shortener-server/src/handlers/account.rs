@@ -93,16 +93,13 @@ pub async fn current_user(
 
 /// Hash a password using argon2 (Argon2id, PHC string format)
 pub fn hash_password(password: &str) -> Result<String, AppError> {
-    use argon2::{
-        Argon2,
-        password_hash::{PasswordHasher, SaltString, rand_core::OsRng},
-    };
+    use argon2::{Argon2, password_hash::PasswordHasher};
 
-    let salt = SaltString::generate(&mut OsRng);
     let argon2 = Argon2::default();
 
+    // 新版 password-hash 的 `hash_password` 会自动生成随机 salt
     let password_hash = argon2
-        .hash_password(password.as_bytes(), &salt)
+        .hash_password(password.as_bytes())
         .map_err(|e| AppError::Internal(format!("Failed to hash password: {}", e)))?
         .to_string();
 
@@ -113,7 +110,7 @@ pub fn hash_password(password: &str) -> Result<String, AppError> {
 pub fn verify_password(password: &str, hash: &str) -> Result<bool, AppError> {
     use argon2::{
         Argon2,
-        password_hash::{PasswordHash, PasswordVerifier},
+        password_hash::{PasswordVerifier, phc::PasswordHash},
     };
 
     let parsed_hash = PasswordHash::new(hash)
