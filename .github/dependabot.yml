@@ -55,6 +55,10 @@ updates:
       default-days: 3
       exclude:
         - "eslint"
+    # typescript-eslint 目前不支持 TS 7.x（需要等待 TS 7.1 的稳定 API），
+    # 忽略 typescript 更新以避免产生无法通过 CI 的 PR。
+    ignore:
+      - dependency-name: "typescript"
     groups:
       # 前端主运行时依赖（react、semi 等）分组
       runtime-dependencies:
@@ -64,20 +68,4 @@ updates:
     commit-message:
       prefix: "build"
       prefix-development: "build"
-      include: "scope"
-
-  # ============ Docker 镜像 ============
-  - package-ecosystem: "docker"
-    directory: "/docker"
-    schedule:
-      interval: "monthly"
-      day: "monday"
-      time: "03:00"
-      timezone: "Asia/Shanghai"
-    open-pull-requests-limit: 5
-    labels:
-      - "dependencies"
-      - "docker"
-    commit-message:
-      prefix: "build"
       include: "scope"
