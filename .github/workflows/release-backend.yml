@@ -71,8 +71,8 @@ jobs:
       - name: Package deb and rpm
         run: |
           for arch in x86_64 aarch64 loongarch64; do
-            cargo deb -p shortener-server --no-build --target $arch-unknown-linux-musl --output ${{ env.RELEASE_DIR }}
-            cargo deb -p shortener-cli --no-build --target $arch-unknown-linux-musl --output ${{ env.RELEASE_DIR }}
+            cargo deb -p shortener-server --no-build --no-strip --target $arch-unknown-linux-musl --output ${{ env.RELEASE_DIR }}
+            cargo deb -p shortener-cli --no-build --no-strip --target $arch-unknown-linux-musl --output ${{ env.RELEASE_DIR }}
             cargo generate-rpm -p shortener-server --target $arch-unknown-linux-musl --output ${{ env.RELEASE_DIR }}
             cargo generate-rpm -p shortener-cli --target $arch-unknown-linux-musl --output ${{ env.RELEASE_DIR }}
           done
