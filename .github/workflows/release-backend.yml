@@ -8,6 +8,16 @@ on:
     types:
       - created
   workflow_dispatch:
+    inputs:
+      tag_name:
+        description: '要补发资产的已有 tag（如 shortener-server-v0.2.1），留空则使用默认分支'
+        required: false
+        type: string
+      only_linux:
+        description: '仅运行 build-linux（用于修复补传资产）'
+        required: false
+        type: boolean
+        default: true
 
 permissions:
   contents: write
@@ -26,7 +36,8 @@ jobs:
       - name: Extract tag name
         id: tag
         run: |
-          TAG="${GITHUB_REF#refs/tags/}"
+          TAG="${{ inputs.tag_name || github.ref }}"
+          TAG="${TAG#refs/tags/}"
           VERSION="${TAG#shortener-server-}"
           echo "TAG_NAME=$TAG" >> $GITHUB_OUTPUT
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
@@ -88,6 +99,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build-macos:
+    if: github.event_name != 'workflow_dispatch' || inputs.only_linux != true
     runs-on: macos-15
     steps:
       - uses: actions/checkout@v7
@@ -96,7 +108,8 @@ jobs:
       - name: Extract tag name
         id: tag
         run: |
-          TAG="${GITHUB_REF#refs/tags/}"
+          TAG="${{ inputs.tag_name || github.ref }}"
+          TAG="${TAG#refs/tags/}"
           VERSION="${TAG#shortener-server-}"
           echo "TAG_NAME=$TAG" >> $GITHUB_OUTPUT
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
@@ -133,6 +146,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build-windows:
+    if: github.event_name != 'workflow_dispatch' || inputs.only_linux != true
     runs-on: windows-2025
     steps:
       - uses: actions/checkout@v7
@@ -142,7 +156,8 @@ jobs:
         id: tag
         shell: bash
         run: |
-          TAG="${GITHUB_REF#refs/tags/}"
+          TAG="${{ inputs.tag_name || github.ref }}"
+          TAG="${TAG#refs/tags/}"
           VERSION="${TAG#shortener-server-}"
           echo "TAG_NAME=$TAG" >> $GITHUB_OUTPUT
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
