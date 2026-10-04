@@ -12,8 +12,16 @@ address = "0.0.0.0:8080"
 # Trusted platform header for getting real client IP (optional)
 trusted-platform = ""
 
-# Short URL base (短址专用域名，用于生成短链接；未设置时从监听地址推断，通配地址回退 localhost)
+# Short URL base (短址专用域名，用于生成短链接)
+# 未设置：从监听地址推断并追加 /go 前缀（链接形如 http://localhost:8080/go/<code>）
+# 显式设置：链接直接为 <short_url>/<code>（专用短域名无需前缀，形如 https://s.example.com/<code>）
 short_url = ""
+
+# 前端静态资源目录（可选）：配置后由后端直接托管该目录下的静态文件，
+# 未命中文件时回退返回目录内 index.html（SPA 回退）。留空/未设置表示不托管。
+# 注意：请通过环境变量 SERVER__STATIC_DIR 设置（config.toml 写同名键会与环境变量
+# 冲突报 duplicate field）；统一镜像内已由 Dockerfile 内置 ENV。
+# static-dir 也可写为 TOML 键 "static-dir"（仅在不使用 SERVER__STATIC_DIR 时）
 
 # API key for authentication (REQUIRED)
 # Generate with: openssl rand -base64 32

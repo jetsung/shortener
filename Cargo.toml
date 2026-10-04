@@ -3,7 +3,7 @@ members = ["shortener-server", "shortener-cli", "shortener-common"]
 resolver = "2"
 
 [workspace.package]
-version = "0.2.1"
+version = "0.3.0-preview.1"
 edition = "2024"
 authors = ["Jetsung Chan <i@jetsung.com>"]
 license = "Apache-2.0"
@@ -19,7 +19,7 @@ categories = ["web-services", "utilities"]
 axum = "0.8"
 tokio = { version = "1.43", features = ["full"] }
 tower = "0.5"
-tower-http = { version = "0.7", features = ["trace", "cors"] }
+tower-http = { version = "0.7", features = ["trace", "cors", "fs"] }
 
 # 序列化
 serde = { version = "1.0", features = ["derive"] }
@@ -74,7 +74,9 @@ uuid = { version = "1.11", features = ["v4"] }
 argon2 = "0.6"
 
 # JWT
-jsonwebtoken = "11.0"
+# jsonwebtoken 11 必须显式选择 CryptoProvider（rust_crypto 纯 Rust 实现，
+# 兼容 musl 静态构建），否则运行时签发/校验 JWT 会 panic
+jsonwebtoken = { version = "11.0", features = ["rust_crypto"] }
 
 # OIDC / OAuth2
 openidconnect = { version = "3", default-features = false, features = ["reqwest", "rustls-tls"] }

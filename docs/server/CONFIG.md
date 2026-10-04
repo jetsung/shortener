@@ -23,7 +23,8 @@
 [server]
 address = ":8080"                          # 服务器监听地址
 trusted-platform = ""                      # 可信平台头（可选）
-short_url = "https://s.example.com"      # 短址专用域名（可选，未设置时从监听地址推断，通配地址回退 localhost）
+short_url = "https://s.example.com"      # 短址专用域名（可选，未设置时从监听地址推断并追加 /go 前缀）
+static-dir = ""                            # 前端静态资源目录（可选，留空表示不托管）
 api_key = "your-secret-api-key"           # 用于认证的 API 密钥（必需）
 ```
 
@@ -215,7 +216,8 @@ if let Some(cache_url) = config.get_cache_url() {
 如果未指定，将应用以下默认值：
 
 - `server.address`: `:8080`
-- `server.short_url`: 空（从监听地址推断，通配地址回退 localhost）
+- `server.short_url`: 空（从监听地址推断并追加 `/go` 前缀，链接形如 `http://localhost:8080/go/<code>`）
+- `server.static_dir`: 空（不托管静态资源）
 - `slug.length`: `6`
 - `slug.alphabet`: `0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ`
 - `cache.enabled`: `false`

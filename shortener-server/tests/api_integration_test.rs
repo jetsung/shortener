@@ -35,7 +35,8 @@ fn create_test_config() -> Config {
             address: ":8080".to_string(),
             trusted_platform: None,
             short_url: "http://localhost:8080".to_string(),
-            api_key: "test-api-key-12345".to_string(),
+    static_dir: None,
+    api_key: "test-api-key-12345".to_string(),
         },
         slug: SlugConfig {
             length: 6,

@@ -7,11 +7,14 @@ use crate::handlers::{
 use crate::middleware::{HybridAuth, error_handler_middleware, logging_middleware};
 use crate::services::{HistoryService, ShortenService};
 use axum::{
-    Router, middleware,
+    Router, extract::State, http::Request, middleware, response::{IntoResponse, Response},
     routing::{delete, get, post, put},
 };
+use std::path::PathBuf;
 use std::sync::Arc;
+use tower::util::ServiceExt;
 use tower_http::cors::CorsLayer;
+use tower_http::services::{ServeDir, ServeFile};
 
 /// Application state shared across handlers
 #[derive(Clone)]
@@ -19,6 +22,19 @@ pub struct AppState {
     pub shorten_service: Arc<ShortenService>,
     pub history_service: Arc<HistoryService>,
     pub config: Arc<Config>,
+}
+
+/// 解析后端托管的静态资源目录（可选）。
+///
+/// 未配置或值为空返回 `None`；配置后由 fallback handler 托管该目录。
+fn static_dir_of(config: &Config) -> Option<PathBuf> {
+    config
+        .server
+        .static_dir
+        .as_deref()
+        .map(str::trim)
+        .filter(|s| !s.is_empty())
+        .map(PathBuf::from)
 }
 
 /// Create the main application router with all routes and middleware
@@ -76,14 +92,15 @@ pub fn create_router(state: AppState) -> Router {
     let public_api = Router::new().merge(login_api).merge(oidc_api);
 
     // Create redirect routes (public, for short URL redirection)
+    // 短码跳转统一走 /go/ 前缀，避免与静态资源在根命名空间冲突
     let redirect_routes = Router::new()
-        .route("/{short_code}", get(redirect_to_url))
+        .route("/go/{short_code}", get(redirect_to_url))
         .with_state(state.clone());
 
-    // Create health check route
+    // Create health check routes（全部收敛到 /api 命名空间）
     let health_routes = Router::new()
-        .route("/", get(root))
-        .route("/ping", get(ping));
+        .route("/api", get(root))
+        .route("/api/ping", get(ping));
 
     // Combine all routes
     Router::new()
@@ -91,6 +108,8 @@ pub fn create_router(state: AppState) -> Router {
         .merge(protected_api)
         .merge(public_api)
         .merge(redirect_routes)
+        .fallback(fallback_handler)
+        .with_state(state.clone())
         // Add CORS layer
         .layer(CorsLayer::permissive())
         // Add logging middleware
@@ -99,9 +118,36 @@ pub fn create_router(state: AppState) -> Router {
         .layer(middleware::from_fn(error_handler_middleware))
 }
 
+/// 未匹配任何路由的兜底处理。
+///
+/// 配置了 `static-dir` 时托管前端静态资源：命中文件直接返回，
+/// 未命中回退 `index.html`（SPA 回退，200），使前端路由可接管；
+/// 未配置时返回结构化 404。
+async fn fallback_handler(State(state): State<AppState>, request: Request<axum::body::Body>) -> Response {
+    let Some(static_dir) = static_dir_of(&state.config) else {
+        let path = request.uri().path().to_owned();
+        return (
+            axum::http::StatusCode::NOT_FOUND,
+            axum::Json(serde_json::json!({
+                "code": 404,
+                "message": format!("路径不存在: {path}"),
+            })),
+        )
+            .into_response();
+    };
+    // 用 `fallback` 而不是 `not_found_service`：后者会把回退响应状态码
+    // 强制改写为 404，而 SPA 深链回退必须以 200 交出入口 HTML。
+    let index = static_dir.join("index.html");
+    let service = ServeDir::new(&static_dir).fallback(ServeFile::new(index));
+    match service.oneshot(request).await {
+        Ok(response) => response.into_response(),
+        Err(never) => match never {},
+    }
+}
+
 /// Health check handler
 ///
-/// GET /ping
+/// GET /api/ping
 async fn ping() -> axum::Json<serde_json::Value> {
     axum::Json(serde_json::json!({
         "message": "pong"
@@ -110,7 +156,7 @@ async fn ping() -> axum::Json<serde_json::Value> {
 
 /// Root handler - service information
 ///
-/// GET /
+/// GET /api
 async fn root() -> axum::Json<serde_json::Value> {
     axum::Json(serde_json::json!({
         "service": "URL Shortener API",
@@ -140,6 +186,7 @@ mod tests {
                 address: ":8080".to_string(),
                 trusted_platform: None,
                 short_url: "http://localhost:8080".to_string(),
+                static_dir: None,
                 api_key: "test-api-key".to_string(),
             },
             slug: SlugConfig {
@@ -266,11 +313,40 @@ mod tests {
         // This will return 404 since no short URL exists with code "test123"
         let request = Request::builder()
             .method("GET")
-            .uri("/test123")
+            .uri("/go/test123")
             .body(Body::empty())
             .unwrap();
 
         let response = app.oneshot(request).await.unwrap();
+        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+    }
+
+    #[tokio::test]
+    async fn test_root_path_single_segment_is_not_redirect() {
+        let state = setup_test_state().await;
+        let app = create_router(state);
+
+        // 先创建短码 redirect123，但根路径 /redirect123 不再触发跳转
+        let create_request = Request::builder()
+            .method("POST")
+            .uri("/api/shortens")
+            .header("X-API-KEY", "test-api-key")
+            .header("content-type", "application/json")
+            .body(Body::from(
+                r#"{"original_url":"https://example.com","short_code":"redirect123"}"#,
+            ))
+            .unwrap();
+        let create_response = app.clone().oneshot(create_request).await.unwrap();
+        assert_eq!(create_response.status(), StatusCode::CREATED);
+
+        let request = Request::builder()
+            .method("GET")
+            .uri("/redirect123")
+            .body(Body::empty())
+            .unwrap();
+
+        let response = app.oneshot(request).await.unwrap();
+        // 未配置 static_dir 时兜底返回结构化 404，而非 302 跳转
         assert_eq!(response.status(), StatusCode::NOT_FOUND);
     }
 
@@ -296,7 +372,7 @@ mod tests {
         // Now test the redirect
         let redirect_request = Request::builder()
             .method("GET")
-            .uri("/redirect123")
+            .uri("/go/redirect123")
             .body(Body::empty())
             .unwrap();
 
@@ -306,5 +382,101 @@ mod tests {
         // Check the Location header
         let location = redirect_response.headers().get("location").unwrap();
         assert_eq!(location.to_str().unwrap(), "https://example.com");
+    }
+
+    #[tokio::test]
+    async fn test_static_dir_serves_files_and_spa_fallback() {
+        let mut state = setup_test_state().await;
+        // 构造临时静态目录：index.html + assets/app.js
+        let dir = std::env::temp_dir().join(format!("shortener-static-test-{}", std::process::id()));
+        std::fs::create_dir_all(dir.join("assets")).unwrap();
+        std::fs::write(dir.join("index.html"), "<html>spa</html>").unwrap();
+        std::fs::write(dir.join("assets/app.js"), "console.log(1)").unwrap();
+
+        let config = Arc::make_mut(&mut state.config);
+        config.server.static_dir = Some(dir.to_string_lossy().into_owned());
+
+        let app = create_router(state);
+
+        // 命中静态文件
+        let request = Request::builder()
+            .method("GET")
+            .uri("/assets/app.js")
+            .body(Body::empty())
+            .unwrap();
+        let response = app.clone().oneshot(request).await.unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+
+        // SPA 深链回退：无对应文件时以 200 返回 index.html
+        let request = Request::builder()
+            .method("GET")
+            .uri("/some/spa/route")
+            .body(Body::empty())
+            .unwrap();
+        let response = app.oneshot(request).await.unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+        let body = axum::body::to_bytes(response.into_body(), usize::MAX)
+            .await
+            .unwrap();
+        assert_eq!(&body[..], b"<html>spa</html>");
+
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    #[tokio::test]
+    async fn test_api_route_takes_precedence_over_static_dir() {
+        let mut state = setup_test_state().await;
+        let dir = std::env::temp_dir().join(format!("shortener-static-api-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+
+        let config = Arc::make_mut(&mut state.config);
+        config.server.static_dir = Some(dir.to_string_lossy().into_owned());
+
+        let app = create_router(state);
+
+        // 即使配置了 static_dir，API 路由仍优先进入处理逻辑（无凭证返回 401 而非静态内容）
+        let request = Request::builder()
+            .method("GET")
+            .uri("/api/shortens")
+            .body(Body::empty())
+            .unwrap();
+        let response = app.oneshot(request).await.unwrap();
+        assert_eq!(response.status(), StatusCode::UNAUTHORIZED);
+
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    #[tokio::test]
+    async fn test_redirect_with_static_dir_still_works() {
+        let mut state = setup_test_state().await;
+        let dir = std::env::temp_dir().join(format!("shortener-static-to-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+
+        let config = Arc::make_mut(&mut state.config);
+        config.server.static_dir = Some(dir.to_string_lossy().into_owned());
+
+        let app = create_router(state);
+
+        let create_request = Request::builder()
+            .method("POST")
+            .uri("/api/shortens")
+            .header("X-API-KEY", "test-api-key")
+            .header("content-type", "application/json")
+            .body(Body::from(
+                r#"{"original_url":"https://example.com","short_code":"mixabc"}"#,
+            ))
+            .unwrap();
+        let create_response = app.clone().oneshot(create_request).await.unwrap();
+        assert_eq!(create_response.status(), StatusCode::CREATED);
+
+        let request = Request::builder()
+            .method("GET")
+            .uri("/go/mixabc")
+            .body(Body::empty())
+            .unwrap();
+        let response = app.oneshot(request).await.unwrap();
+        assert_eq!(response.status(), StatusCode::PERMANENT_REDIRECT);
+
+        std::fs::remove_dir_all(&dir).ok();
     }
 }

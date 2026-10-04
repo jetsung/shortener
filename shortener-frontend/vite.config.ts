@@ -19,23 +19,16 @@ export default defineConfig(({ mode }) => {
       },
     },
     server: {
-      port: 8000,
+      // 端口以 VITE_DEV_PORT 为准（缺省 8000）；strictPort 使端口被占用时
+      // 显式报错退出，而非静默漂移到 8001 等端口
+      port: Number(env.VITE_DEV_PORT) || 8000,
+      strictPort: true,
       proxy: {
         '/api': {
-          target: 'http://localhost:8080',
-          changeOrigin: true,
-          secure: false, // 修改为 false，因为目标是 http
-          rewrite: (path) => path.replace(/^\/api/, '/api'),
-          configure: (proxy, _options) => {
-            proxy.on('error', (err, _req, _res) => {
-              console.error('proxy error', err);
-            });
-            proxy.on('proxyReq', (proxyReq, _req, _res) => {
-              // 确保正确设置请求头
-              proxyReq.setHeader('Accept', 'application/json');
-              proxyReq.setHeader('Content-Type', 'application/json');
-            });
-          },
+          // 指向 127.0.0.1 而非 localhost：Node ≥17 下 localhost 可能解析为
+          // IPv6 ::1，后端仅监听 IPv4，会导致代理连接被拒（对齐 acmecast）
+          target: 'http://127.0.0.1:8080',
+          changeOrigin: false,
         },
       },
     },

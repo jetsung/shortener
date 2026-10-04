@@ -9,7 +9,7 @@ info:
   license:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0.html
-  version: 0.2.1
+  version: 0.3.0-preview.1
 servers:
   - url: http://127.0.0.1:8080
     description: Version 1
@@ -23,7 +23,7 @@ tags:
   - name: health
     description: 健康检查
 paths:
-  /ping:
+  /api/ping:
     get:
       tags:
         - health
@@ -41,6 +41,64 @@ paths:
                   message:
                     type: string
                     example: "pong"
+
+  /api:
+    get:
+      tags:
+        - health
+      summary: "服务信息"
+      description: "返回服务名称、版本与运行状态"
+      operationId: "root"
+      responses:
+        "200":
+          description: "服务信息"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  service:
+                    type: string
+                    example: "URL Shortener API"
+                  version:
+                    type: string
+                    example: "0.3.0-preview.1"
+                  status:
+                    type: string
+                    example: "running"
+
+  /go/{short_code}:
+    get:
+      tags:
+        - shorten
+      summary: "短码跳转"
+      description: "根据短码 308 重定向到原始 URL（无需认证），并记录一条访问历史"
+      operationId: "redirectToUrl"
+      parameters:
+        - name: short_code
+          in: path
+          description: "短码"
+          required: true
+          schema:
+            type: string
+            maxLength: 16
+            pattern: "^[a-zA-Z0-9]+$"
+            example: "abc123"
+      responses:
+        "308":
+          description: "永久重定向到原始 URL"
+          headers:
+            Location:
+              description: "原始 URL"
+              schema:
+                type: string
+                format: uri
+        "404":
+          description: "短码不存在"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 
   /api/account/login:
     post:
@@ -112,6 +170,70 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
     x-swagger-router-controller: api
+
+  /api/oidc/login:
+    get:
+      tags:
+        - account
+      summary: "OIDC 登录"
+      description: "重定向浏览器到 IdP 授权端点（302/303 Location）。需启用 OIDC（[oidc] enabled = true）；redirect_uri 由请求 Host 头推导为 {scheme}://{host}/api/oidc/callback"
+      operationId: oidcLogin
+      responses:
+        "303":
+          description: "重定向到 IdP 授权页"
+          headers:
+            Location:
+              description: "IdP 授权端点 URL"
+              schema:
+                type: string
+                format: uri
+        "500":
+          description: "OIDC 未启用或配置错误"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/oidc/callback:
+    get:
+      tags:
+        - account
+      summary: "OIDC 回调"
+      description: "IdP 授权后的回调端点：用 code 换取令牌并校验，成功后重定向到前端 /#/dashboard"
+      operationId: oidcCallback
+      parameters:
+        - name: code
+          in: query
+          description: "IdP 授权码"
+          required: true
+          schema:
+            type: string
+        - name: state
+          in: query
+          description: "CSRF state（含前端回跳地址与 nonce，格式 r:<redirect>|n:<nonce>）"
+          required: true
+          schema:
+            type: string
+      responses:
+        "303":
+          description: "重定向到前端（默认 /#/dashboard）"
+          headers:
+            Location:
+              description: "前端回跳地址"
+              schema:
+                type: string
+        "401":
+          description: "授权失败（用户不在允许名单等）"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: "OIDC 未启用或令牌交换失败"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 
   /api/cache/refresh:
     post:
@@ -650,8 +772,8 @@ components:
         short_url:
           type: string
           format: uri
-          description: "完整短网址"
-          example: "https://example.com/s/abc123"
+          description: "完整短网址。short_url 未设置时形如 http://host:port/go/abc123（推断地址 + /go 前缀）；显式配置专用短域名时形如 https://s.example.com/abc123（无前缀）"
+          example: "http://localhost:8080/go/abc123"
         original_url:
           type: string
           format: uri

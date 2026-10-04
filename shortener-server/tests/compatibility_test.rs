@@ -240,7 +240,7 @@ mod api_compatibility_tests {
         let response = json!({
             "id": 1,
             "short_code": "abc123",
-            "short_url": "http://localhost:8080/abc123",
+            "short_url": "http://localhost:8080/go/abc123",
             "original_url": "https://example.com",
             "description": "Test URL",
             "status": 1,

@@ -1,165 +1,268 @@
-# Justfile for shortener project
+# Shortener 项目任务入口
 # https://github.com/casey/just
+#
+# 命令按 [group('...')] 分组，just --list 按分组展示。
 
-# Current version read from Cargo.toml (workspace.package.version)
+# 当前版本号：从 Cargo.toml (workspace.package.version) 读取
 current_version := `sed -n 's/^version = "\(.*\)"/\1/p' Cargo.toml | head -1`
 
-# Default recipe to display help
+# 默认命令：显示帮助
 default:
     @just --list
 
 # ============================================================================
-# Build
+# 构建
 # ============================================================================
 
 alias b := build
 
-# Build all packages (backend + frontend)
+# 构建全部包（后端 + 前端）
+[group('构建')]
 build: build-backend build-frontend
 
-# Build backend packages
+# 构建后端包
+[group('构建')]
 build-backend:
     cargo build --release
 
-# Build server only
+# 仅构建 server
+[group('构建')]
 build-server:
     cargo build --release -p shortener-server
 
-# Build CLI only
+# 仅构建 CLI
+[group('构建')]
 build-cli:
     cargo build --release -p shortener-cli
 
-# Build frontend for production
+# 构建前端生产产物
+[group('构建')]
 build-frontend:
     cd shortener-frontend && pnpm install && pnpm build
 
-# Build frontend with bundle analysis
+# 构建前端并生成体积分析
+[group('构建')]
 build-frontend-analyze:
     cd shortener-frontend && pnpm install && pnpm build:analyze
 
-# Clean build artifacts
+# 清理构建产物
+[group('构建')]
 clean: clean-backend clean-frontend
 
-# Clean backend artifacts
+# 清理后端构建产物
+[group('构建')]
 clean-backend:
     cargo clean
 
-# Clean frontend artifacts
+# 清理前端构建产物
+[group('构建')]
 clean-frontend:
     cd shortener-frontend && pnpm clean
 
 # ============================================================================
-# Run
+# 运行
 # ============================================================================
 
-# Run server
+# 运行后端服务
+[group('运行')]
 run:
     cargo run -p shortener-server
 
-# Run CLI
+# 运行 CLI
+[group('运行')]
 run-cli *ARGS:
     cargo run -p shortener-cli -- {{ARGS}}
 
-# Run frontend development server
+# 一键本地调试：后端 :8080 + 前端 Vite dev server :8000（/api 代理到 8080）
+# Ctrl-C 退出时由 trap 回收后端进程
+[doc('一键本地调试：后端 + 前端 Vite（/api 代理到后端）')]
+[group('运行')]
+dev:
+    #!/usr/bin/env bash
+    set -euo pipefail
+
+    # 后端必需密钥：未提供时使用开发默认值（对齐 acmecast 开发流程）
+    export JWT_SECRET="${JWT_SECRET:-dev-only-jwt-secret-change-me}"
+    if [ -z "${ADMIN__PASSWORD_HASH:-}" ]; then
+        export ADMIN__PASSWORD_HASH="$(cargo run -q -p shortener-server -- hash-password -p dev -c /dev/null | head -1)"
+        echo "==> 已生成开发用管理员哈希（用户 admin / 密码 dev）"
+    fi
+
+    # cargo 会再派生 shortener-server 子进程：直接 kill cargo 会把子进程变成
+    # 孤儿继续占住 8080。改为 setsid 独立进程组 + 组杀（负 PID）
+    setsid cargo run -p shortener-server &
+    SERVER_PID=$!
+    trap 'kill -- -"$SERVER_PID" 2>/dev/null || true' EXIT
+
+    # 等待后端探活通过再启动前端；后端退出则终止并输出日志
+    for _ in $(seq 1 30); do
+        if curl -fsS http://127.0.0.1:8080/api/ping >/dev/null 2>&1; then
+            break
+        fi
+        if ! kill -0 "$SERVER_PID" 2>/dev/null; then
+            echo "==> 后端启动失败" >&2
+            wait "$SERVER_PID" || true
+            exit 1
+        fi
+        sleep 0.5
+    done
+
+    echo "==> 后端就绪 http://127.0.0.1:8080"
+    echo "==> 启动前端 dev server（Ctrl-C 或另开终端执行 just dev-stop 停止）"
+    cd shortener-frontend && pnpm dev
+
+# 启动前端开发服务器
+[group('运行')]
 run-frontend:
     cd shortener-frontend && pnpm dev
 
-# Preview frontend production build
+# 停止本地调试环境（后端 :8080 + 前端 :8000）
+[group('运行')]
+dev-stop:
+    #!/usr/bin/env bash
+    set -uo pipefail
+    stopped=0
+
+    # 后端：shortener-server 及其 cargo 父进程（含 setsid 进程组）
+    if pkill -TERM -f 'shortener-server' 2>/dev/null; then
+        echo "==> 已停止后端 shortener-server"
+        stopped=1
+    fi
+    pkill -TERM -f 'cargo run -q -p shortener-server' 2>/dev/null || true
+    pkill -TERM -f 'cargo run -p shortener-server' 2>/dev/null || true
+
+    # 前端：Vite dev server（node 进程，监听 8000）
+    # 实际命令行为 node .../node_modules/.bin/../vite/bin/vite.js，
+    # 以 vite/bin/vite.js 精确匹配，避免误杀路径中恰好含 "vite" 的无关进程
+    if pkill -TERM -f 'vite/bin/vite\.js' 2>/dev/null; then
+        echo "==> 已停止前端 Vite dev server"
+        stopped=1
+    fi
+
+    if [ "$stopped" -eq 0 ]; then
+        echo "==> 未发现运行中的调试进程"
+    fi
+
+# 预览前端生产构建
+[group('运行')]
 preview-frontend:
     cd shortener-frontend && pnpm preview
 
 # ============================================================================
-# Test
+# 测试
 # ============================================================================
 
 alias t := test
 
-# Run all tests (backend + frontend)
+# 运行全部测试（后端 + 前端）
+[group('测试')]
 test: test-backend test-frontend
 
-# Run backend tests
+# 运行后端测试
+[group('测试')]
 test-backend:
     cargo test --all
 
-# Run backend tests with output
+# 运行后端测试（显示输出）
+[group('测试')]
 test-verbose:
     cargo test --all -- --nocapture
 
-# Run benchmarks
+# 运行基准测试
+[group('测试')]
 bench:
     cargo bench --all
 
-# Run frontend tests
+# 运行前端测试
+[group('测试')]
 test-frontend:
     cd shortener-frontend && pnpm test
 
-# Run frontend tests in watch mode
+# 前端测试（watch 模式）
+[group('测试')]
 test-frontend-watch:
     cd shortener-frontend && pnpm test:watch
 
-# Run frontend tests with coverage
+# 前端测试（覆盖率）
+[group('测试')]
 test-frontend-coverage:
     cd shortener-frontend && pnpm test:coverage
 
-# Run frontend tests with UI
+# 前端测试（UI 界面）
+[group('测试')]
 test-frontend-ui:
     cd shortener-frontend && pnpm test:ui
 
 # ============================================================================
-# Code Quality
+# 代码质量
 # ============================================================================
 
-# Format all code (backend + frontend)
+# 格式化全部代码（后端 + 前端）
+[group('代码质量')]
 fmt: fmt-backend fmt-frontend
 
-# Format backend code
+# 格式化后端代码
+[group('代码质量')]
 fmt-backend:
     cargo fmt --all
 
-# Format frontend code
+# 格式化前端代码
+[group('代码质量')]
 fmt-frontend:
     cd shortener-frontend && pnpm prettier
 
-# Check formatting for all code
+# 检查全部代码格式
+[group('代码质量')]
 fmt-check: fmt-check-backend fmt-check-frontend
 
-# Check backend formatting
+# 检查后端代码格式
+[group('代码质量')]
 fmt-check-backend:
     cargo fmt --all -- --check
 
-# Check frontend formatting
+# 检查前端代码格式
+[group('代码质量')]
 fmt-check-frontend:
     cd shortener-frontend && pnpm prettier:check
 
-# Run clippy
+# 运行 clippy 检查
+[group('代码质量')]
 clippy:
     cargo clippy --all-targets --all-features -- -D warnings
 
-# Lint all code (backend + frontend)
+# 全量 Lint（后端 + 前端）
+[group('代码质量')]
 lint: clippy lint-frontend
 
-# Lint frontend code
+# Lint 前端代码
+[group('代码质量')]
 lint-frontend:
     cd shortener-frontend && pnpm lint
 
-# Fix frontend linting issues
+# 自动修复前端 Lint 问题
+[group('代码质量')]
 lint-frontend-fix:
     cd shortener-frontend && pnpm lint:fix
 
-# Type check frontend
+# 前端类型检查
+[group('代码质量')]
 type-check-frontend:
     cd shortener-frontend && pnpm type-check
 
-# Run all checks (backend + frontend)
+# 全量检查（后端 + 前端）
+[group('代码质量')]
 check: fmt-check clippy test type-check-frontend lint-frontend
 
-# Run backend checks only
+# 仅检查后端
+[group('代码质量')]
 check-backend: fmt-check-backend clippy test-backend
 
-# Run frontend checks only
+# 仅检查前端
+[group('代码质量')]
 check-frontend: fmt-check-frontend lint-frontend type-check-frontend test-frontend
 
-# Run CI checks for frontend
+# 前端 CI 检查
+[group('代码质量')]
 ci-frontend:
     cd shortener-frontend && pnpm ci
 
@@ -167,145 +270,147 @@ ci-frontend:
 # Docker
 # ============================================================================
 
-# Build Docker image (Debian)
+# 构建 Docker 镜像（统一镜像：前端 + 后端）
+[group('Docker')]
 docker-build:
-    docker build -f docker/Dockerfile.backend -t shortener-server:latest .
-
-# Build frontend Docker image
-docker-build-frontend:
-    docker build -f docker/Dockerfile.frontend -t shortener-frontend:latest .
-
-# Build All-In-One Docker image (frontend + backend)
-docker-build-aio:
     docker build -f docker/Dockerfile -t shortener:latest .
 
-# Run with docker compose
+# docker compose 启动（统一镜像）
+[group('Docker')]
 docker-run:
     docker compose -f docker/docker-compose.yml up -d
 
-# Run development environment
-docker-run-dev:
-    docker compose -f docker/docker-compose.dev.yml up -d
-
-# Run frontend with docker compose
-docker-run-frontend:
-    docker compose -f docker/docker-compose.frontend.yml up -d
-
-# Run All-In-One with docker compose
-docker-run-aio:
-    docker compose -f docker/docker-compose.aio.yml up -d
-
-# Stop Docker containers
+# docker compose 停止全部容器
+[group('Docker')]
 docker-stop:
     docker compose -f docker/docker-compose.yml down
-    docker compose -f docker/docker-compose.dev.yml down
-    docker compose -f docker/docker-compose.frontend.yml down
-    docker compose -f docker/docker-compose.aio.yml down
 
-# View Docker logs
+# 查看 Docker 日志
+[group('Docker')]
 docker-logs:
     docker compose -f docker/docker-compose.yml logs -f
 
 # ============================================================================
-# Cross-compilation
+# 交叉编译
 # ============================================================================
 
-# Build for all targets
+# 交叉编译全部目标
+[group('交叉编译')]
 cross-all:
     ./scripts/build-cross.sh --all
 
-# Build server for all targets
+# 交叉编译 server 全部目标
+[group('交叉编译')]
 cross-server:
     ./scripts/build-cross.sh --server
 
-# Build CLI for all targets
+# 交叉编译 CLI 全部目标
+[group('交叉编译')]
 cross-cli:
     ./scripts/build-cross.sh --cli
 
-# Build for specific target
+# 交叉编译指定目标
+[group('交叉编译')]
 cross-target TARGET PACKAGE:
     ./scripts/build-cross.sh -t {{TARGET}} -p {{PACKAGE}}
 
-# List available cross-compilation targets
+# 列出可用交叉编译目标
+[group('交叉编译')]
 cross-list:
     ./scripts/build-cross.sh --list
 
 # ============================================================================
-# Release
+# 发布
 # ============================================================================
 
-# Show versions in Cargo.toml / openapi.yml / shortener-frontend/package.json
+# 查看 Cargo.toml / openapi.yml / shortener-frontend/package.json 中的版本号
+[group('发布')]
 version:
     ./scripts/bump-version.sh
 
-# Sync version across Cargo.toml / openapi.yml / shortener-frontend/package.json
+# 同步版本号到 Cargo.toml / openapi.yml / shortener-frontend/package.json
+[group('发布')]
 bump-version VERSION=current_version:
     ./scripts/bump-version.sh {{VERSION}}
 
-# Create a new release
+# 创建新版本发布（提交 + 打 tag）
+[group('发布')]
 release VERSION:
-    @echo "Creating release {{VERSION}}"
+    @echo "创建发布 {{VERSION}}"
     just bump-version {{VERSION}}
     git add Cargo.toml openapi.yml shortener-frontend/package.json
     git commit -m "Release {{VERSION}}"
     git tag -a "v{{VERSION}}" -m "Release {{VERSION}}"
-    @echo "Push with: git push origin main --tags"
+    @echo "请执行: git push origin main --tags"
 
-# Build release binaries
+# 构建发布二进制
+[group('发布')]
 release-build:
     just cross-all
 
 # ============================================================================
-# Deployment
+# 部署
 # ============================================================================
 
-# Install systemd service
+# 安装 systemd 服务
+[group('部署')]
 install-systemd:
     cd deploy/systemd && sudo ./install.sh
 
-# Uninstall systemd service
+# 卸载 systemd 服务
+[group('部署')]
 uninstall-systemd:
     cd deploy/systemd && sudo ./uninstall.sh
 
 # ============================================================================
-# Development
+# 开发
 # ============================================================================
 
-# Watch and rebuild on changes
+# 监视变更并重新构建
+[group('开发')]
 watch:
     cargo watch -x 'run -p shortener-server'
 
-# Watch and run tests
+# 监视变更并运行测试
+[group('开发')]
 watch-test:
     cargo watch -x test
 
-# Generate documentation
+# 生成 Rust 文档
+[group('开发')]
 doc:
     cargo doc --all --no-deps --open
 
-# Update dependencies
+# 更新全部依赖（后端 + 前端）
+[group('开发')]
 update: update-backend update-frontend
 
-# Update backend dependencies
+# 更新后端依赖
+[group('开发')]
 update-backend:
     cargo update
 
-# Update frontend dependencies
+# 更新前端依赖
+[group('开发')]
 update-frontend:
     cd shortener-frontend && pnpm update
 
-# Audit dependencies for security issues
+# 依赖安全审计（后端 + 前端）
+[group('开发')]
 audit: audit-backend
 
-# Audit backend dependencies
+# 后端依赖安全审计
+[group('开发')]
 audit-backend:
     cargo audit
 
-# Install frontend dependencies
+# 安装前端依赖
+[group('开发')]
 install-frontend:
     cd shortener-frontend && pnpm install
 
-# Install development tools
+# 安装开发工具链
+[group('开发')]
 install-tools:
     cargo install cargo-watch
     cargo install cargo-audit
@@ -313,68 +418,75 @@ install-tools:
     cargo install cargo-outdated
 
 # ============================================================================
-# Documentation
+# 文档
 # ============================================================================
 
-# Serve documentation locally
+# 本地启动文档服务
+[group('文档')]
 docs:
     # 优先 uv tool install，回退 pip
     @command -v zensical >/dev/null 2>&1 || { command -v uv >/dev/null 2>&1 && uv tool install -q zensical || pip install -q zensical; }
     @echo "Starting documentation server at http://127.0.0.1:8000"
     @zensical serve
 
-# Build documentation
+# 构建文档
+[group('文档')]
 docs-build:
     # 优先 uv tool install，回退 pip
     @command -v zensical >/dev/null 2>&1 || { command -v uv >/dev/null 2>&1 && uv tool install -q zensical || pip install -q zensical; }
-    @echo "Building documentation..."
+    @echo "正在构建文档..."
     @zensical build --clean
-    @echo "Documentation built to site/"
+    @echo "文档已构建到 site/"
 
-# Deploy documentation to GitHub Pages
+# 部署文档到 GitHub Pages
+[group('文档')]
 docs-deploy:
-    @echo "Deploying documentation to GitHub Pages..."
-    @echo "Documentation is deployed by .github/workflows/docs.yml on push to main"
+    @echo "文档由 .github/workflows/docs.yml 在 push 到 main 时自动部署"
 
 # ============================================================================
-# Utilities
+# 实用工具
 # ============================================================================
 
-# Show project statistics
+# 显示项目统计信息
+[group('实用工具')]
 stats:
-    @echo "=== Backend Statistics ==="
-    @echo "Lines of Rust code:"
+    @echo "=== 后端统计 ==="
+    @echo "Rust 代码行数:"
     @find . -name '*.rs' -not -path './target/*' | xargs wc -l | tail -1
     @echo ""
-    @echo "Number of Rust files:"
+    @echo "Rust 文件数:"
     @find . -name '*.rs' -not -path './target/*' | wc -l
     @echo ""
-    @echo "Backend dependencies:"
+    @echo "后端依赖:"
     @cargo tree --depth 1
     @echo ""
-    @echo "=== Frontend Statistics ==="
-    @echo "Lines of TypeScript/TSX code:"
+    @echo "=== 前端统计 ==="
+    @echo "TypeScript/TSX 代码行数:"
     @find shortener-frontend/src -name '*.ts' -o -name '*.tsx' | xargs wc -l | tail -1 || echo "N/A"
     @echo ""
-    @echo "Number of TypeScript/TSX files:"
+    @echo "TypeScript/TSX 文件数:"
     @find shortener-frontend/src -name '*.ts' -o -name '*.tsx' | wc -l || echo "N/A"
 
-# Check for outdated dependencies
+# 检查过期依赖（后端 + 前端）
+[group('实用工具')]
 outdated: outdated-backend outdated-frontend
 
-# Check for outdated backend dependencies
+# 检查过期后端依赖
+[group('实用工具')]
 outdated-backend:
     cargo outdated
 
-# Check for outdated frontend dependencies
+# 检查过期前端依赖
+[group('实用工具')]
 outdated-frontend:
     cd shortener-frontend && pnpm outdated
 
-# Show binary sizes
+# 显示产物体积
+[group('实用工具')]
 sizes:
-    @echo "=== Backend Binary Sizes ==="
-    @ls -lh target/release/shortener-server 2>/dev/null || echo "Server not built"
-    @ls -lh target/release/shortener-cli 2>/dev/null || echo "CLI not built"
+    @echo "=== 后端二进制体积 ==="
+    @ls -lh target/release/shortener-server 2>/dev/null || echo "server 未构建"
+    @ls -lh target/release/shortener-cli 2>/dev/null || echo "CLI 未构建"
     @echo ""
-    @echo "=== Frontend Build Size ==="
-    @du -sh shortener-frontend/dist 2>/dev/null || echo "Frontend not built"
+    @echo "=== 前端构建体积 ==="
+    @du -sh shortener-frontend/dist 2>/dev/null || echo "前端未构建"

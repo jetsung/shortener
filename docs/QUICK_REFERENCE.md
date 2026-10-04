@@ -25,6 +25,31 @@ cargo run -p shortener-server
 shortener-cli --help
 ```
 
+## 💻 本地调试（前后端一体）
+
+```bash
+# 一键启动：自动准备开发密钥 → 等待后端探活 → 启动前端 Vite dev server
+just dev
+
+# 行为说明（对齐 acmecast 开发流程）：
+#   - 未导出 JWT_SECRET / ADMIN__PASSWORD_HASH 时自动生成开发默认值
+#     （管理员 admin / 密码 dev；也可自行 export 覆盖）
+#   - 后端 :8080 探活通过后才启动 Vite；后端启动失败则终止并输出日志
+#   - Vite 端口取 VITE_DEV_PORT（缺省 8000），strictPort 开启：
+#     端口被占用时显式报错退出，不静默漂移
+#   - /api 代理到 http://127.0.0.1:8080（务必写 127.0.0.1 而非 localhost，
+#     避免 Node ≥17 将 localhost 解析为 IPv6 ::1 导致代理失败）
+
+# 访问
+#   页面（Vite 热更新）：http://localhost:8000/
+#   后端 API 直连：      http://localhost:8080/api/ping
+
+# 停止调试环境（二选一）：
+#   1. 运行 just dev 的终端按 Ctrl-C（trap 自动回收后端进程组）
+#   2. 另开终端执行（后端残留/终端被强杀时适用）：
+just dev-stop
+```
+
 ## 📚 文档
 
 ```bash
@@ -57,20 +82,17 @@ cargo watch -x 'run -p shortener-server'
 ## 🐳 Docker
 
 ```bash
-# 构建镜像
-make build             # 或 just docker-build
+# 构建统一镜像（前端 + 后端）
+just docker-build
 
-# 运行（生产）
-make run               # 或 just docker-run
-
-# 运行（开发）
-make run-dev           # 或 just docker-run-dev
+# 运行（SQLite + Redis，可选启用 postgres/mysql profile）
+just docker-run
 
 # 查看日志
-make logs              # 或 just docker-logs
+just docker-logs
 
 # 停止
-make stop              # 或 just docker-stop
+just docker-stop
 ```
 
 ## 🧪 测试

@@ -12,7 +12,8 @@ fn create_test_config() -> Config {
             address: ":8080".to_string(),
             trusted_platform: None,
             short_url: "http://localhost:8080".to_string(),
-            api_key: "test-key".to_string(),
+    static_dir: None,
+    api_key: "test-key".to_string(),
         },
         slug: shortener_server::config::SlugConfig {
             length: 6,

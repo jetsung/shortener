@@ -96,9 +96,9 @@ ENV SERVER__ADDRESS=127.0.0.1:8080
 # 暴露端口（nginx 对外端口）
 EXPOSE 80
 
-# 健康检查（探测 nginx 反代到后端的 /ping）
+# 健康检查（探测 nginx 反代到后端的 /api/ping）
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget -q -O /dev/null http://127.0.0.1/ping || exit 1
+  CMD wget -q -O /dev/null http://127.0.0.1/api/ping || exit 1
 
 # 启动入口
 ENTRYPOINT ["/usr/local/bin/entrypoint-aio.sh"]

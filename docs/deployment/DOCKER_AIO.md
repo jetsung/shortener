@@ -18,17 +18,17 @@
 ## 快速开始
 
 ```bash
-# 1. 构建镜像（也可用 make build-aio 或 just docker-build-aio）
+# 1. 构建镜像（也可用 just docker-build）
 docker build -f docker/Dockerfile -t shortener:latest .
 
 # 2. 使用 Docker Compose 一键启动（含 Redis）
-docker compose -f docker/docker-compose.aio.yml up -d
+docker compose -f docker/docker-compose.yml up -d
 
 # 3. 查看日志
-docker compose -f docker/docker-compose.aio.yml logs -f
+docker compose -f docker/docker-compose.yml logs -f
 
 # 4. 停止
-docker compose -f docker/docker-compose.aio.yml down
+docker compose -f docker/docker-compose.yml down
 ```
 
 启动后访问：**http://localhost:80**
@@ -38,18 +38,27 @@ docker compose -f docker/docker-compose.aio.yml down
 ```
 浏览器 ──→ :80 nginx（托管前端静态资源，前端为 hash 路由 /#/...）
               ├─ /api/* ───────────────→ 127.0.0.1:8080 shortener-server
-              ├─ /ping ────────────────→ 127.0.0.1:8080（健康检查）
+              ├─ /api/*（含 /api/ping）──→ 127.0.0.1:8080（API 与健康检查）
               ├─ /assets/*（^~ 前缀优先） → 本地静态文件（一年 immutable 缓存）
-              └─ /{short_code}（字母数字） → 127.0.0.1:8080（短码重定向）
+              └─ /go/{short_code} ──────→ 127.0.0.1:8080（短码重定向）
 ```
 
-- **nginx**（监听 80）：负责前端静态资源托管，并将 `/api/*`、`/ping` 与短码重定向反向代理到容器内后端
-- **shortener-server**（监听 `127.0.0.1:8080`）：Rust API 服务，仅容器内网可访问
+- **nginx**（监听 80）：负责前端静态资源托管，并将 `/api/*`（含 `/api/ping` 健康检查）与 `/go/` 短码重定向反向代理到容器内后端
+- **shortener-server**（监听 `127.0.0.1:8080`）：Rust API 服务，仅容器内网可访问；亦可通过 `SERVER__STATIC_DIR` 直托管前端静态资源（本 compose 已启用，nginx 故障时直连 8080 仍可访问页面）
 - **进程管理**：`docker/entrypoint-aio.sh` 以 `setsid` 在独立会话中启动后端（信号隔离），前台运行 nginx；监控子 shell 通过 `kill -0` 轮询后端存活，后端崩溃时终止 nginx 使容器整体退出，配合 Docker `restart` 策略实现自愈
 
 ### 前端路由说明
 
-前端采用 **hash 路由**（如 `/#/dashboard`、`/#/account/login`），`#` 及其后内容不会发送到服务端——服务端只需响应 `/`（返回 `index.html`），前端 SPA 路由不占用任何服务端路径。因此**短码路径 `/{short_code}` 与前端路由不存在冲突**，nginx 短码正则为 `^/[A-Za-z0-9]+$`（1 位及以上字母数字；实际有效短码长度由后端 `slug.length` 配置校验）。
+前端采用 **hash 路由**（如 `/#/dashboard`、`/#/account/login`），`#` 及其后内容不会发送到服务端——服务端只需响应 `/`（返回 `index.html`），前端 SPA 路由不占用任何服务端路径。因此**短码路径 `/go/{short_code}` 与前端路由不存在冲突**（短码统一走 `/go/` 前缀，避免与静态资源在根命名空间竞争；实际有效短码长度由后端 `slug.length` 配置校验）。
+
+### 旧短链兼容（可选）
+
+v0.2.1 之前短链形态为 `/{short_code}`，升级后需使用 `/go/{short_code}`。已对外分发的旧短链可在**外层** nginx（TLS 终结层）加一条 301 重定向过渡：
+
+```nginx
+# 放在外层 server 块中，置于其它 location 之前
+rewrite ^/([A-Za-z0-9]+)$ /go/$1 permanent;
+```
 
 ### Dockerfile 说明
 
@@ -65,7 +74,7 @@ AIO 镜像为三段式多阶段构建：
 
 ## Docker Compose 部署
 
-项目提供现成的编排文件：`docker/docker-compose.aio.yml`。
+项目提供现成的编排文件：`docker/docker-compose.yml`。
 
 ```yaml
 services:
@@ -91,7 +100,7 @@ services:
       redis:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/ping"]
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/api/ping"]
       interval: 30s
       timeout: 3s
       retries: 3
@@ -228,7 +237,7 @@ docker logs shortener
 docker logs -f shortener
 
 # 使用 Docker Compose
-docker compose -f docker/docker-compose.aio.yml logs -f
+docker compose -f docker/docker-compose.yml logs -f
 ```
 
 - **后端日志**：由 `RUST_LOG` 控制，输出到容器 stdout
@@ -250,7 +259,7 @@ docker exec shortener nginx -t
 
 ```bash
 # 检查 nginx 反代是否正常
-docker exec shortener wget -q -O- http://127.0.0.1/ping
+docker exec shortener wget -q -O- http://127.0.0.1/api/ping
 
 # 检查后端日志
 docker logs shortener 2>&1 | grep -i error
@@ -258,8 +267,8 @@ docker logs shortener 2>&1 | grep -i error
 
 ### 3. 短码无法访问
 
-- 确认短码为纯字母数字（nginx 短码正则为 `location ~ "^/[A-Za-z0-9]+$"`），长度在配置的 `slug.length` 生成规则内
-- 检查后端是否正常（`docker exec shortener wget -q -O- http://127.0.0.1/ping`）
+- 确认访问路径使用 `/go/` 前缀（如 `/go/abc123`），短码为纯字母数字且长度在配置的 `slug.length` 生成规则内；旧形态 `/{short_code}` 需外层 nginx 301 重定向（见「旧短链兼容」）
+- 检查后端是否正常（`docker exec shortener wget -q -O- http://127.0.0.1/api/ping`）
 
 ### 4. 数据目录权限
 
@@ -302,5 +311,4 @@ AIO 镜像通过 GitHub Actions 自动构建与发布，相关 workflow：
 ## 相关文档
 
 - [Docker 部署（后端）](DOCKER.md)
-- [前端 Docker 部署](DOCKER_FRONTEND.md)
 - [Docker 高级部署](DOCKER_ADVANCED.md)

@@ -48,19 +48,19 @@ jobs:
         with:
           images: ${{ env.package_name }}
           labels: |
-            org.opencontainers.image.title=Shortener All-In-One
-            org.opencontainers.image.description=All-in-one image with frontend and backend for URL shortener
+            org.opencontainers.image.title=Shortener
+            org.opencontainers.image.description=Unified URL shortener image with frontend (nginx) and backend (shortener-server)
             org.opencontainers.image.vendor=Jetsung Chan
           tags:
             latest
 
-      - name: Build AIO with Bake
+      - name: Build image with Bake
         uses: docker/bake-action@v7
         with:
           files: |
             ./docker/docker-bake.hcl
             cwd://${{ steps.meta.outputs.bake-file }}
-          targets: aio-release
+          targets: release
           push: false
           provenance: false
           set: |

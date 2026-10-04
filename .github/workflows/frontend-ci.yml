@@ -83,10 +83,5 @@ jobs:
 
       - name: Build
         run: pnpm build
-
-      - name: Upload Build Artifacts
-        uses: actions/upload-artifact@v7
-        with:
-          name: frontend-dist
-          path: shortener-frontend/dist
-          retention-days: 7
+# 说明：前端产物不再单独上传/发布——统一由 Docker 镜像（docker/Dockerfile）
+# 的前端构建阶段内嵌交付，本 workflow 仅保留质量检查与构建校验。

@@ -105,9 +105,16 @@ pub struct ServerConfig {
     pub address: String,
     #[serde(default, rename = "trusted-platform")]
     pub trusted_platform: Option<String>,
-    /// 短址专用域名（可选）：未设置时从监听地址 `address` 推断（通配地址回退 localhost）
+    /// 短址专用域名（可选）：
+    /// - 未设置：由监听地址推断并追加 `/go` 前缀（短址链接形如 `http://host:port/go/<code>`）
+    /// - 显式设置：短址链接直接为 `<short_url>/<code>`（专用短域名无需前缀）
     #[serde(default)]
     pub short_url: String,
+    /// 前端静态资源目录（可选）：配置后由后端托管该目录下的静态文件，
+    /// 未命中文件时回退返回目录内 `index.html`（SPA 回退）。
+    /// alias 兼容 TOML 的 `static-dir` 写法；环境变量为 `SERVER__STATIC_DIR`
+    #[serde(default, alias = "static-dir")]
+    pub static_dir: Option<String>,
     /// API key（必填，敏感）；缺省空值由 validate 拦截
     #[serde(default)]
     pub api_key: String,
@@ -372,9 +379,11 @@ impl Config {
         if self.server.address.is_empty() {
             self.server.address = ":8080".to_string();
         }
-        // 短址专用域名未单独配置时，从监听地址推断（host 为空或通配地址时回退 localhost）
+        // 短址专用域名未单独配置时，从监听地址推断并追加 /go 前缀
+        // （跳转路由为 /go/{short_code}，短址链接形如 http://host:port/go/<code>）；
+        // 显式配置专用短域名时直接使用，不做前缀追加（链接形如 https://s.example.com/<code>）
         if self.server.short_url.is_empty() {
-            self.server.short_url = infer_short_url(&self.server.address);
+            self.server.short_url = format!("{}/go", infer_short_url(&self.server.address));
         }
 
         // Shortener defaults
@@ -635,7 +644,8 @@ allow_subjects = []
 
         // Check defaults are applied
         assert_eq!(config.server.address, ":8080");
-        assert_eq!(config.server.short_url, "http://localhost:8080");
+        // short_url 未设置时：从监听地址推断并追加 /go 前缀
+        assert_eq!(config.server.short_url, "http://localhost:8080/go");
         assert_eq!(config.slug.length, 6);
         assert_eq!(
             config.slug.alphabet,

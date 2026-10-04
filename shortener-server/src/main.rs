@@ -160,6 +160,13 @@ async fn main() {
     // 创建路由
     let app = create_router(state);
 
+    // 后端托管静态资源时，目录不存在仅告警不阻断启动（ServeDir 会对请求返回 404）
+    if let Some(dir) = config.server.static_dir.as_deref().map(str::trim).filter(|s| !s.is_empty())
+        && !std::path::Path::new(dir).is_dir()
+    {
+        tracing::warn!("static-dir 目录不存在: {dir}，静态资源请求将返回 404");
+    }
+
     // 解析监听地址
     let addr = config
         .server

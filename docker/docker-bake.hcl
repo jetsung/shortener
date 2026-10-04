@@ -1,6 +1,8 @@
 ## Docker Bake Configuration for Shortener
 ## https://docs.docker.com/build/bake/
 ## https://docs.docker.com/reference/cli/docker/buildx/bake/
+##
+## 唯一交付镜像：docker/Dockerfile（nginx + shortener-server 统一镜像）。
 
 ## Special target: https://github.com/docker/metadata-action#bake-definition
 target "docker-metadata-action" {}
@@ -14,12 +16,12 @@ variable "VERSION" {
     default = "latest"
 }
 
-## Rust toolchain for all backend builder stages (rust:${RUST_VERSION}-alpine)
+## Rust toolchain for the backend builder stage (rust:${RUST_VERSION}-alpine)
 variable "RUST_VERSION" {
     default = "1.98"
 }
 
-## Shared OCI labels; only title/description differ per image
+## Shared OCI labels
 function "oci_labels" {
     params = [title, description]
     result = {
@@ -57,19 +59,21 @@ function "dev_arch_tags" {
 }
 
 ## ============================================================================
-## Backend (distroless: built on rust:alpine, runtime is scratch)
+## Shortener unified image (nginx:alpine runtime; nginx serves the frontend
+## and proxies /api/* + short codes to the in-container backend at
+## 127.0.0.1:8080 — see docker/nginx-aio.conf)
 ## ============================================================================
 
 variable "IMAGE_NAME" {
-    default = "shortener-server"
+    default = "shortener"
 }
 
-## Common configuration for all backend targets
+## Common configuration for all targets
 target "_common" {
     inherits = ["docker-metadata-action"]
-    labels = oci_labels("Shortener Server", "High-performance URL shortener service written in Rust")
+    labels = oci_labels("Shortener", "Unified URL shortener image with frontend (nginx) and backend (shortener-server) written in Rust")
     context = "."
-    dockerfile = "./docker/Dockerfile.backend"
+    dockerfile = "./docker/Dockerfile"
     platforms = ["linux/amd64"]
     args = {
         RUST_VERSION = "${RUST_VERSION}"
@@ -136,162 +140,4 @@ target "release-arm64" {
     inherits = ["_common"]
     platforms = ["linux/arm64"]
     tags = arch_tags(IMAGE_NAME, "arm64")
-}
-
-## ============================================================================
-## Frontend (built on node:alpine, runtime is nginx:alpine)
-## ============================================================================
-
-variable "FRONTEND_IMAGE_NAME" {
-    default = "shortener-frontend"
-}
-
-## Common configuration for frontend targets
-target "_frontend_common" {
-    inherits = ["docker-metadata-action"]
-    labels = oci_labels("Shortener Frontend", "Modern URL shortener service frontend")
-    context = "."
-    dockerfile = "./docker/Dockerfile.frontend"
-    platforms = ["linux/amd64"]
-}
-
-## Default target for local development
-target "frontend-default" {
-    inherits = ["_frontend_common"]
-    tags = [
-        "${FRONTEND_IMAGE_NAME}:local",
-        "${FRONTEND_IMAGE_NAME}:dev"
-    ]
-    output = ["type=docker"]
-}
-
-## Development builds group
-group "frontend-dev" {
-    targets = ["frontend-dev-amd64", "frontend-dev-arm64"]
-}
-
-## Development build (all platforms)
-target "frontend-dev" {
-    inherits = ["_frontend_common"]
-    platforms = ["linux/amd64", "linux/arm64"]
-    tags = dev_tags(FRONTEND_IMAGE_NAME)
-}
-
-## Development build (amd64)
-target "frontend-dev-amd64" {
-    inherits = ["_frontend_common"]
-    platforms = ["linux/amd64"]
-    tags = dev_arch_tags(FRONTEND_IMAGE_NAME, "amd64")
-}
-
-## Development build (arm64)
-target "frontend-dev-arm64" {
-    inherits = ["_frontend_common"]
-    platforms = ["linux/arm64"]
-    tags = dev_arch_tags(FRONTEND_IMAGE_NAME, "arm64")
-}
-
-## Release build (multi-platform)
-target "frontend-release" {
-    inherits = ["_frontend_common"]
-    platforms = ["linux/amd64", "linux/arm64"]
-    tags = release_tags(FRONTEND_IMAGE_NAME)
-}
-
-## Release build (amd64 only)
-target "frontend-release-amd64" {
-    inherits = ["_frontend_common"]
-    platforms = ["linux/amd64"]
-    tags = arch_tags(FRONTEND_IMAGE_NAME, "amd64")
-}
-
-## Release build (arm64 only)
-target "frontend-release-arm64" {
-    inherits = ["_frontend_common"]
-    platforms = ["linux/arm64"]
-    tags = arch_tags(FRONTEND_IMAGE_NAME, "arm64")
-}
-
-## ============================================================================
-## All-In-One (frontend + backend in a single image)
-## nginx (port 80) serves the frontend and proxies /api/* + short codes to
-## the in-container backend at 127.0.0.1:8080 (see docker/nginx-aio.conf)
-## ============================================================================
-
-variable "AIO_IMAGE_NAME" {
-    default = "shortener"
-}
-
-## Common configuration for AIO targets
-target "_aio_common" {
-    inherits = ["docker-metadata-action"]
-    labels = oci_labels("Shortener All-In-One", "All-in-one image with frontend and backend for URL shortener")
-    context = "."
-    dockerfile = "./docker/Dockerfile"
-    platforms = ["linux/amd64"]
-    args = {
-        RUST_VERSION = "${RUST_VERSION}"
-    }
-}
-
-## Default target for local development
-target "aio-default" {
-    inherits = ["_aio_common"]
-    tags = [
-        "${AIO_IMAGE_NAME}:local",
-        "${AIO_IMAGE_NAME}:dev"
-    ]
-    output = ["type=docker"]
-}
-
-## Development builds group
-group "aio-dev" {
-    targets = ["aio-dev-amd64", "aio-dev-arm64"]
-}
-
-## Development build (all platforms)
-target "aio-dev" {
-    inherits = ["_aio_common"]
-    platforms = ["linux/amd64", "linux/arm64"]
-    tags = dev_tags(AIO_IMAGE_NAME)
-}
-
-## Development build (amd64)
-target "aio-dev-amd64" {
-    inherits = ["_aio_common"]
-    platforms = ["linux/amd64"]
-    tags = dev_arch_tags(AIO_IMAGE_NAME, "amd64")
-}
-
-## Development build (arm64)
-target "aio-dev-arm64" {
-    inherits = ["_aio_common"]
-    platforms = ["linux/arm64"]
-    tags = dev_arch_tags(AIO_IMAGE_NAME, "arm64")
-}
-
-## Release builds group (for CI/CD)
-group "aio-release-all" {
-    targets = ["aio-release"]
-}
-
-## Release build (multi-platform)
-target "aio-release" {
-    inherits = ["_aio_common"]
-    platforms = ["linux/amd64", "linux/arm64"]
-    tags = release_tags(AIO_IMAGE_NAME)
-}
-
-## Release build (amd64 only)
-target "aio-release-amd64" {
-    inherits = ["_aio_common"]
-    platforms = ["linux/amd64"]
-    tags = arch_tags(AIO_IMAGE_NAME, "amd64")
-}
-
-## Release build (arm64 only)
-target "aio-release-arm64" {
-    inherits = ["_aio_common"]
-    platforms = ["linux/arm64"]
-    tags = arch_tags(AIO_IMAGE_NAME, "arm64")
 }

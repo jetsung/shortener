@@ -112,7 +112,7 @@ docker compose ps
 docker compose logs -f shortener-server
 
 # 测试 API
-curl http://localhost:8080/ping
+curl http://localhost:8080/api/ping
 ```
 
 详细说明请参阅 [Docker 部署指南](DOCKER.md)。
@@ -370,7 +370,7 @@ sudo certbot renew --dry-run
 
 ```bash
 # 检查服务器是否运行
-curl http://localhost:8080/ping
+curl http://localhost:8080/api/ping
 ```
 
 ### 日志

@@ -64,9 +64,7 @@ cargo build --release -p shortener-server
 
 - [部署概述](deployment/README.md) - 部署方式总览
 - [Docker 后端部署](deployment/DOCKER.md) - 使用 Docker 部署后端服务
-- [Docker 前端部署](deployment/DOCKER_FRONTEND.md) - 使用 Docker 部署前端应用
-- [Docker 完整指南](deployment/DOCKER_FULL.md) - Docker 部署完整流程
-- [Docker All-In-One](deployment/DOCKER_AIO.md) - 前端 + 后端单镜像部署
+- [Docker All-In-One](deployment/DOCKER_AIO.md) - 前端 + 后端统一镜像部署（推荐）
 - [Docker 高级配置](deployment/DOCKER_ADVANCED.md) - Docker 高级配置和优化
 - [前端部署指南](frontend/DEPLOYMENT.md) - 前端部署详细说明
 - [生产部署](deployment/DEPLOYMENT.md) - 生产环境部署

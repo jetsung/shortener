@@ -1,37 +1,64 @@
+# Shortener 统一部署编排：单一镜像（docker/Dockerfile，nginx + shortener-server）
+# 对外仅暴露 80 端口（nginx），/api/* 与 /to/ 短码重定向由 nginx 反代到容器内后端 127.0.0.1:8080
+#
+# 数据库默认使用 SQLite（./data 目录），可选启用 PostgreSQL / MySQL（profiles）。
 services:
-  # Shortener Server
-  shortener-server:
+  # Shortener（统一镜像：nginx 托管前端 + 反代后端）
+  shortener:
     build:
       context: ..
-      dockerfile: docker/Dockerfile.backend
-    container_name: shortener-server
+      dockerfile: docker/Dockerfile
+    container_name: shortener
     restart: unless-stopped
     ports:
-      - "8080:8080"
+      - "80:80"
     environment:
       - RUST_LOG=shortener_server=info,sqlx=off
-      - DATABASE__URL=postgres://shortener:shortener_password@postgres:5432/shortener
+      - DATABASE__URL=sqlite:///app/data/shortener.db?mode=rwc
       - CACHE__ENABLED=true
-      - CACHE__URL=redis://:redis_password@redis:6379/0
+      - CACHE__URL=redis://redis:6379/0
       - GEOIP__ENABLED=true
       - GEOIP__IP2REGION__PATH=/app/data/ip2region.xdb
+      # PostgreSQL（启用 postgres profile 时改用，替换上面的 DATABASE__URL）：
+      # - DATABASE__URL=postgres://shortener:shortener_password@postgres:5432/shortener
     volumes:
       - ../config.toml:/app/config.toml:ro
       - ../data:/app/data
-      - app-logs:/app/logs
     depends_on:
-      postgres:
-        condition: service_healthy
       redis:
         condition: service_healthy
     networks:
       - shortener-network
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/api/ping"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
 
-  # PostgreSQL Database
+  # Redis 缓存
+  redis:
+    image: redis:7-alpine
+    container_name: shortener-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+    networks:
+      - shortener-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # PostgreSQL 数据库（可选：docker compose --profile postgres up）
   postgres:
     image: postgres:16-alpine
     container_name: shortener-postgres
     restart: unless-stopped
+    profiles:
+      - postgres
     environment:
       - POSTGRES_DB=shortener
       - POSTGRES_USER=shortener
@@ -46,32 +73,14 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-    ports:
-      - "5432:5432"
 
-  # Redis Cache
-  redis:
-    image: redis:7-alpine
-    container_name: shortener-redis
-    restart: unless-stopped
-    command: redis-server --appendonly yes --requirepass redis_password
-    volumes:
-      - redis-data:/data
-    networks:
-      - shortener-network
-    healthcheck:
-      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
-      interval: 10s
-      timeout: 3s
-      retries: 5
-    ports:
-      - "6379:6379"
-
-  # MySQL Database (alternative to PostgreSQL)
+  # MySQL 数据库（可选：docker compose --profile mysql up）
   mysql:
     image: mysql:8.0
     container_name: shortener-mysql
     restart: unless-stopped
+    profiles:
+      - mysql
     environment:
       - MYSQL_ROOT_PASSWORD=root_password
       - MYSQL_DATABASE=shortener
@@ -86,10 +95,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-    ports:
-      - "3306:3306"
-    profiles:
-      - mysql
 
 volumes:
   postgres-data:
@@ -98,9 +103,8 @@ volumes:
     driver: local
   redis-data:
     driver: local
-  app-logs:
-    driver: local
 
 networks:
   shortener-network:
     driver: bridge
+    name: shortener-network

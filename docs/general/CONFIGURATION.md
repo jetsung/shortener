@@ -87,14 +87,18 @@ export SERVER__API_KEY="your-secret-key"
 ```toml
 [server]
 address = ":8080"                          # 监听地址
-short_url = "https://s.example.com"      # 短址专用域名（可选，未设置时从监听地址推断，通配地址回退 localhost）
+short_url = "https://s.example.com"      # 短址专用域名（可选，未设置时从监听地址推断并追加 /go 前缀）
+static-dir = ""                            # 前端静态资源目录（可选，留空表示不托管）
 api_key = "your-secret-api-key"           # API 密钥（必需）
 ```
 
 ### 详细说明
 
 - `address`：服务器监听地址，默认 `:8080`
-- `short_url`：短址专用域名，用于生成短链接；未设置时从监听地址推断，通配地址回退 localhost
+- `short_url`：短址专用域名，用于生成短链接。
+  - **未设置**：从监听地址推断并追加 `/go` 前缀，短址链接形如 `http://localhost:8080/go/<code>`
+  - **显式设置**：链接直接为 `<short_url>/<code>`（专用短域名无需前缀），形如 `https://s.example.com/<code>`
+- `static-dir`：前端静态资源目录（可选）。配置后由后端直接托管该目录下的静态文件，未命中文件时回退返回目录内 `index.html`（SPA 回退），支持单二进制部署形态；留空时静态资源由 nginx 等外部服务承担。也可通过环境变量 `SERVER__STATIC_DIR` 设置
 - `api_key`：用于认证的 API 密钥，使用 `openssl rand -base64 32` 生成
 
 ## 短链接配置
@@ -283,7 +287,8 @@ version = "4"
 ```toml
 [server]
 address = ":8080"
-short_url = "http://localhost:8080"
+# 未设置 short_url：从监听地址推断并追加 /go 前缀，
+# 短址链接形如 http://localhost:8080/go/<code>
 api_key = "dev-api-key"
 
 [admin]
@@ -306,6 +311,9 @@ enabled = false
 ```toml
 [server]
 address = ":8080"
+# 显式设置专用短域名：短址链接直接为 https://short.example.com/<code>。
+# 注意：后端跳转路由为 /go/{short_code}，专用短域名需在其 nginx 中把
+# 根路径短码转发到后端 /go/（如 rewrite ^/([A-Za-z0-9]+)$ /go/$1 last;）
 short_url = "https://short.example.com"
 api_key = "${SHORTENER_API_KEY}"
 

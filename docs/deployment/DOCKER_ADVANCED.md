@@ -3,7 +3,7 @@
 本文档介绍 Shortener 服务的 Docker 高级部署主题，包括多平台镜像构建、性能调优、安全加固与高级排障。
 
 > 基础 Docker 部署（快速开始、Compose 编排、环境变量）请参阅 [Docker 部署指南](DOCKER.md)；
-> 端到端完整部署（后端 + 前端 + 数据库 + 反向代理）请参阅 [Docker 完整指南](DOCKER_FULL.md)。
+> 端到端完整部署（统一镜像 + 数据库 + 反向代理）请参阅 [All-In-One Docker 部署](DOCKER_AIO.md)。
 
 ## 目录
 
@@ -48,9 +48,9 @@ docker buildx create --use
 # 构建并推送多平台镜像
 docker buildx build \
   --platform linux/amd64,linux/arm64 \
-  -t jetsung/shortener-server:latest \
+  -t jetsung/shortener:latest \
   --push \
-  -f docker/Dockerfile.backend .
+  -f docker/Dockerfile .
 ```
 
 ## Docker Bake 高级用法
@@ -87,17 +87,14 @@ docker buildx bake -f docker/docker-bake.hcl --set "*.platform=linux/amd64,linux
 
 ## 镜像体积优化
 
-项目提供基于 Debian 的标准镜像。
-
-### 标准镜像
+项目仅提供统一镜像（`docker/Dockerfile`）。
 
 ```bash
-docker build -f docker/Dockerfile.backend -t shortener-server:latest .
+docker build -f docker/Dockerfile -t shortener:latest .
 ```
 
-- 基础镜像：`debian:trixie-slim`
-- 大小：约 150MB
-- 适用于：通用场景，兼容性好
+- 运行时基础镜像：`nginx:alpine`（含 nginx + shortener-server）
+- 后端为 musl 静态链接二进制，无语言运行时依赖
 
 ## 性能优化
 
@@ -121,13 +118,13 @@ services:
 ### 缓存与压缩
 
 - 后端启用 Redis/Valkey 缓存（`CACHE__ENABLED=true`、`CACHE__URL`）
-- 前端启用 Gzip 压缩与静态资源缓存（见 `docker/nginx-frontend.conf`）
+- 前端启用 Gzip 压缩与静态资源缓存（见 `docker/nginx-aio.conf`）
 
 ### 健康检查
 
-后端服务提供健康检查端点 `/ping`（返回 `{"message":"pong"}`），而非 `/health`。
+后端服务提供健康检查端点 `/api/ping`（返回 `{"message":"pong"}`），而非 `/health`。
 
-> 注意：`Dockerfile.backend` 基于 `scratch` 空镜像，不含 curl/wget 等探针工具，因此镜像内未配置 `HEALTHCHECK`。如需容器级健康检查，需自行提供探针（如静态编译的 curl）或在编排层挂载；也可直接使用外部监控探测 `/ping`。
+> 注意：镜像内置 `HEALTHCHECK`（nginx 探测后端 `/api/ping`）。如需更细粒度的容器级探针，可在编排层自行挂载（如静态编译的 curl）或使用外部监控探测 `/api/ping`。
 
 ## 安全加固
 
@@ -172,7 +169,7 @@ ports:
 
 ## 多服务编排
 
-结合后端、前端与反向代理的完整编排（如 Caddy / Traefik），详见 [Docker 完整指南](DOCKER_FULL.md) 与 [前端 Docker 部署指南](DOCKER_FRONTEND.md)。
+结合数据库与反向代理的完整编排（如 Caddy / Traefik），详见 [All-In-One Docker 部署指南](DOCKER_AIO.md)。
 
 反向代理需正确转发 OIDC 回调路径：
 

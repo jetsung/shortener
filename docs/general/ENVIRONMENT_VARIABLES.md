@@ -71,7 +71,8 @@ Shortener 服务器的所有配置都可以通过环境变量覆盖。本文档�
 | --- | --- | --- | --- |
 | `SERVER__ADDRESS` | `[server] address` | 否 | `:8080` |
 | `SERVER__TRUSTED_PLATFORM` | `[server] trusted-platform` | 否 | 空 |
-| `SERVER__SHORT_URL` | `[server] short_url` | 否 | 空（从监听地址推断） |
+| `SERVER__SHORT_URL` | `[server] short_url` | 否 | 空（从监听地址推断并追加 `/go` 前缀） |
+| `SERVER__STATIC_DIR` | `[server] static-dir` | 否 | 空（不托管静态资源） |
 | `SERVER__API_KEY` | `[server] api_key` | **是** | - |
 | `SLUG__LENGTH` | `[slug] length` | 否 | `6` |
 | `SLUG__ALPHABET` | `[slug] alphabet` | 否 | 大小写字母+数字 |
@@ -114,13 +115,15 @@ Shortener 服务器的所有配置都可以通过环境变量覆盖。本文档�
 | --- | --- | --- | --- | --- |
 | `SERVER__ADDRESS` | `address` | 字符串 | `:8080` | 监听地址。Docker/生产环境使用 `0.0.0.0:8080` 接受外部连接 |
 | `SERVER__TRUSTED_PLATFORM` | `trusted-platform` | 字符串 | 空 | 可信平台头（用于获取真实客户端 IP），可选 |
-| `SERVER__SHORT_URL` | `short_url` | 字符串 | 空（从监听地址推断） | 短址专用域名，用于生成短链接 |
+| `SERVER__SHORT_URL` | `short_url` | 字符串 | 空（从监听地址推断并追加 `/go` 前缀） | 短址专用域名。未设置：链接为 `{推断地址}/go/{code}`；显式设置：链接直接为 `{short_url}/{code}` |
+| `SERVER__STATIC_DIR` | `static-dir` | 字符串 | 空（不托管静态资源） | 前端静态资源目录；配置后由后端托管该目录并回退 SPA `index.html` |
 | `SERVER__API_KEY` | `api_key` | 字符串 | - | API 认证密钥，**必需**。生成：`openssl rand -base64 32` |
 
 ```bash
 export SERVER__ADDRESS="0.0.0.0:8080"
 export SERVER__TRUSTED_PLATFORM=""                    # 例如 "X-Real-IP"
 export SERVER__SHORT_URL="https://s.example.com"  # 短址专用域名（可选，未设置时从监听地址推断，通配地址回退 localhost）
+export SERVER__STATIC_DIR="/usr/share/nginx/html"     # 后端直托管前端静态资源（可选）
 export SERVER__API_KEY="$(openssl rand -base64 32)"
 ```
 

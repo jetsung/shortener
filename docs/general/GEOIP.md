@@ -164,10 +164,10 @@ path = "/var/lib/shortener/ip2region.xdb"
 ```yaml
 # docker-compose.yml
 services:
-  shortener-server:
+  shortener:
     build:
       context: ..
-      dockerfile: docker/Dockerfile.backend
+      dockerfile: docker/Dockerfile
     volumes:
       - ./data:/app/data
     environment:

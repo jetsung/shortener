@@ -37,7 +37,7 @@ Authorization: Bearer <your-jwt-token>
 {
   "id": 1,
   "short_code": "abc123",
-  "short_url": "http://localhost:8080/abc123",
+  "short_url": "http://localhost:8080/go/abc123",
   "original_url": "https://example.com",
   "description": "示例网站",
   "status": 1,
@@ -91,7 +91,7 @@ Authorization: Bearer <your-jwt-token>
 无需认证。
 
 ```http
-GET /ping
+GET /api/ping
 ```
 
 响应：
@@ -103,7 +103,7 @@ GET /ping
 ```
 
 ```http
-GET /
+GET /api
 ```
 
 返回服务信息（名称、版本、状态）：
@@ -119,7 +119,7 @@ GET /
 示例：
 
 ```bash
-curl http://localhost:8080/ping
+curl http://localhost:8080/api/ping
 ```
 
 ### 账户管理
@@ -174,6 +174,31 @@ Authorization: Bearer <token>
 ```
 
 ### 短链接管理
+
+#### 短码跳转
+
+根据短码重定向到原始 URL（无需认证，公开访问）。
+
+```http
+GET /go/{short_code}
+```
+
+路径参数：
+
+- `short_code`（必需）：短码
+
+响应：
+
+- `308`：永久重定向，`Location` 头为原始 URL
+- `404`：短码不存在
+
+说明：短码统一走 `/go/` 前缀；API 返回的 `short_url` 在未设置专用短域名时形如 `http://host:port/go/<code>`，显式配置专用短域名时形如 `https://s.example.com/<code>`（该域名需将根路径短码转发到后端 `/go/`）。
+
+示例：
+
+```bash
+curl -i http://localhost:8080/go/abc123
+```
 
 #### 创建短链接
 

@@ -31,7 +31,7 @@ sudo nano /opt/shortener/config/config.toml
 ```toml
 [server]
 address = ":8080"
-short_url = "http://s.your-domain.com"   # 短址专用域名（可选，未设置时从监听地址推断，通配地址回退 localhost）
+short_url = "http://s.your-domain.com"   # 短址专用域名（可选，未设置时从监听地址推断并追加 /go 前缀）
 api_key = "your-secret-key"
 
 [database]
