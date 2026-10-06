@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="zensical-0.0.67">
+      <meta name="generator" content="zensical-0.0.68">
     
     
       
@@ -36,12 +36,12 @@
       
         
       
-      <link rel="stylesheet" href="../../assets/stylesheets/modern/main.4ae390e2.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/modern/main.595f2bf5.min.css">
       
         
           
         
-        <link rel="stylesheet" href="../../assets/stylesheets/modern/palette.96d1a7e4.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/modern/palette.b27955a4.min.css">
       
       
 
@@ -83,14 +83,11 @@
     
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
-    <label class="md-overlay" for="__drawer" aria-label="导航栏"></label>
+    <label class="md-overlay" for="__drawer" aria-hidden="true"></label>
     <div data-md-component="skip">
-      
-        
-        <a href="#all-in-one-docker-部署指南" class="md-skip">
-          跳转至
-        </a>
-      
+      <a href="#__skip" class="md-skip">
+        跳转至
+      </a>
     </div>
     <div data-md-component="announce">
       
@@ -1399,17 +1396,6 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#目录" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        目录
-      </span>
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#快速开始" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -1454,27 +1440,16 @@
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#dockerfile-说明" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        Dockerfile 说明
-      </span>
-    </span>
-  </a>
-  
-</li>
-        
       </ul>
     </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#docker-compose-部署" class="md-nav__link">
+  <a href="#dockerfile-说明" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Docker Compose 部署
+        Dockerfile 说明
       </span>
     </span>
   </a>
@@ -1490,14 +1465,69 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="环境变量配置">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#docker-compose-部署" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Docker Compose 部署
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#外部-nginx-反向代理" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        外部 Nginx 反向代理
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="外部 Nginx 反向代理">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#纯环境变量部署不挂载-configtoml" class="md-nav__link">
+  <a href="#推荐完整配置" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        纯环境变量部署（不挂载 config.toml）
+        推荐完整配置
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#透传头说明必设" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        透传头说明（必设）
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#可选外层缓存与压缩" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        可选：外层缓存与压缩
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#其他网关" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        其他网关
       </span>
     </span>
   </a>
@@ -1510,88 +1540,21 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#反向代理配置" class="md-nav__link">
+  <a href="#性能说明" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        反向代理配置
+        性能说明
       </span>
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="反向代理配置">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#使用-caddy" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        使用 Caddy
-      </span>
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#使用-traefik" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        使用 Traefik
-      </span>
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#性能优化" class="md-nav__link">
+  <a href="#日志" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        性能优化
-      </span>
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="性能优化">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#1-压缩与缓存" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        1. 压缩与缓存
-      </span>
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#2-资源限制" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        2. 资源限制
-      </span>
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#日志管理" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        日志管理
+        日志
       </span>
     </span>
   </a>
@@ -1611,10 +1574,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#1-容器无法启动" class="md-nav__link">
+  <a href="#页面无法访问" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        1. 容器无法启动
+        页面无法访问
       </span>
     </span>
   </a>
@@ -1622,10 +1585,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#2-前端白屏--api-请求失败" class="md-nav__link">
+  <a href="#健康检查" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        2. 前端白屏 / API 请求失败
+        健康检查
       </span>
     </span>
   </a>
@@ -1633,10 +1596,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#3-短码无法访问" class="md-nav__link">
+  <a href="#短码无法访问" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        3. 短码无法访问
+        短码无法访问
       </span>
     </span>
   </a>
@@ -1644,10 +1607,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#4-数据目录权限" class="md-nav__link">
+  <a href="#数据目录权限" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        4. 数据目录权限
+        数据目录权限
       </span>
     </span>
   </a>
@@ -1660,41 +1623,13 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#cicd-发布" class="md-nav__link">
+  <a href="#cicd" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        CI/CD 发布
+        CI/CD
       </span>
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="CI&#x2f;CD 发布">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#发布镜像docker-release-aioyml" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        发布镜像（<code>docker-release-aio.yml</code>）
-      </span>
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#开发镜像docker-dev-aioyml" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        开发镜像（<code>docker-dev-aio.yml</code>）
-      </span>
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -2131,6 +2066,7 @@
 
               
               <article class="md-content__inner md-typeset">
+                <a id="__skip" tabindex="-1"></a>
                 
                   
 
@@ -2138,21 +2074,10 @@
   
 
 
-<h1 id="all-in-one-docker-部署指南">All-In-One Docker 部署指南<a class="headerlink" href="#all-in-one-docker-部署指南" title="Permanent link">&para;</a></h1>
-<p>本文档介绍使用 <strong>All-In-One（AIO）镜像</strong> 部署 shortener 服务。AIO 镜像同时包含<strong>前端（React + nginx）<strong>与</strong>后端（Rust API）</strong>，对外仅暴露一个端口，适合单机/小型部署，无需分别管理前后端两个容器。</p>
-<h2 id="目录">目录<a class="headerlink" href="#目录" title="Permanent link">&para;</a></h2>
-<ul>
-<li><a href="#快速开始">快速开始</a></li>
-<li><a href="#镜像架构">镜像架构</a></li>
-<li><a href="#docker-compose-部署">Docker Compose 部署</a></li>
-<li><a href="#环境变量配置">环境变量配置</a></li>
-<li><a href="#纯环境变量部署不挂载-configtoml">纯环境变量部署（不挂载 config.toml）</a></li>
-<li><a href="#反向代理配置">反向代理配置</a></li>
-<li><a href="#性能优化">性能优化</a></li>
-<li><a href="#日志管理">日志管理</a></li>
-<li><a href="#故障排查">故障排查</a></li>
-<li><a href="#安全建议">安全建议</a></li>
-</ul>
+<h1 id="统一镜像部署指南">统一镜像部署指南<a class="headerlink" href="#统一镜像部署指南" title="Permanent link">&para;</a></h1>
+<p>本文档介绍使用 <strong>Shortener 统一镜像</strong> 部署服务。镜像内是<strong>单一进程</strong>
+<code>shortener-server</code>（对齐 acmecast 形态）：直接托管前端静态产物并对外提供
+API，无 nginx、无进程管理脚本，适合单机/小型部署，无需分别管理前后端两个容器。</p>
 <h2 id="快速开始">快速开始<a class="headerlink" href="#快速开始" title="Permanent link">&para;</a></h2>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># 1. 构建镜像（也可用 just docker-build）</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>docker<span class="w"> </span>build<span class="w"> </span>-f<span class="w"> </span>docker/Dockerfile<span class="w"> </span>-t<span class="w"> </span>shortener:latest<span class="w"> </span>.
@@ -2166,295 +2091,321 @@
 </span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="c1"># 4. 停止</span>
 </span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>docker<span class="w"> </span>compose<span class="w"> </span>-f<span class="w"> </span>docker/docker-compose.yml<span class="w"> </span>down
 </span></code></pre></div>
-<p>启动后访问：<strong><a href="http://localhost:80">http://localhost:80</a></strong></p>
+<p>启动后访问：<strong><a href="http://localhost:8080">http://localhost:8080</a></strong></p>
 <h2 id="镜像架构">镜像架构<a class="headerlink" href="#镜像架构" title="Permanent link">&para;</a></h2>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>浏览器 ──→ :80 nginx（托管前端静态资源，前端为 hash 路由 /#/...）
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>              ├─ /api/* ───────────────→ 127.0.0.1:8080 shortener-server
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>              ├─ /api/*（含 /api/ping）──→ 127.0.0.1:8080（API 与健康检查）
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>              ├─ /assets/*（^~ 前缀优先） → 本地静态文件（一年 immutable 缓存）
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>              └─ /go/{short_code} ──────→ 127.0.0.1:8080（短码重定向）
+<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>浏览器 ──→ :8080 shortener-server（单进程，distroless static 运行时、非 root）
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>              ├─ /              → 前端静态文件（/static，未命中回退 index.html）
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>              ├─ /assets/*      → Vite 带内容哈希产物
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>              ├─ /api/*         → 业务 API（含 /api/ping 健康检查）
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>              └─ /go/{short_code} → 短码跳转
 </span></code></pre></div>
 <ul>
-<li><strong>nginx</strong>（监听 80）：负责前端静态资源托管，并将 <code>/api/*</code>（含 <code>/api/ping</code> 健康检查）与 <code>/go/</code> 短码重定向反向代理到容器内后端</li>
-<li><strong>shortener-server</strong>（监听 <code>127.0.0.1:8080</code>）：Rust API 服务，仅容器内网可访问；亦可通过 <code>SERVER__STATIC_DIR</code> 直托管前端静态资源（本 compose 已启用，nginx 故障时直连 8080 仍可访问页面）</li>
-<li><strong>进程管理</strong>：<code>docker/entrypoint-aio.sh</code> 以 <code>setsid</code> 在独立会话中启动后端（信号隔离），前台运行 nginx；监控子 shell 通过 <code>kill -0</code> 轮询后端存活，后端崩溃时终止 nginx 使容器整体退出，配合 Docker <code>restart</code> 策略实现自愈</li>
+<li><strong>单进程</strong>：<code>shortener-server</code> 静态链接二进制，直接托管静态资源与 API，
+  无 nginx、无 entrypoint 脚本；容器崩溃自愈完全由 Docker <code>restart</code> 策略承担</li>
+<li><strong>非 root</strong>：distroless <code>nonroot</code> 用户（UID 65532），数据目录已预授权</li>
+<li><strong>数据持久化</strong>：<code>/app/data</code>（SQLite / GeoIP），挂卷即可</li>
 </ul>
 <h3 id="前端路由说明">前端路由说明<a class="headerlink" href="#前端路由说明" title="Permanent link">&para;</a></h3>
-<p>前端采用 <strong>hash 路由</strong>（如 <code>/#/dashboard</code>、<code>/#/account/login</code>），<code>#</code> 及其后内容不会发送到服务端——服务端只需响应 <code>/</code>（返回 <code>index.html</code>），前端 SPA 路由不占用任何服务端路径。因此<strong>短码路径 <code>/go/{short_code}</code> 与前端路由不存在冲突</strong>（短码统一走 <code>/go/</code> 前缀，避免与静态资源在根命名空间竞争；实际有效短码长度由后端 <code>slug.length</code> 配置校验）。</p>
+<p>前端采用 <strong>hash 路由</strong>（如 <code>/#/dashboard</code>、<code>/#/account/login</code>），<code>#</code> 及其后
+内容不会发送到服务端——服务端只需响应 <code>/</code>（返回 <code>index.html</code>）。因此<strong>短码
+路径 <code>/go/{short_code}</code> 与前端路由不存在冲突</strong>（短码统一走 <code>/go/</code> 前缀；
+实际有效短码长度由后端 <code>slug.length</code> 配置校验）。</p>
 <h3 id="旧短链兼容可选">旧短链兼容（可选）<a class="headerlink" href="#旧短链兼容可选" title="Permanent link">&para;</a></h3>
-<p>v0.2.1 之前短链形态为 <code>/{short_code}</code>，升级后需使用 <code>/go/{short_code}</code>。已对外分发的旧短链可在<strong>外层</strong> nginx（TLS 终结层）加一条 301 重定向过渡：</p>
+<p>v0.3.0 之前短链形态历经 <code>/{short_code}</code> 与 <code>/to/{short_code}</code> 两代，现统一为
+<code>/go/{short_code}</code>。已对外分发的旧短链可在<strong>外层</strong> nginx（TLS 终结层）加一条
+301 重定向过渡：</p>
 <div class="language-nginx highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># 放在外层 server 块中，置于其它 location 之前</span>
 </span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="k">rewrite</span><span class="w"> </span><span class="s">^/([A-Za-z0-9]+)</span>$<span class="w"> </span><span class="s">/go/</span><span class="nv">$1</span><span class="w"> </span><span class="s">permanent</span><span class="p">;</span>
 </span></code></pre></div>
-<h3 id="dockerfile-说明">Dockerfile 说明<a class="headerlink" href="#dockerfile-说明" title="Permanent link">&para;</a></h3>
-<p>AIO 镜像为三段式多阶段构建：</p>
+<h2 id="dockerfile-说明">Dockerfile 说明<a class="headerlink" href="#dockerfile-说明" title="Permanent link">&para;</a></h2>
+<p>统一镜像为三段式多阶段构建：</p>
 <table>
 <thead>
 <tr>
 <th>阶段</th>
 <th>基础镜像</th>
-<th>产物</th>
+<th>产出</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>builder-server</code></td>
-<td><code>rust:alpine</code>（musl 静态链接）</td>
-<td><code>shortener-server</code> 静态二进制</td>
+<td>builder-server</td>
+<td><code>rust:1.98-alpine</code></td>
+<td>musl 静态链接的 <code>shortener-server</code> 二进制 + <code>/app/data</code> 目录</td>
 </tr>
 <tr>
-<td><code>builder-frontend</code></td>
+<td>builder-frontend</td>
 <td><code>node:24-alpine</code></td>
-<td>前端 Vite 构建产物 <code>dist</code></td>
+<td>Vite 前端产物（pnpm 版本由 package.json 锁定）</td>
 </tr>
 <tr>
 <td>运行时</td>
-<td><code>nginx:alpine</code></td>
-<td>合并前端产物 + 后端二进制</td>
+<td><code>gcr.io/distroless/static-debian13:nonroot</code></td>
+<td>仅二进制 + 静态产物 + 配置</td>
 </tr>
 </tbody>
 </table>
-<p>后端以 <code>-c /app/config.toml</code> 显式指定配置路径启动（镜像 <code>WORKDIR /app</code>，配置文件即位于工作目录），并监听 <code>SERVER__ADDRESS=127.0.0.1:8080</code>（仅容器内网监听）。<code>config.toml</code> 为<strong>可选</strong>：镜像内置了一份默认模板，也可以不挂载文件、完全通过环境变量配置（环境变量优先于文件），详见 <a href="#环境变量配置">环境变量配置</a>。</p>
-<h2 id="docker-compose-部署">Docker Compose 部署<a class="headerlink" href="#docker-compose-部署" title="Permanent link">&para;</a></h2>
-<p>项目提供现成的编排文件：<code>docker/docker-compose.yml</code>。</p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nt">services</span><span class="p">:</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span><span class="nt">shortener</span><span class="p">:</span>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">    </span><span class="nt">build</span><span class="p">:</span>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">      </span><span class="nt">context</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">..</span>
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">      </span><span class="nt">dockerfile</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">docker/Dockerfile</span>
-</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">    </span><span class="nt">container_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">shortener</span>
-</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">    </span><span class="nt">restart</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">unless-stopped</span>
-</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="w">    </span><span class="nt">ports</span><span class="p">:</span>
-</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"80:80"</span>
-</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="w">    </span><span class="nt">environment</span><span class="p">:</span>
-</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">RUST_LOG=shortener_server=info,sqlx=off</span>
-</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">DATABASE__URL=sqlite:///app/data/shortener.db?mode=rwc</span>
-</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CACHE__ENABLED=true</span>
-</span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CACHE__URL=redis://redis:6379/0</span>
-</span><span id="__span-3-15"><a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">GEOIP__ENABLED=true</span>
-</span><span id="__span-3-16"><a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">GEOIP__IP2REGION__PATH=/app/data/ip2region.xdb</span>
-</span><span id="__span-3-17"><a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a><span class="w">    </span><span class="nt">volumes</span><span class="p">:</span>
-</span><span id="__span-3-18"><a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">../config.toml:/app/config.toml:ro</span>
-</span><span id="__span-3-19"><a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">../data:/app/data</span>
-</span><span id="__span-3-20"><a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a><span class="w">    </span><span class="nt">depends_on</span><span class="p">:</span>
-</span><span id="__span-3-21"><a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a><span class="w">      </span><span class="nt">redis</span><span class="p">:</span>
-</span><span id="__span-3-22"><a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a><span class="w">        </span><span class="nt">condition</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">service_healthy</span>
-</span><span id="__span-3-23"><a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a><span class="w">    </span><span class="nt">healthcheck</span><span class="p">:</span>
-</span><span id="__span-3-24"><a id="__codelineno-3-24" name="__codelineno-3-24" href="#__codelineno-3-24"></a><span class="w">      </span><span class="nt">test</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">"CMD"</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">"wget"</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">"-q"</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">"-O"</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">"/dev/null"</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">"http://127.0.0.1/api/ping"</span><span class="p p-Indicator">]</span>
-</span><span id="__span-3-25"><a id="__codelineno-3-25" name="__codelineno-3-25" href="#__codelineno-3-25"></a><span class="w">      </span><span class="nt">interval</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30s</span>
-</span><span id="__span-3-26"><a id="__codelineno-3-26" name="__codelineno-3-26" href="#__codelineno-3-26"></a><span class="w">      </span><span class="nt">timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3s</span>
-</span><span id="__span-3-27"><a id="__codelineno-3-27" name="__codelineno-3-27" href="#__codelineno-3-27"></a><span class="w">      </span><span class="nt">retries</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
-</span><span id="__span-3-28"><a id="__codelineno-3-28" name="__codelineno-3-28" href="#__codelineno-3-28"></a><span class="w">      </span><span class="nt">start_period</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10s</span>
-</span></code></pre></div>
-<blockquote>
-<p>提示：
-- 若宿主机 80 端口被占用，可改用其他端口映射，如 <code>"8080:80"</code>。
-- 生产环境务必覆盖 <code>api_key</code>、管理员密码等敏感配置——可编辑挂载的 <code>config.toml</code>，或直接用环境变量注入（推荐，见下节）。
-- <code>data</code> 目录用于 sqlite / geoip 数据，建议挂载持久化卷。
-- 不想挂载 <code>config.toml</code>？删掉该 volumes 行并补齐必填环境变量即可，见下节 <a href="#纯环境变量部署">纯环境变量部署</a>。</p>
-</blockquote>
-<h2 id="环境变量配置">环境变量配置<a class="headerlink" href="#环境变量配置" title="Permanent link">&para;</a></h2>
-<p>AIO 镜像支持通过环境变量配置/覆盖后端配置（使用 <code>__</code> 分隔嵌套键，环境变量优先于 <code>config.toml</code>）。</p>
+<p>环境变量（镜像内置默认值）：</p>
 <table>
 <thead>
 <tr>
-<th>环境变量</th>
-<th>必需</th>
+<th>变量</th>
+<th>值</th>
 <th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>JWT_SECRET</code></td>
-<td><strong>是</strong></td>
-<td>JWT 签名密钥，生成：<code>openssl rand -base64 48</code></td>
-</tr>
-<tr>
-<td><code>SERVER__API_KEY</code></td>
-<td><strong>是</strong></td>
-<td>API 认证密钥，生成：<code>openssl rand -base64 32</code></td>
-</tr>
-<tr>
-<td><code>ADMIN__PASSWORD_HASH</code></td>
-<td><strong>是</strong></td>
-<td>管理员口令哈希，生成：<code>shortener-server hash-password --password "..."</code></td>
-</tr>
-<tr>
-<td><code>DATABASE__URL</code></td>
-<td><strong>是</strong></td>
-<td>数据库连接串（<code>sqlite://</code> / <code>postgres://</code> / <code>mysql://</code>）</td>
-</tr>
-<tr>
-<td><code>RUST_LOG</code></td>
-<td>否</td>
-<td>日志级别（默认 <code>info</code>）</td>
-</tr>
-<tr>
 <td><code>SERVER__ADDRESS</code></td>
-<td>否</td>
-<td>后端监听地址（镜像默认 <code>127.0.0.1:8080</code>，勿改）</td>
+<td><code>0.0.0.0:8080</code></td>
+<td>单进程直接对外</td>
 </tr>
 <tr>
-<td><code>ADMIN__USERNAME</code></td>
-<td>否</td>
-<td>管理员用户名（默认 <code>admin</code>）</td>
+<td><code>SERVER__STATIC_DIR</code></td>
+<td><code>/static</code></td>
+<td>前端静态产物目录（未命中回退 <code>index.html</code>）</td>
 </tr>
 <tr>
-<td><code>CACHE__ENABLED</code> / <code>CACHE__URL</code></td>
-<td>否</td>
-<td>缓存开关与 Redis 连接串；启用后启动时自动清空前缀旧键并从数据库预热全量短链</td>
-</tr>
-<tr>
-<td><code>GEOIP__ENABLED</code> / <code>GEOIP__IP2REGION__PATH</code></td>
-<td>否</td>
-<td>IP 地理定位与 ip2region 数据库路径</td>
+<td><code>CONFIG_PATH</code></td>
+<td><code>/app/config.toml</code></td>
+<td>配置文件路径（可挂载覆盖）</td>
 </tr>
 </tbody>
 </table>
-<p>完整配置项见 <a href="../../general/ENVIRONMENT_VARIABLES/">环境变量参考</a> 或 <code>config.toml</code>。</p>
-<h3 id="纯环境变量部署不挂载-configtoml">纯环境变量部署（不挂载 config.toml）<a class="headerlink" href="#纯环境变量部署不挂载-configtoml" title="Permanent link">&para;</a></h3>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nt">services</span><span class="p">:</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span><span class="nt">shortener</span><span class="p">:</span>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ghcr.io/jetsung/shortener:latest</span>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">    </span><span class="nt">container_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">shortener</span>
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">    </span><span class="nt">restart</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">unless-stopped</span>
-</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">    </span><span class="nt">ports</span><span class="p">:</span>
-</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"80:80"</span>
-</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="w">    </span><span class="nt">environment</span><span class="p">:</span>
-</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">RUST_LOG=shortener_server=info,sqlx=off</span>
-</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">JWT_SECRET=${JWT_SECRET}</span>
-</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">SERVER__API_KEY=${SERVER__API_KEY}</span>
-</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ADMIN__PASSWORD_HASH=${ADMIN__PASSWORD_HASH}</span>
-</span><span id="__span-4-13"><a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">DATABASE__URL=sqlite:///app/data/shortener.db?mode=rwc</span>
-</span><span id="__span-4-14"><a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CACHE__ENABLED=true</span>
-</span><span id="__span-4-15"><a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CACHE__URL=redis://redis:6379/0</span>
-</span><span id="__span-4-16"><a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a><span class="w">    </span><span class="nt">volumes</span><span class="p">:</span>
-</span><span id="__span-4-17"><a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./data:/app/data</span>
+<h2 id="环境变量配置">环境变量配置<a class="headerlink" href="#环境变量配置" title="Permanent link">&para;</a></h2>
+<p>镜像支持通过环境变量覆盖后端配置（使用 <code>__</code> 分隔嵌套键，环境变量优先于
+<code>config.toml</code>）。完整清单见 <a href="../../general/ENVIRONMENT_VARIABLES/">环境变量参考</a>。</p>
+<p>常用项：</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nv">SERVER__API_KEY</span><span class="o">=</span>&lt;openssl<span class="w"> </span>rand<span class="w"> </span>-base64<span class="w"> </span><span class="m">32</span>&gt;<span class="w">   </span><span class="c1"># API 密钥（必填）</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="nv">JWT_SECRET</span><span class="o">=</span>&lt;openssl<span class="w"> </span>rand<span class="w"> </span>-base64<span class="w"> </span><span class="m">48</span>&gt;<span class="w">        </span><span class="c1"># JWT 签名密钥</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="nv">ADMIN__PASSWORD_HASH</span><span class="o">=</span><span class="s1">'$argon2id$...'</span><span class="w">        </span><span class="c1"># 管理员口令哈希</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="nv">DATABASE__URL</span><span class="o">=</span>sqlite:///app/data/shortener.db?mode<span class="o">=</span>rwc
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="nv">CACHE__ENABLED</span><span class="o">=</span><span class="nb">true</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="nv">CACHE__URL</span><span class="o">=</span>redis://redis:6379/0
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="nv">GEOIP__ENABLED</span><span class="o">=</span><span class="nb">true</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="nv">GEOIP__IP2REGION__PATH</span><span class="o">=</span>/app/data/ip2region.xdb
 </span></code></pre></div>
-<p>配合 <code>.env</code> 文件（与 compose 同目录，<code>docker compose</code> 自动读取）：</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># .env</span>
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="nv">JWT_SECRET</span><span class="o">=</span>...<span class="w">                  </span><span class="c1"># openssl rand -base64 48</span>
-</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="nv">SERVER__API_KEY</span><span class="o">=</span>...<span class="w">             </span><span class="c1"># openssl rand -base64 32</span>
-</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="nv">ADMIN__PASSWORD_HASH</span><span class="o">=</span><span class="nv">$argon2id</span>$...<span class="w">   </span><span class="c1"># shortener-server hash-password --password "..."</span>
+<h2 id="docker-compose-部署">Docker Compose 部署<a class="headerlink" href="#docker-compose-部署" title="Permanent link">&para;</a></h2>
+<p>项目提供现成的编排文件：<code>docker/docker-compose.yml</code>（shortener + Redis，
+PostgreSQL/MySQL 通过 profile 可选启用）。</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># 默认（SQLite + Redis）</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>docker<span class="w"> </span>compose<span class="w"> </span>-f<span class="w"> </span>docker/docker-compose.yml<span class="w"> </span>up<span class="w"> </span>-d
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="c1"># 启用 PostgreSQL</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>docker<span class="w"> </span>compose<span class="w"> </span>-f<span class="w"> </span>docker/docker-compose.yml<span class="w"> </span>--profile<span class="w"> </span>postgres<span class="w"> </span>up<span class="w"> </span>-d
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="c1"># 并把 shortener 服务的 DATABASE__URL 改为</span>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="c1"># postgres://shortener:shortener_password@postgres:5432/shortener</span>
+</span></code></pre></div>
+<h2 id="外部-nginx-反向代理">外部 Nginx 反向代理<a class="headerlink" href="#外部-nginx-反向代理" title="Permanent link">&para;</a></h2>
+<p>单进程直接对外，后端<strong>不需要</strong>任何反代即可工作（<code>http://服务器IP:8080</code>）。
+需要 HTTPS 终结、域名接入或负载均衡时，在外层加一台 nginx，把 <code>8080</code> 作为上游，
+<strong>任意路径原样转发，无需任何改写</strong>。</p>
+<h3 id="推荐完整配置">推荐完整配置<a class="headerlink" href="#推荐完整配置" title="Permanent link">&para;</a></h3>
+<p>一个主域名（控制台 + API + 短码）+ 一个专用短域名（仅短码，链接无 <code>/go/</code> 前缀）的典型配置：</p>
+<div class="language-nginx highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># ---------- 公共上游与透传 ----------</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="k">upstream</span><span class="w"> </span><span class="s">shortener</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">    </span><span class="kn">server</span><span class="w"> </span><span class="n">127.0.0.1</span><span class="p">:</span><span class="mi">8080</span><span class="p">;</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">    </span><span class="kn">keepalive</span><span class="w"> </span><span class="mi">32</span><span class="p">;</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="p">}</span>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="c1"># ---------- 主域名：控制台 + API + 短码 ----------</span>
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="k">server</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="w">    </span><span class="kn">listen</span><span class="w"> </span><span class="mi">80</span><span class="p">;</span>
+</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="w">    </span><span class="kn">server_name</span><span class="w"> </span><span class="s">short.example.com</span><span class="p">;</span>
+</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="w">    </span><span class="c1"># 全站跳 HTTPS（首次用 HTTP 申请证书时临时注释这两行）</span>
+</span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span class="w">    </span><span class="kn">return</span><span class="w"> </span><span class="mi">301</span><span class="w"> </span><span class="s">https://</span><span class="nv">$host$request_uri</span><span class="p">;</span>
+</span><span id="__span-5-13"><a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a><span class="p">}</span>
+</span><span id="__span-5-14"><a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>
+</span><span id="__span-5-15"><a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a><span class="k">server</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-5-16"><a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a><span class="w">    </span><span class="kn">listen</span><span class="w"> </span><span class="mi">443</span><span class="w"> </span><span class="s">ssl</span><span class="p">;</span>
+</span><span id="__span-5-17"><a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a><span class="w">    </span><span class="kn">http2</span><span class="w"> </span><span class="no">on</span><span class="p">;</span>
+</span><span id="__span-5-18"><a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a><span class="w">    </span><span class="kn">server_name</span><span class="w"> </span><span class="s">short.example.com</span><span class="p">;</span>
+</span><span id="__span-5-19"><a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a>
+</span><span id="__span-5-20"><a id="__codelineno-5-20" name="__codelineno-5-20" href="#__codelineno-5-20"></a><span class="w">    </span><span class="kn">ssl_certificate</span><span class="w">     </span><span class="s">/etc/letsencrypt/live/short.example.com/fullchain.pem</span><span class="p">;</span>
+</span><span id="__span-5-21"><a id="__codelineno-5-21" name="__codelineno-5-21" href="#__codelineno-5-21"></a><span class="w">    </span><span class="kn">ssl_certificate_key</span><span class="w"> </span><span class="s">/etc/letsencrypt/live/short.example.com/privkey.pem</span><span class="p">;</span>
+</span><span id="__span-5-22"><a id="__codelineno-5-22" name="__codelineno-5-22" href="#__codelineno-5-22"></a><span class="w">    </span><span class="kn">ssl_protocols</span><span class="w"> </span><span class="s">TLSv1.2</span><span class="w"> </span><span class="s">TLSv1.3</span><span class="p">;</span>
+</span><span id="__span-5-23"><a id="__codelineno-5-23" name="__codelineno-5-23" href="#__codelineno-5-23"></a>
+</span><span id="__span-5-24"><a id="__codelineno-5-24" name="__codelineno-5-24" href="#__codelineno-5-24"></a><span class="w">    </span><span class="c1"># 上传/请求体限制（按需调整）</span>
+</span><span id="__span-5-25"><a id="__codelineno-5-25" name="__codelineno-5-25" href="#__codelineno-5-25"></a><span class="w">    </span><span class="kn">client_max_body_size</span><span class="w"> </span><span class="mi">10m</span><span class="p">;</span>
+</span><span id="__span-5-26"><a id="__codelineno-5-26" name="__codelineno-5-26" href="#__codelineno-5-26"></a>
+</span><span id="__span-5-27"><a id="__codelineno-5-27" name="__codelineno-5-27" href="#__codelineno-5-27"></a><span class="w">    </span><span class="kn">location</span><span class="w"> </span><span class="s">/</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-5-28"><a id="__codelineno-5-28" name="__codelineno-5-28" href="#__codelineno-5-28"></a><span class="w">        </span><span class="kn">proxy_pass</span><span class="w"> </span><span class="s">http://shortener</span><span class="p">;</span>
+</span><span id="__span-5-29"><a id="__codelineno-5-29" name="__codelineno-5-29" href="#__codelineno-5-29"></a><span class="w">        </span><span class="kn">proxy_http_version</span><span class="w"> </span><span class="mi">1</span><span class="s">.1</span><span class="p">;</span>
+</span><span id="__span-5-30"><a id="__codelineno-5-30" name="__codelineno-5-30" href="#__codelineno-5-30"></a>
+</span><span id="__span-5-31"><a id="__codelineno-5-31" name="__codelineno-5-31" href="#__codelineno-5-31"></a><span class="w">        </span><span class="c1"># 必设透传头（见下方「透传头说明」）</span>
+</span><span id="__span-5-32"><a id="__codelineno-5-32" name="__codelineno-5-32" href="#__codelineno-5-32"></a><span class="w">        </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">Host</span><span class="w">              </span><span class="nv">$http_host</span><span class="p">;</span>
+</span><span id="__span-5-33"><a id="__codelineno-5-33" name="__codelineno-5-33" href="#__codelineno-5-33"></a><span class="w">        </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">X-Real-IP</span><span class="w">         </span><span class="nv">$remote_addr</span><span class="p">;</span>
+</span><span id="__span-5-34"><a id="__codelineno-5-34" name="__codelineno-5-34" href="#__codelineno-5-34"></a><span class="w">        </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">X-Forwarded-For</span><span class="w">   </span><span class="nv">$proxy_add_x_forwarded_for</span><span class="p">;</span>
+</span><span id="__span-5-35"><a id="__codelineno-5-35" name="__codelineno-5-35" href="#__codelineno-5-35"></a><span class="w">        </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">X-Forwarded-Proto</span><span class="w"> </span><span class="nv">$scheme</span><span class="p">;</span>
+</span><span id="__span-5-36"><a id="__codelineno-5-36" name="__codelineno-5-36" href="#__codelineno-5-36"></a>
+</span><span id="__span-5-37"><a id="__codelineno-5-37" name="__codelineno-5-37" href="#__codelineno-5-37"></a><span class="w">        </span><span class="c1"># WebSocket（前端 dev 热更新或未来实时功能）</span>
+</span><span id="__span-5-38"><a id="__codelineno-5-38" name="__codelineno-5-38" href="#__codelineno-5-38"></a><span class="w">        </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">Upgrade</span><span class="w">    </span><span class="nv">$http_upgrade</span><span class="p">;</span>
+</span><span id="__span-5-39"><a id="__codelineno-5-39" name="__codelineno-5-39" href="#__codelineno-5-39"></a><span class="w">        </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">Connection</span><span class="w"> </span><span class="nv">$connection_upgrade</span><span class="p">;</span>
+</span><span id="__span-5-40"><a id="__codelineno-5-40" name="__codelineno-5-40" href="#__codelineno-5-40"></a>
+</span><span id="__span-5-41"><a id="__codelineno-5-41" name="__codelineno-5-41" href="#__codelineno-5-41"></a><span class="w">        </span><span class="c1"># 长连接复用</span>
+</span><span id="__span-5-42"><a id="__codelineno-5-42" name="__codelineno-5-42" href="#__codelineno-5-42"></a><span class="w">        </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">Connection</span><span class="w"> </span><span class="s">""</span><span class="p">;</span>
+</span><span id="__span-5-43"><a id="__codelineno-5-43" name="__codelineno-5-43" href="#__codelineno-5-43"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-5-44"><a id="__codelineno-5-44" name="__codelineno-5-44" href="#__codelineno-5-44"></a><span class="p">}</span>
+</span><span id="__span-5-45"><a id="__codelineno-5-45" name="__codelineno-5-45" href="#__codelineno-5-45"></a>
+</span><span id="__span-5-46"><a id="__codelineno-5-46" name="__codelineno-5-46" href="#__codelineno-5-46"></a><span class="c1"># WebSocket 升级映射（放在 http{} 层，与 upstream 同级）</span>
+</span><span id="__span-5-47"><a id="__codelineno-5-47" name="__codelineno-5-47" href="#__codelineno-5-47"></a><span class="c1"># map $http_upgrade $connection_upgrade {</span>
+</span><span id="__span-5-48"><a id="__codelineno-5-48" name="__codelineno-5-48" href="#__codelineno-5-48"></a><span class="c1">#     default upgrade;</span>
+</span><span id="__span-5-49"><a id="__codelineno-5-49" name="__codelineno-5-49" href="#__codelineno-5-49"></a><span class="c1">#     ""      close;</span>
+</span><span id="__span-5-50"><a id="__codelineno-5-50" name="__codelineno-5-50" href="#__codelineno-5-50"></a><span class="c1"># }</span>
+</span><span id="__span-5-51"><a id="__codelineno-5-51" name="__codelineno-5-51" href="#__codelineno-5-51"></a>
+</span><span id="__span-5-52"><a id="__codelineno-5-52" name="__codelineno-5-52" href="#__codelineno-5-52"></a><span class="c1"># ---------- 专用短域名：仅短码（链接形如 https://s.example.com/&lt;code&gt;） ----------</span>
+</span><span id="__span-5-53"><a id="__codelineno-5-53" name="__codelineno-5-53" href="#__codelineno-5-53"></a><span class="c1"># 使用此配置时，服务端配置 SERVER__SHORT_URL=https://s.example.com</span>
+</span><span id="__span-5-54"><a id="__codelineno-5-54" name="__codelineno-5-54" href="#__codelineno-5-54"></a><span class="k">server</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-5-55"><a id="__codelineno-5-55" name="__codelineno-5-55" href="#__codelineno-5-55"></a><span class="w">    </span><span class="kn">listen</span><span class="w"> </span><span class="mi">443</span><span class="w"> </span><span class="s">ssl</span><span class="p">;</span>
+</span><span id="__span-5-56"><a id="__codelineno-5-56" name="__codelineno-5-56" href="#__codelineno-5-56"></a><span class="w">    </span><span class="kn">http2</span><span class="w"> </span><span class="no">on</span><span class="p">;</span>
+</span><span id="__span-5-57"><a id="__codelineno-5-57" name="__codelineno-5-57" href="#__codelineno-5-57"></a><span class="w">    </span><span class="kn">server_name</span><span class="w"> </span><span class="s">s.example.com</span><span class="p">;</span>
+</span><span id="__span-5-58"><a id="__codelineno-5-58" name="__codelineno-5-58" href="#__codelineno-5-58"></a>
+</span><span id="__span-5-59"><a id="__codelineno-5-59" name="__codelineno-5-59" href="#__codelineno-5-59"></a><span class="w">    </span><span class="kn">ssl_certificate</span><span class="w">     </span><span class="s">/etc/letsencrypt/live/s.example.com/fullchain.pem</span><span class="p">;</span>
+</span><span id="__span-5-60"><a id="__codelineno-5-60" name="__codelineno-5-60" href="#__codelineno-5-60"></a><span class="w">    </span><span class="kn">ssl_certificate_key</span><span class="w"> </span><span class="s">/etc/letsencrypt/live/s.example.com/privkey.pem</span><span class="p">;</span>
+</span><span id="__span-5-61"><a id="__codelineno-5-61" name="__codelineno-5-61" href="#__codelineno-5-61"></a><span class="w">    </span><span class="kn">ssl_protocols</span><span class="w"> </span><span class="s">TLSv1.2</span><span class="w"> </span><span class="s">TLSv1.3</span><span class="p">;</span>
+</span><span id="__span-5-62"><a id="__codelineno-5-62" name="__codelineno-5-62" href="#__codelineno-5-62"></a>
+</span><span id="__span-5-63"><a id="__codelineno-5-63" name="__codelineno-5-63" href="#__codelineno-5-63"></a><span class="w">    </span><span class="c1"># 旧版短链（/{code} 与 /to/{code}）301 过渡到 /go/{code}</span>
+</span><span id="__span-5-64"><a id="__codelineno-5-64" name="__codelineno-5-64" href="#__codelineno-5-64"></a><span class="w">    </span><span class="kn">rewrite</span><span class="w"> </span><span class="s">^/([A-Za-z0-9]+)</span>$<span class="w">          </span><span class="s">/go/</span><span class="nv">$1</span><span class="w"> </span><span class="s">permanent</span><span class="p">;</span>
+</span><span id="__span-5-65"><a id="__codelineno-5-65" name="__codelineno-5-65" href="#__codelineno-5-65"></a><span class="w">    </span><span class="kn">rewrite</span><span class="w"> </span><span class="s">^/to/([A-Za-z0-9]+)</span>$<span class="w">       </span><span class="s">/go/</span><span class="nv">$1</span><span class="w"> </span><span class="s">permanent</span><span class="p">;</span>
+</span><span id="__span-5-66"><a id="__codelineno-5-66" name="__codelineno-5-66" href="#__codelineno-5-66"></a>
+</span><span id="__span-5-67"><a id="__codelineno-5-67" name="__codelineno-5-67" href="#__codelineno-5-67"></a><span class="w">    </span><span class="kn">location</span><span class="w"> </span><span class="s">/go/</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-5-68"><a id="__codelineno-5-68" name="__codelineno-5-68" href="#__codelineno-5-68"></a><span class="w">        </span><span class="kn">proxy_pass</span><span class="w"> </span><span class="s">http://shortener</span><span class="p">;</span>
+</span><span id="__span-5-69"><a id="__codelineno-5-69" name="__codelineno-5-69" href="#__codelineno-5-69"></a><span class="w">        </span><span class="kn">proxy_http_version</span><span class="w"> </span><span class="mi">1</span><span class="s">.1</span><span class="p">;</span>
+</span><span id="__span-5-70"><a id="__codelineno-5-70" name="__codelineno-5-70" href="#__codelineno-5-70"></a><span class="w">        </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">Host</span><span class="w">              </span><span class="nv">$http_host</span><span class="p">;</span>
+</span><span id="__span-5-71"><a id="__codelineno-5-71" name="__codelineno-5-71" href="#__codelineno-5-71"></a><span class="w">        </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">X-Real-IP</span><span class="w">         </span><span class="nv">$remote_addr</span><span class="p">;</span>
+</span><span id="__span-5-72"><a id="__codelineno-5-72" name="__codelineno-5-72" href="#__codelineno-5-72"></a><span class="w">        </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">X-Forwarded-For</span><span class="w">   </span><span class="nv">$proxy_add_x_forwarded_for</span><span class="p">;</span>
+</span><span id="__span-5-73"><a id="__codelineno-5-73" name="__codelineno-5-73" href="#__codelineno-5-73"></a><span class="w">        </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">X-Forwarded-Proto</span><span class="w"> </span><span class="nv">$scheme</span><span class="p">;</span>
+</span><span id="__span-5-74"><a id="__codelineno-5-74" name="__codelineno-5-74" href="#__codelineno-5-74"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-5-75"><a id="__codelineno-5-75" name="__codelineno-5-75" href="#__codelineno-5-75"></a>
+</span><span id="__span-5-76"><a id="__codelineno-5-76" name="__codelineno-5-76" href="#__codelineno-5-76"></a><span class="w">    </span><span class="c1"># 短址域名只服务跳转，其余路径一律 404</span>
+</span><span id="__span-5-77"><a id="__codelineno-5-77" name="__codelineno-5-77" href="#__codelineno-5-77"></a><span class="w">    </span><span class="kn">location</span><span class="w"> </span><span class="s">/</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-5-78"><a id="__codelineno-5-78" name="__codelineno-5-78" href="#__codelineno-5-78"></a><span class="w">        </span><span class="kn">return</span><span class="w"> </span><span class="mi">404</span><span class="p">;</span>
+</span><span id="__span-5-79"><a id="__codelineno-5-79" name="__codelineno-5-79" href="#__codelineno-5-79"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-5-80"><a id="__codelineno-5-80" name="__codelineno-5-80" href="#__codelineno-5-80"></a><span class="p">}</span>
 </span></code></pre></div>
 <blockquote>
-<p>其余配置（监听地址、短码长度、管理员用户名等）均有合理默认值，必填项缺失时启动会给出明确的字段级错误。</p>
+<p><code>map $http_upgrade $connection_upgrade</code> 必须位于 <code>http {}</code> 层（<code>upstream</code> 同级），
+不能放进 <code>server {}</code>；若不需要 WebSocket，可删除对应两行 <code>proxy_set_header</code>。</p>
 </blockquote>
-<h2 id="反向代理配置">反向代理配置<a class="headerlink" href="#反向代理配置" title="Permanent link">&para;</a></h2>
-<p>AIO 镜像本身已用 nginx 承担静态托管与反代，外部无需再配置后端反代。若需在 AIO 之前再套一层网关（HTTPS 终结、负载均衡），将 80 端口作为上游即可。</p>
-<p><strong>协议透传</strong>：AIO 内置 nginx 会透传上游的 <code>X-Forwarded-Proto</code> 与 <code>X-Real-IP</code>（未携带时回退本机值），后端据此推导 OIDC 回调地址（<code>redirect_uri</code>）与真实客户端 IP。因此外层网关务必设置：</p>
-<div class="language-nginx highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="k">proxy_set_header</span><span class="w"> </span><span class="s">X-Forwarded-Proto</span><span class="w"> </span><span class="nv">$scheme</span><span class="p">;</span>
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="k">proxy_set_header</span><span class="w"> </span><span class="s">X-Forwarded-For</span><span class="w"> </span><span class="nv">$proxy_add_x_forwarded_for</span><span class="p">;</span>
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="k">proxy_set_header</span><span class="w"> </span><span class="s">X-Real-IP</span><span class="w"> </span><span class="nv">$remote_addr</span><span class="p">;</span>
-</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="k">proxy_set_header</span><span class="w"> </span><span class="s">Host</span><span class="w"> </span><span class="nv">$http_host</span><span class="p">;</span>
+<h3 id="透传头说明必设">透传头说明（必设）<a class="headerlink" href="#透传头说明必设" title="Permanent link">&para;</a></h3>
+<p>后端依赖以下请求头推导<strong>真实客户端 IP</strong>（访问统计/GeoIP）与 <strong>OIDC 回调地址</strong>，
+缺失或错误会导致统计数据失真、OIDC 登录失败：</p>
+<table>
+<thead>
+<tr>
+<th>请求头</th>
+<th>设置值</th>
+<th>后端用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Host</code></td>
+<td><code>$http_host</code></td>
+<td>OIDC <code>redirect_uri</code> 推导（<code>{scheme}://{host}/api/oidc/callback</code>）</td>
+</tr>
+<tr>
+<td><code>X-Real-IP</code></td>
+<td><code>$remote_addr</code></td>
+<td>真实客户端 IP</td>
+</tr>
+<tr>
+<td><code>X-Forwarded-For</code></td>
+<td><code>$proxy_add_x_forwarded_for</code></td>
+<td>真实客户端 IP（链式）</td>
+</tr>
+<tr>
+<td><code>X-Forwarded-Proto</code></td>
+<td><code>$scheme</code></td>
+<td>OIDC <code>redirect_uri</code> 的 scheme 部分</td>
+</tr>
+</tbody>
+</table>
+<p>多层代理（CDN → nginx → 容器）时，<code>X-Real-IP</code> 使用最外层传来的值即可；
+若外层还有 CDN，请以 <code>real_ip</code> 模块或 CDN 文档为准取最原始客户端 IP。</p>
+<h3 id="可选外层缓存与压缩">可选：外层缓存与压缩<a class="headerlink" href="#可选外层缓存与压缩" title="Permanent link">&para;</a></h3>
+<p>后端已对 <code>/assets/</code>（Vite 内容哈希产物）返回长期 <code>Cache-Control</code> 头、页面回退
+<code>index.html</code>，通常无需额外配置。如需进一步降低回源量，可在主域名 server 块追加：</p>
+<div class="language-nginx highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="k">gzip</span><span class="w"> </span><span class="no">on</span><span class="p">;</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="k">gzip_comp_level</span><span class="w"> </span><span class="mi">5</span><span class="p">;</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="k">gzip_min_length</span><span class="w"> </span><span class="mi">1024</span><span class="p">;</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="k">gzip_types</span><span class="w"> </span><span class="s">text/css</span><span class="w"> </span><span class="s">application/javascript</span><span class="w"> </span><span class="s">application/json</span><span class="w"> </span><span class="s">image/svg+xml</span><span class="p">;</span>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="c1"># 静态哈希资源直接命中外层缓存（可选）</span>
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="k">location</span><span class="w"> </span><span class="s">/assets/</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="w">    </span><span class="kn">proxy_pass</span><span class="w"> </span><span class="s">http://shortener</span><span class="p">;</span>
+</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="w">    </span><span class="kn">proxy_cache_valid</span><span class="w"> </span><span class="mi">200</span><span class="w"> </span><span class="s">30d</span><span class="p">;</span>
+</span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="w">    </span><span class="kn">expires</span><span class="w"> </span><span class="s">1y</span><span class="p">;</span>
+</span><span id="__span-6-11"><a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a><span class="w">    </span><span class="kn">add_header</span><span class="w"> </span><span class="s">Cache-Control</span><span class="w"> </span><span class="s">"public,</span><span class="w"> </span><span class="s">immutable"</span><span class="p">;</span>
+</span><span id="__span-6-12"><a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a><span class="p">}</span>
 </span></code></pre></div>
-<p>否则 HTTPS 部署下 OIDC 回调地址会被推导为 <code>http://</code>，IdP 校验 Redirect URI 将失败。</p>
-<h3 id="使用-caddy">使用 Caddy<a class="headerlink" href="#使用-caddy" title="Permanent link">&para;</a></h3>
+<h3 id="其他网关">其他网关<a class="headerlink" href="#其他网关" title="Permanent link">&para;</a></h3>
+<p>Caddy：</p>
 <div class="language-caddyfile highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>short.example.com<span class="w"> </span><span class="p">{</span>
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">    </span><span class="k">reverse_proxy</span><span class="w"> </span>shortener:80
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">    </span><span class="k">reverse_proxy</span><span class="w"> </span>127.0.0.1:8080
 </span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="p">}</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="c1"># 专用短域名同理：</span>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="c1"># s.example.com { reverse_proxy 127.0.0.1:8080 }</span>
 </span></code></pre></div>
-<h3 id="使用-traefik">使用 Traefik<a class="headerlink" href="#使用-traefik" title="Permanent link">&para;</a></h3>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="nt">services</span><span class="p">:</span>
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">  </span><span class="nt">traefik</span><span class="p">:</span>
-</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">traefik:v3</span>
-</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">...</span>
-</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="w">  </span><span class="nt">shortener</span><span class="p">:</span>
-</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="w">    </span><span class="nt">build</span><span class="p">:</span>
-</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="w">      </span><span class="nt">context</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">..</span>
-</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="w">      </span><span class="nt">dockerfile</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">docker/Dockerfile</span>
-</span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a><span class="w">    </span><span class="nt">labels</span><span class="p">:</span>
-</span><span id="__span-8-10"><a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"traefik.enable=true"</span>
-</span><span id="__span-8-11"><a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"traefik.http.routers.aio.rule=Host(`short.example.com`)"</span>
-</span><span id="__span-8-12"><a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"traefik.http.routers.aio.entrypoints=websecure"</span>
-</span><span id="__span-8-13"><a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"traefik.http.routers.aio.tls=true"</span>
-</span><span id="__span-8-14"><a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"traefik.http.services.aio.loadbalancer.server.port=80"</span>
+<p>Traefik：</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="nt">labels</span><span class="p">:</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"traefik.http.routers.shortener.rule=Host(`short.example.com`)"</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"traefik.http.routers.shortener.entrypoints=websecure"</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"traefik.http.routers.shortener.tls=true"</span>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"traefik.http.services.shortener.loadbalancer.server.port=8080"</span>
 </span></code></pre></div>
-<h2 id="性能优化">性能优化<a class="headerlink" href="#性能优化" title="Permanent link">&para;</a></h2>
-<h3 id="1-压缩与缓存">1. 压缩与缓存<a class="headerlink" href="#1-压缩与缓存" title="Permanent link">&para;</a></h3>
-<p>nginx 默认已启用 Gzip 压缩，并对 <code>/assets/</code>（Vite 带内容哈希产物）设置长期 <code>immutable</code> 缓存、其余静态资源 30 天缓存（见 <code>docker/nginx-aio.conf</code>）。</p>
-<h3 id="2-资源限制">2. 资源限制<a class="headerlink" href="#2-资源限制" title="Permanent link">&para;</a></h3>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="nt">services</span><span class="p">:</span>
-</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">  </span><span class="nt">shortener</span><span class="p">:</span>
-</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">    </span><span class="nt">deploy</span><span class="p">:</span>
-</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="w">      </span><span class="nt">resources</span><span class="p">:</span>
-</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="w">        </span><span class="nt">limits</span><span class="p">:</span>
-</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="w">          </span><span class="nt">cpus</span><span class="p">:</span><span class="w"> </span><span class="s">'1'</span>
-</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="w">          </span><span class="nt">memory</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">512M</span>
-</span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="w">        </span><span class="nt">reservations</span><span class="p">:</span>
-</span><span id="__span-9-9"><a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a><span class="w">          </span><span class="nt">cpus</span><span class="p">:</span><span class="w"> </span><span class="s">'0.5'</span>
-</span><span id="__span-9-10"><a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a><span class="w">          </span><span class="nt">memory</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">256M</span>
-</span></code></pre></div>
-<h2 id="日志管理">日志管理<a class="headerlink" href="#日志管理" title="Permanent link">&para;</a></h2>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="c1"># 查看容器日志</span>
-</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>docker<span class="w"> </span>logs<span class="w"> </span>shortener
-</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>
-</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="c1"># 实时跟踪</span>
-</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>docker<span class="w"> </span>logs<span class="w"> </span>-f<span class="w"> </span>shortener
-</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>
-</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="c1"># 使用 Docker Compose</span>
-</span><span id="__span-10-8"><a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>docker<span class="w"> </span>compose<span class="w"> </span>-f<span class="w"> </span>docker/docker-compose.yml<span class="w"> </span>logs<span class="w"> </span>-f
-</span></code></pre></div>
+<h2 id="性能说明">性能说明<a class="headerlink" href="#性能说明" title="Permanent link">&para;</a></h2>
+<p>静态资源缓存由后端处理：<code>/assets/</code>（Vite 带内容哈希产物）返回长期缓存头，
+页面与深链回退 <code>index.html</code>。如需更激进的压缩/缓存策略，可在外层网关配置。</p>
+<h2 id="日志">日志<a class="headerlink" href="#日志" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>后端日志</strong>：由 <code>RUST_LOG</code> 控制，输出到容器 stdout</li>
-<li><strong>nginx 日志</strong>：access/error 日志默认输出到容器 stdout/stderr</li>
+<li>后端日志：由 <code>RUST_LOG</code> 控制，输出到容器 stdout（JSON 格式）</li>
 </ul>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1"># 实时跟踪</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>docker<span class="w"> </span>logs<span class="w"> </span>-f<span class="w"> </span>shortener
+</span></code></pre></div>
 <h2 id="故障排查">故障排查<a class="headerlink" href="#故障排查" title="Permanent link">&para;</a></h2>
-<h3 id="1-容器无法启动">1. 容器无法启动<a class="headerlink" href="#1-容器无法启动" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="c1"># 检查后端能否单独启动</span>
-</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>-it<span class="w"> </span>--entrypoint<span class="w"> </span>/usr/local/bin/shortener-server<span class="w"> </span>shortener:latest<span class="w"> </span>--help
-</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>
-</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="c1"># 检查 nginx 配置</span>
-</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>shortener<span class="w"> </span>nginx<span class="w"> </span>-t
-</span></code></pre></div>
-<h3 id="2-前端白屏--api-请求失败">2. 前端白屏 / API 请求失败<a class="headerlink" href="#2-前端白屏--api-请求失败" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="c1"># 检查 nginx 反代是否正常</span>
-</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>shortener<span class="w"> </span>wget<span class="w"> </span>-q<span class="w"> </span>-O-<span class="w"> </span>http://127.0.0.1/api/ping
-</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>
-</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="c1"># 检查后端日志</span>
-</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>docker<span class="w"> </span>logs<span class="w"> </span>shortener<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-i<span class="w"> </span>error
-</span></code></pre></div>
-<h3 id="3-短码无法访问">3. 短码无法访问<a class="headerlink" href="#3-短码无法访问" title="Permanent link">&para;</a></h3>
+<h3 id="页面无法访问">页面无法访问<a class="headerlink" href="#页面无法访问" title="Permanent link">&para;</a></h3>
 <ul>
-<li>确认访问路径使用 <code>/go/</code> 前缀（如 <code>/go/abc123</code>），短码为纯字母数字且长度在配置的 <code>slug.length</code> 生成规则内；旧形态 <code>/{short_code}</code> 需外层 nginx 301 重定向（见「旧短链兼容」）</li>
-<li>检查后端是否正常（<code>docker exec shortener wget -q -O- http://127.0.0.1/api/ping</code>）</li>
+<li>确认容器在运行：<code>docker compose -f docker/docker-compose.yml ps</code></li>
+<li>检查后端日志：<code>docker logs shortener</code></li>
 </ul>
-<h3 id="4-数据目录权限">4. 数据目录权限<a class="headerlink" href="#4-数据目录权限" title="Permanent link">&para;</a></h3>
-<p>AIO 镜像后端以容器默认用户运行，挂载的 <code>data</code> 卷需保证可写：</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>chown<span class="w"> </span>-R<span class="w"> </span><span class="m">65532</span>:65532<span class="w"> </span>./data<span class="w">   </span><span class="c1"># 若后端以非 root 运行</span>
-</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="c1"># 或检查挂载卷权限</span>
-</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>shortener<span class="w"> </span>ls<span class="w"> </span>-la<span class="w"> </span>/app/data
+<h3 id="健康检查">健康检查<a class="headerlink" href="#健康检查" title="Permanent link">&para;</a></h3>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="c1"># 容器内直接探测（宿主机映射端口同理）</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>curl<span class="w"> </span>http://127.0.0.1:8080/api/ping<span class="w">   </span><span class="c1"># {"message":"pong"}</span>
 </span></code></pre></div>
-<h2 id="cicd-发布">CI/CD 发布<a class="headerlink" href="#cicd-发布" title="Permanent link">&para;</a></h2>
-<p>AIO 镜像通过 GitHub Actions 自动构建与发布，相关 workflow：</p>
-<h3 id="发布镜像docker-release-aioyml">发布镜像（<code>docker-release-aio.yml</code>）<a class="headerlink" href="#发布镜像docker-release-aioyml" title="Permanent link">&para;</a></h3>
-<ul>
-<li><strong>触发</strong>：推送 <code>shortener-server-v*</code> tag（与后端发布共用同一 tag，打 <code>shortener-server-vX.Y.Z</code> 时 server 与 AIO 镜像同步构建）</li>
-<li><strong>产物</strong>：多架构（amd64 + arm64）OCI 归档</li>
-<li><strong>推送目标</strong>：</li>
-<li>Docker Hub：<code>jetsung/shortener</code>（<code>:latest</code> / <code>:${VERSION}</code>）</li>
-<li>GHCR：<code>ghcr.io/jetsung/shortener</code></li>
-<li>阿里云 ACR / 腾讯云 TCR（配置凭证后自动同步，否则跳过）</li>
-</ul>
-<h3 id="开发镜像docker-dev-aioyml">开发镜像（<code>docker-dev-aio.yml</code>）<a class="headerlink" href="#开发镜像docker-dev-aioyml" title="Permanent link">&para;</a></h3>
-<ul>
-<li><strong>触发</strong>：推送 <code>dev*</code> 分支，且改动涉及 AIO 相关文件（<code>docker/Dockerfile</code>、<code>nginx-aio.conf</code>、<code>entrypoint-aio.sh</code>、后端源码、前端源码、<code>config.toml</code> 等）</li>
-<li><strong>产物</strong>：多架构（amd64 + arm64）</li>
-<li><strong>推送目标</strong>：Docker Hub <code>jetsung/shortener</code>，合并 manifest 后输出 <code>:dev</code> 与 <code>:latest</code></li>
-</ul>
 <blockquote>
-<p>说明：workflow 内 git tag 前缀剥离使用 <code>shortener-server-v</code>，与触发 tag 一致；镜像名统一为 <code>shortener</code>，不区分 <code>-server</code>/<code>-frontend</code> 后缀。</p>
+<p>镜像为 distroless（无 shell/wget），未内置容器级 <code>HEALTHCHECK</code> 探针；
+compose 的 healthcheck 已禁用。健康监控建议使用外部探针请求 <code>/api/ping</code>。</p>
 </blockquote>
+<h3 id="短码无法访问">短码无法访问<a class="headerlink" href="#短码无法访问" title="Permanent link">&para;</a></h3>
+<ul>
+<li>确认访问路径使用 <code>/go/</code> 前缀（如 <code>/go/abc123</code>），短码为纯字母数字且长度在
+  配置的 <code>slug.length</code> 生成规则内；旧形态 <code>/{short_code}</code> 需外层 nginx 301
+  重定向（见「旧短链兼容」）</li>
+</ul>
+<h3 id="数据目录权限">数据目录权限<a class="headerlink" href="#数据目录权限" title="Permanent link">&para;</a></h3>
+<p>镜像以非 root（UID 65532）运行，挂载的 <code>data</code> 卷需保证可写：</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>mkdir<span class="w"> </span>-p<span class="w"> </span>data<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>sudo<span class="w"> </span>chown<span class="w"> </span>-R<span class="w"> </span><span class="m">65532</span>:65532<span class="w"> </span>data
+</span></code></pre></div>
+<h2 id="cicd">CI/CD<a class="headerlink" href="#cicd" title="Permanent link">&para;</a></h2>
+<p>镜像通过 GitHub Actions 自动构建与发布：</p>
+<ul>
+<li><strong>开发镜像</strong>（<code>docker-dev-aio.yml</code>）：推送 <code>dev*</code> 分支时构建
+  <code>ghcr.io/jetsung/shortener:dev</code>（触发路径含 <code>docker/Dockerfile</code>、后端/前端源码）</li>
+<li><strong>发布镜像</strong>（<code>docker-release-aio.yml</code>）：推送 <code>shortener-server-v*</code> tag 时
+  构建多平台（amd64/arm64）发布镜像并同步到 Docker Hub / GHCR / 阿里云 / 华为云 / 腾讯云</li>
+</ul>
 <h2 id="安全建议">安全建议<a class="headerlink" href="#安全建议" title="Permanent link">&para;</a></h2>
 <ol>
-<li><strong>修改默认凭据</strong>：部署前务必修改 <code>config.toml</code> 中的 <code>api_key</code>、admin 密码等默认值</li>
-<li><strong>使用 HTTPS</strong>：在外部网关（Caddy/Traefik/云负载均衡）终结 TLS</li>
-<li><strong>限制访问</strong>：配置防火墙规则，必要时启用 rate limiting</li>
-<li><strong>定期更新</strong>：及时更新基础镜像（<code>nginx:alpine</code>、<code>rust:alpine</code>、<code>node:24-alpine</code>）与依赖</li>
+<li><strong>修改默认凭证</strong>：部署前设置 <code>SERVER__API_KEY</code>、<code>JWT_SECRET</code>、
+   <code>ADMIN__PASSWORD_HASH</code>（勿使用示例值）</li>
+<li><strong>最小暴露</strong>：仅映射 <code>8080</code>，数据库/Redis 端口不对宿主机暴露</li>
+<li><strong>及时更新</strong>：升级基础镜像（<code>rust:alpine</code>、<code>node:24-alpine</code>、distroless）与依赖</li>
 </ol>
 <h2 id="相关文档">相关文档<a class="headerlink" href="#相关文档" title="Permanent link">&para;</a></h2>
 <ul>
-<li><a href="../DOCKER/">Docker 部署（后端）</a></li>
+<li><a href="../DOCKER/">Docker 部署（快速开始）</a></li>
 <li><a href="../DOCKER_ADVANCED/">Docker 高级部署</a></li>
 </ul>
 
@@ -2591,7 +2542,7 @@
       <script id="__config" type="application/json">{"annotate":null,"base":"../..","features":["announce.dismiss","content.code.annotate","content.code.copy","content.code.select","content.footnote.tooltips","content.tabs.link","content.tooltips","navigation.footer","navigation.instant","navigation.instant.prefetch","navigation.path","navigation.sections","navigation.tabs","navigation.top","navigation.tracking","search.highlight","toc.integrate"],"redirect":null,"search":"../../assets/javascripts/workers/search.7d14d953.min.js","tags":null,"translations":{"clipboard.copied":"已复制","clipboard.copy":"复制","clipboard.error":"Could not copy to clipboard","search.result.more.one":"在该页上还有 1 个符合条件的结果","search.result.more.other":"在该页上还有 # 个符合条件的结果","search.result.none":"没有找到符合条件的结果","search.result.one":"找到 1 个符合条件的结果","search.result.other":"# 个符合条件的结果","search.result.placeholder":"键入以开始搜索","search.result.term.missing":"缺少","select.version":"选择当前版本"},"version":null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.67a597eb.min.js"></script>
+      <script src="../../assets/javascripts/bundle.3c842f4c.min.js"></script>
       
     
   </body>

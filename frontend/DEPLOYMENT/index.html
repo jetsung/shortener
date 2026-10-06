@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="zensical-0.0.67">
+      <meta name="generator" content="zensical-0.0.68">
     
     
       
@@ -36,12 +36,12 @@
       
         
       
-      <link rel="stylesheet" href="../../assets/stylesheets/modern/main.4ae390e2.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/modern/main.595f2bf5.min.css">
       
         
           
         
-        <link rel="stylesheet" href="../../assets/stylesheets/modern/palette.96d1a7e4.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/modern/palette.b27955a4.min.css">
       
       
 
@@ -83,14 +83,11 @@
     
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
-    <label class="md-overlay" for="__drawer" aria-label="导航栏"></label>
+    <label class="md-overlay" for="__drawer" aria-hidden="true"></label>
     <div data-md-component="skip">
-      
-        
-        <a href="#部署说明" class="md-skip">
-          跳转至
-        </a>
-      
+      <a href="#__skip" class="md-skip">
+        跳转至
+      </a>
     </div>
     <div data-md-component="announce">
       
@@ -1887,6 +1884,7 @@
 
               
               <article class="md-content__inner md-typeset">
+                <a id="__skip" tabindex="-1"></a>
                 
                   
 
@@ -1896,10 +1894,11 @@
 
 <h1 id="部署说明">部署说明<a class="headerlink" href="#部署说明" title="Permanent link">&para;</a></h1>
 <blockquote>
-<p><strong>重要</strong>：项目已采用<strong>统一交付形态</strong>——前端不再独立部署，构建产物由统一镜像
-（<code>docker/Dockerfile</code>）在构建阶段内嵌，运行时由 nginx 托管（后端
-<code>SERVER__STATIC_DIR</code> 兜底，含 SPA 回退）。标准部署方式请参阅
-<a href="../../deployment/DOCKER_AIO/">All-In-One Docker 部署</a>。</p>
+<p><strong>重要</strong>：项目已采用<strong>统一交付形态</strong>（对齐 acmecast）——前端不再独立部署，
+构建产物由统一镜像（<code>docker/Dockerfile</code>）在构建阶段内嵌，运行时由
+shortener-server 单进程直接托管（<code>SERVER__STATIC_DIR=/static</code>，未命中回退
+<code>index.html</code>）。标准部署方式请参阅
+<a href="../../deployment/DOCKER_AIO/">统一镜像部署指南</a>。</p>
 </blockquote>
 <h2 id="目录">目录<a class="headerlink" href="#目录" title="Permanent link">&para;</a></h2>
 <ul>
@@ -1910,10 +1909,14 @@
 <p>以下步骤仅用于本地开发与质量检查；生产交付由统一镜像自动完成，无需手动构建。</p>
 <h3 id="系统要求">系统要求<a class="headerlink" href="#系统要求" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Node.js &gt;= 18.0.0</li>
-<li>pnpm &gt;= 10.0.0 (推荐) 或 npm &gt;= 9.0.0</li>
+<li>Node.js 24（由仓库根目录 <code>mise.toml</code> 自动安装）或 &gt;= 18.0.0</li>
+<li>pnpm 10.20.0（由 mise 自动安装）或 &gt;= 10.0.0</li>
 <li>至少 2GB 可用内存用于构建</li>
 </ul>
+<blockquote>
+<p>安装 <a href="https://mise.jdx.dev">mise</a> 后在仓库根目录执行 <code>mise install</code>，
+Node 与 pnpm 版本即自动就绪，无需手动管理。</p>
+</blockquote>
 <h3 id="构建步骤">构建步骤<a class="headerlink" href="#构建步骤" title="Permanent link">&para;</a></h3>
 <ol>
 <li><strong>安装依赖</strong></li>
@@ -2077,7 +2080,7 @@
       <script id="__config" type="application/json">{"annotate":null,"base":"../..","features":["announce.dismiss","content.code.annotate","content.code.copy","content.code.select","content.footnote.tooltips","content.tabs.link","content.tooltips","navigation.footer","navigation.instant","navigation.instant.prefetch","navigation.path","navigation.sections","navigation.tabs","navigation.top","navigation.tracking","search.highlight","toc.integrate"],"redirect":null,"search":"../../assets/javascripts/workers/search.7d14d953.min.js","tags":null,"translations":{"clipboard.copied":"已复制","clipboard.copy":"复制","clipboard.error":"Could not copy to clipboard","search.result.more.one":"在该页上还有 1 个符合条件的结果","search.result.more.other":"在该页上还有 # 个符合条件的结果","search.result.none":"没有找到符合条件的结果","search.result.one":"找到 1 个符合条件的结果","search.result.other":"# 个符合条件的结果","search.result.placeholder":"键入以开始搜索","search.result.term.missing":"缺少","select.version":"选择当前版本"},"version":null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.67a597eb.min.js"></script>
+      <script src="../../assets/javascripts/bundle.3c842f4c.min.js"></script>
       
     
   </body>
