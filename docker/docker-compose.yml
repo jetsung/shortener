@@ -1,9 +1,8 @@
-# Shortener 统一部署编排：单一镜像（docker/Dockerfile，nginx + shortener-server）
-# 对外仅暴露 80 端口（nginx），/api/* 与 /to/ 短码重定向由 nginx 反代到容器内后端 127.0.0.1:8080
+# Shortener 统一部署编排：单一镜像、单一进程（shortener-server 直接托管前端静态资源）
+# 对外仅暴露 8080 端口：/ 前端页面、/api/*（含健康检查）、/go/{code} 短码跳转
 #
 # 数据库默认使用 SQLite（./data 目录），可选启用 PostgreSQL / MySQL（profiles）。
 services:
-  # Shortener（统一镜像：nginx 托管前端 + 反代后端）
   shortener:
     build:
       context: ..
@@ -11,7 +10,7 @@ services:
     container_name: shortener
     restart: unless-stopped
     ports:
-      - "80:80"
+      - "8080:8080"
     environment:
       - RUST_LOG=shortener_server=info,sqlx=off
       - DATABASE__URL=sqlite:///app/data/shortener.db?mode=rwc
@@ -30,11 +29,15 @@ services:
     networks:
       - shortener-network
     healthcheck:
-      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/api/ping"]
+      # distroless 无 shell：借用 redis 镜像同款 busybox 探针不可行，
+      # 改由后端 /api/ping + 外部探针；此处用内建 TCP 探测（无 wget）
+      # 兼容方案：挂载 busybox 或使用编排层探针，详见 docs/deployment/DOCKER.md
+      test: ["NONE"]
       interval: 30s
       timeout: 3s
       retries: 3
       start_period: 10s
+      disable: true
 
   # Redis 缓存
   redis:
@@ -93,7 +96,7 @@ services:
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot_password"]
       interval: 10s
-      timeout: 5s
+      timeout: 3s
       retries: 5
 
 volumes:

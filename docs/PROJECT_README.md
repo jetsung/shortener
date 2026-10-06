@@ -94,9 +94,12 @@ zensical serve
 
 ### 环境要求
 
-- Rust 1.90+
-- Node.js 18+ (前端开发)
-- pnpm 8+ (前端开发)
+开发工具链由 [mise](https://mise.jdx.dev) 统一管理（根目录 `mise.toml`，进入目录自动生效）：
+
+- Rust 1.98（后端）
+- Node.js 24 + pnpm 10.20.0（前端开发）
+
+安装 mise 后在仓库根目录执行 `mise install` 即可，无需手动安装各工具。
 
 ### 开发服务器
 

@@ -123,7 +123,7 @@ Shortener 服务器的所有配置都可以通过环境变量覆盖。本文档�
 export SERVER__ADDRESS="0.0.0.0:8080"
 export SERVER__TRUSTED_PLATFORM=""                    # 例如 "X-Real-IP"
 export SERVER__SHORT_URL="https://s.example.com"  # 短址专用域名（可选，未设置时从监听地址推断，通配地址回退 localhost）
-export SERVER__STATIC_DIR="/usr/share/nginx/html"     # 后端直托管前端静态资源（可选）
+export SERVER__STATIC_DIR="/static"     # 后端直托管前端静态资源（可选）
 export SERVER__API_KEY="$(openssl rand -base64 32)"
 ```
 
@@ -351,25 +351,34 @@ export JWT_SECRET="$(openssl rand -base64 48)"
 cargo run -p shortener-server
 ```
 
-### direnv / .envrc（参考仓库根目录 `.envrc`）
+### mise / .env（推荐，参考仓库根目录 `mise.toml` 与 `.env`）
+
+项目开发环境已改用 [mise](https://mise.jdx.dev) 管理：工具链（Rust / Node / pnpm / prek）
+由根目录 `mise.toml` 声明并自动安装，服务端环境变量由 mise 自动加载 `.env`（KEY=VALUE
+格式，无需 `export`）。进入仓库目录后直接运行即可：
 
 ```bash
-# .envrc
-export SERVER__ADDRESS="0.0.0.0:8080"
-export SERVER__SHORT_URL="https://s.example.com"
-export SERVER__API_KEY="your-api-key"
+mise exec -- cargo run -p shortener-server
+```
 
-export DATABASE__URL="postgres://shortener:pass@localhost:5432/shortener"
-export CACHE__ENABLED="true"
-export CACHE__URL="redis://:pass@localhost:6379/0"
+`.env` 示例（完整默认模板见仓库根目录 `.env`）：
 
-export GEOIP__ENABLED="true"
-export GEOIP__IP2REGION__PATH="data/ip2region.xdb"
+```bash
+SERVER__ADDRESS="0.0.0.0:8080"
+SERVER__SHORT_URL="https://s.example.com"
+SERVER__API_KEY="your-api-key"
 
-export LOGGING__LEVEL="info"
-export LOGGING__FORMAT="json"
+DATABASE__URL="postgres://shortener:pass@localhost:5432/shortener"
+CACHE__ENABLED="true"
+CACHE__URL="redis://:pass@localhost:6379/0"
 
-export JWT_SECRET="your-jwt-secret"
+GEOIP__ENABLED="true"
+GEOIP__IP2REGION__PATH="data/ip2region.xdb"
+
+LOGGING__LEVEL="info"
+LOGGING__FORMAT="json"
+
+JWT_SECRET="your-jwt-secret"
 ```
 
 ### systemd（参考 `deploy/systemd/shortener-server.service`）
@@ -415,7 +424,7 @@ services:
 
 - 检查变量名是否使用 `__`（双下划线）分隔嵌套键，例如 `GEOIP__IP2REGION__PATH`（两层嵌套）
 - 检查是否拼写为扁平别名（如 `DATABASE_URL`），扁平别名仅在 `__` 形式**未设置**时才生效
-- 确认环境变量在**启动进程之前**已导出（`direnv allow` / `systemctl daemon-reload && systemctl restart`）
+- 确认环境变量在**启动进程之前**已加载（进入仓库目录由 mise 自动加载，或 `systemctl daemon-reload && systemctl restart`）
 
 ### 布尔值怎么写？
 

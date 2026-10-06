@@ -310,11 +310,15 @@ gcloud run deploy shortener-server \
 
 ## 反向代理设置
 
+> 完整的外部 nginx 配置（专用短域名、透传头说明、可选缓存压缩）请参阅
+> [统一镜像部署指南 - 外部 Nginx 反向代理](DOCKER_AIO.md#外部-nginx-反向代理)。
+
 ### Nginx
 
 ```nginx
 upstream shortener {
     server localhost:8080;
+    keepalive 32;
 }
 
 server {
@@ -333,13 +337,20 @@ server {
 
     location / {
         proxy_pass http://shortener;
-        proxy_set_header Host $host;
+        proxy_http_version 1.1;
+        proxy_set_header Host $http_host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection $connection_upgrade;
     }
 }
 ```
+
+> 上述 `Connection $connection_upgrade` 依赖 http{} 层的 map（完整说明见
+> [DOCKER_AIO.md](DOCKER_AIO.md#外部-nginx-反向代理)）；不需要 WebSocket 时可
+> 直接写死 `proxy_set_header Connection ""`。
 
 ### Caddy
 

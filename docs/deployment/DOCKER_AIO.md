@@ -1,19 +1,8 @@
-# All-In-One Docker 部署指南
+# 统一镜像部署指南
 
-本文档介绍使用 **All-In-One（AIO）镜像** 部署 shortener 服务。AIO 镜像同时包含**前端（React + nginx）**与**后端（Rust API）**，对外仅暴露一个端口，适合单机/小型部署，无需分别管理前后端两个容器。
-
-## 目录
-
-- [快速开始](#快速开始)
-- [镜像架构](#镜像架构)
-- [Docker Compose 部署](#docker-compose-部署)
-- [环境变量配置](#环境变量配置)
-  - [纯环境变量部署（不挂载 config.toml）](#纯环境变量部署不挂载-configtoml)
-- [反向代理配置](#反向代理配置)
-- [性能优化](#性能优化)
-- [日志管理](#日志管理)
-- [故障排查](#故障排查)
-- [安全建议](#安全建议)
+本文档介绍使用 **Shortener 统一镜像** 部署服务。镜像内是**单一进程**
+`shortener-server`（对齐 acmecast 形态）：直接托管前端静态产物并对外提供
+API，无 nginx、无进程管理脚本，适合单机/小型部署，无需分别管理前后端两个容器。
 
 ## 快速开始
 
@@ -31,284 +20,307 @@ docker compose -f docker/docker-compose.yml logs -f
 docker compose -f docker/docker-compose.yml down
 ```
 
-启动后访问：**http://localhost:80**
+启动后访问：**http://localhost:8080**
 
 ## 镜像架构
 
 ```
-浏览器 ──→ :80 nginx（托管前端静态资源，前端为 hash 路由 /#/...）
-              ├─ /api/* ───────────────→ 127.0.0.1:8080 shortener-server
-              ├─ /api/*（含 /api/ping）──→ 127.0.0.1:8080（API 与健康检查）
-              ├─ /assets/*（^~ 前缀优先） → 本地静态文件（一年 immutable 缓存）
-              └─ /go/{short_code} ──────→ 127.0.0.1:8080（短码重定向）
+浏览器 ──→ :8080 shortener-server（单进程，distroless static 运行时、非 root）
+              ├─ /              → 前端静态文件（/static，未命中回退 index.html）
+              ├─ /assets/*      → Vite 带内容哈希产物
+              ├─ /api/*         → 业务 API（含 /api/ping 健康检查）
+              └─ /go/{short_code} → 短码跳转
 ```
 
-- **nginx**（监听 80）：负责前端静态资源托管，并将 `/api/*`（含 `/api/ping` 健康检查）与 `/go/` 短码重定向反向代理到容器内后端
-- **shortener-server**（监听 `127.0.0.1:8080`）：Rust API 服务，仅容器内网可访问；亦可通过 `SERVER__STATIC_DIR` 直托管前端静态资源（本 compose 已启用，nginx 故障时直连 8080 仍可访问页面）
-- **进程管理**：`docker/entrypoint-aio.sh` 以 `setsid` 在独立会话中启动后端（信号隔离），前台运行 nginx；监控子 shell 通过 `kill -0` 轮询后端存活，后端崩溃时终止 nginx 使容器整体退出，配合 Docker `restart` 策略实现自愈
+- **单进程**：`shortener-server` 静态链接二进制，直接托管静态资源与 API，
+  无 nginx、无 entrypoint 脚本；容器崩溃自愈完全由 Docker `restart` 策略承担
+- **非 root**：distroless `nonroot` 用户（UID 65532），数据目录已预授权
+- **数据持久化**：`/app/data`（SQLite / GeoIP），挂卷即可
 
 ### 前端路由说明
 
-前端采用 **hash 路由**（如 `/#/dashboard`、`/#/account/login`），`#` 及其后内容不会发送到服务端——服务端只需响应 `/`（返回 `index.html`），前端 SPA 路由不占用任何服务端路径。因此**短码路径 `/go/{short_code}` 与前端路由不存在冲突**（短码统一走 `/go/` 前缀，避免与静态资源在根命名空间竞争；实际有效短码长度由后端 `slug.length` 配置校验）。
+前端采用 **hash 路由**（如 `/#/dashboard`、`/#/account/login`），`#` 及其后
+内容不会发送到服务端——服务端只需响应 `/`（返回 `index.html`）。因此**短码
+路径 `/go/{short_code}` 与前端路由不存在冲突**（短码统一走 `/go/` 前缀；
+实际有效短码长度由后端 `slug.length` 配置校验）。
 
 ### 旧短链兼容（可选）
 
-v0.2.1 之前短链形态为 `/{short_code}`，升级后需使用 `/go/{short_code}`。已对外分发的旧短链可在**外层** nginx（TLS 终结层）加一条 301 重定向过渡：
+v0.3.0 之前短链形态历经 `/{short_code}` 与 `/to/{short_code}` 两代，现统一为
+`/go/{short_code}`。已对外分发的旧短链可在**外层** nginx（TLS 终结层）加一条
+301 重定向过渡：
 
 ```nginx
 # 放在外层 server 块中，置于其它 location 之前
 rewrite ^/([A-Za-z0-9]+)$ /go/$1 permanent;
 ```
 
-### Dockerfile 说明
+## Dockerfile 说明
 
-AIO 镜像为三段式多阶段构建：
+统一镜像为三段式多阶段构建：
 
-| 阶段 | 基础镜像 | 产物 |
-|------|---------|------|
-| `builder-server` | `rust:alpine`（musl 静态链接） | `shortener-server` 静态二进制 |
-| `builder-frontend` | `node:24-alpine` | 前端 Vite 构建产物 `dist` |
-| 运行时 | `nginx:alpine` | 合并前端产物 + 后端二进制 |
+| 阶段 | 基础镜像 | 产出 |
+| --- | --- | --- |
+| builder-server | `rust:1.98-alpine` | musl 静态链接的 `shortener-server` 二进制 + `/app/data` 目录 |
+| builder-frontend | `node:24-alpine` | Vite 前端产物（pnpm 版本由 package.json 锁定） |
+| 运行时 | `gcr.io/distroless/static-debian13:nonroot` | 仅二进制 + 静态产物 + 配置 |
 
-后端以 `-c /app/config.toml` 显式指定配置路径启动（镜像 `WORKDIR /app`，配置文件即位于工作目录），并监听 `SERVER__ADDRESS=127.0.0.1:8080`（仅容器内网监听）。`config.toml` 为**可选**：镜像内置了一份默认模板，也可以不挂载文件、完全通过环境变量配置（环境变量优先于文件），详见 [环境变量配置](#环境变量配置)。
+环境变量（镜像内置默认值）：
 
-## Docker Compose 部署
-
-项目提供现成的编排文件：`docker/docker-compose.yml`。
-
-```yaml
-services:
-  shortener:
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile
-    container_name: shortener
-    restart: unless-stopped
-    ports:
-      - "80:80"
-    environment:
-      - RUST_LOG=shortener_server=info,sqlx=off
-      - DATABASE__URL=sqlite:///app/data/shortener.db?mode=rwc
-      - CACHE__ENABLED=true
-      - CACHE__URL=redis://redis:6379/0
-      - GEOIP__ENABLED=true
-      - GEOIP__IP2REGION__PATH=/app/data/ip2region.xdb
-    volumes:
-      - ../config.toml:/app/config.toml:ro
-      - ../data:/app/data
-    depends_on:
-      redis:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/api/ping"]
-      interval: 30s
-      timeout: 3s
-      retries: 3
-      start_period: 10s
-```
-
-> 提示：
-> - 若宿主机 80 端口被占用，可改用其他端口映射，如 `"8080:80"`。
-> - 生产环境务必覆盖 `api_key`、管理员密码等敏感配置——可编辑挂载的 `config.toml`，或直接用环境变量注入（推荐，见下节）。
-> - `data` 目录用于 sqlite / geoip 数据，建议挂载持久化卷。
-> - 不想挂载 `config.toml`？删掉该 volumes 行并补齐必填环境变量即可，见下节 [纯环境变量部署](#纯环境变量部署)。
+| 变量 | 值 | 说明 |
+| --- | --- | --- |
+| `SERVER__ADDRESS` | `0.0.0.0:8080` | 单进程直接对外 |
+| `SERVER__STATIC_DIR` | `/static` | 前端静态产物目录（未命中回退 `index.html`） |
+| `CONFIG_PATH` | `/app/config.toml` | 配置文件路径（可挂载覆盖） |
 
 ## 环境变量配置
 
-AIO 镜像支持通过环境变量配置/覆盖后端配置（使用 `__` 分隔嵌套键，环境变量优先于 `config.toml`）。
+镜像支持通过环境变量覆盖后端配置（使用 `__` 分隔嵌套键，环境变量优先于
+`config.toml`）。完整清单见 [环境变量参考](../general/ENVIRONMENT_VARIABLES.md)。
 
-| 环境变量 | 必需 | 说明 |
-|---------|------|------|
-| `JWT_SECRET` | **是** | JWT 签名密钥，生成：`openssl rand -base64 48` |
-| `SERVER__API_KEY` | **是** | API 认证密钥，生成：`openssl rand -base64 32` |
-| `ADMIN__PASSWORD_HASH` | **是** | 管理员口令哈希，生成：`shortener-server hash-password --password "..."` |
-| `DATABASE__URL` | **是** | 数据库连接串（`sqlite://` / `postgres://` / `mysql://`） |
-| `RUST_LOG` | 否 | 日志级别（默认 `info`） |
-| `SERVER__ADDRESS` | 否 | 后端监听地址（镜像默认 `127.0.0.1:8080`，勿改） |
-| `ADMIN__USERNAME` | 否 | 管理员用户名（默认 `admin`） |
-| `CACHE__ENABLED` / `CACHE__URL` | 否 | 缓存开关与 Redis 连接串；启用后启动时自动清空前缀旧键并从数据库预热全量短链 |
-| `GEOIP__ENABLED` / `GEOIP__IP2REGION__PATH` | 否 | IP 地理定位与 ip2region 数据库路径 |
-
-完整配置项见 [环境变量参考](../general/ENVIRONMENT_VARIABLES.md) 或 `config.toml`。
-
-### 纯环境变量部署（不挂载 config.toml）
-
-```yaml
-services:
-  shortener:
-    image: ghcr.io/jetsung/shortener:latest
-    container_name: shortener
-    restart: unless-stopped
-    ports:
-      - "80:80"
-    environment:
-      - RUST_LOG=shortener_server=info,sqlx=off
-      - JWT_SECRET=${JWT_SECRET}
-      - SERVER__API_KEY=${SERVER__API_KEY}
-      - ADMIN__PASSWORD_HASH=${ADMIN__PASSWORD_HASH}
-      - DATABASE__URL=sqlite:///app/data/shortener.db?mode=rwc
-      - CACHE__ENABLED=true
-      - CACHE__URL=redis://redis:6379/0
-    volumes:
-      - ./data:/app/data
-```
-
-配合 `.env` 文件（与 compose 同目录，`docker compose` 自动读取）：
+常用项：
 
 ```bash
-# .env
-JWT_SECRET=...                  # openssl rand -base64 48
-SERVER__API_KEY=...             # openssl rand -base64 32
-ADMIN__PASSWORD_HASH=$argon2id$...   # shortener-server hash-password --password "..."
+SERVER__API_KEY=<openssl rand -base64 32>   # API 密钥（必填）
+JWT_SECRET=<openssl rand -base64 48>        # JWT 签名密钥
+ADMIN__PASSWORD_HASH='$argon2id$...'        # 管理员口令哈希
+DATABASE__URL=sqlite:///app/data/shortener.db?mode=rwc
+CACHE__ENABLED=true
+CACHE__URL=redis://redis:6379/0
+GEOIP__ENABLED=true
+GEOIP__IP2REGION__PATH=/app/data/ip2region.xdb
 ```
 
-> 其余配置（监听地址、短码长度、管理员用户名等）均有合理默认值，必填项缺失时启动会给出明确的字段级错误。
+## Docker Compose 部署
 
-## 反向代理配置
+项目提供现成的编排文件：`docker/docker-compose.yml`（shortener + Redis，
+PostgreSQL/MySQL 通过 profile 可选启用）。
 
-AIO 镜像本身已用 nginx 承担静态托管与反代，外部无需再配置后端反代。若需在 AIO 之前再套一层网关（HTTPS 终结、负载均衡），将 80 端口作为上游即可。
+```bash
+# 默认（SQLite + Redis）
+docker compose -f docker/docker-compose.yml up -d
 
-**协议透传**：AIO 内置 nginx 会透传上游的 `X-Forwarded-Proto` 与 `X-Real-IP`（未携带时回退本机值），后端据此推导 OIDC 回调地址（`redirect_uri`）与真实客户端 IP。因此外层网关务必设置：
+# 启用 PostgreSQL
+docker compose -f docker/docker-compose.yml --profile postgres up -d
+# 并把 shortener 服务的 DATABASE__URL 改为
+# postgres://shortener:shortener_password@postgres:5432/shortener
+```
+
+## 外部 Nginx 反向代理
+
+单进程直接对外，后端**不需要**任何反代即可工作（`http://服务器IP:8080`）。
+需要 HTTPS 终结、域名接入或负载均衡时，在外层加一台 nginx，把 `8080` 作为上游，
+**任意路径原样转发，无需任何改写**。
+
+### 推荐完整配置
+
+一个主域名（控制台 + API + 短码）+ 一个专用短域名（仅短码，链接无 `/go/` 前缀）的典型配置：
 
 ```nginx
-proxy_set_header X-Forwarded-Proto $scheme;
-proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-proxy_set_header X-Real-IP $remote_addr;
-proxy_set_header Host $http_host;
-```
+# ---------- 公共上游与透传 ----------
+upstream shortener {
+    server 127.0.0.1:8080;
+    keepalive 32;
+}
 
-否则 HTTPS 部署下 OIDC 回调地址会被推导为 `http://`，IdP 校验 Redirect URI 将失败。
+# ---------- 主域名：控制台 + API + 短码 ----------
+server {
+    listen 80;
+    server_name short.example.com;
+    # 全站跳 HTTPS（首次用 HTTP 申请证书时临时注释这两行）
+    return 301 https://$host$request_uri;
+}
 
-### 使用 Caddy
+server {
+    listen 443 ssl;
+    http2 on;
+    server_name short.example.com;
 
-```caddyfile
-short.example.com {
-    reverse_proxy shortener:80
+    ssl_certificate     /etc/letsencrypt/live/short.example.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/short.example.com/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+
+    # 上传/请求体限制（按需调整）
+    client_max_body_size 10m;
+
+    location / {
+        proxy_pass http://shortener;
+        proxy_http_version 1.1;
+
+        # 必设透传头（见下方「透传头说明」）
+        proxy_set_header Host              $http_host;
+        proxy_set_header X-Real-IP         $remote_addr;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        # WebSocket（前端 dev 热更新或未来实时功能）
+        proxy_set_header Upgrade    $http_upgrade;
+        proxy_set_header Connection $connection_upgrade;
+
+        # 长连接复用
+        proxy_set_header Connection "";
+    }
+}
+
+# WebSocket 升级映射（放在 http{} 层，与 upstream 同级）
+# map $http_upgrade $connection_upgrade {
+#     default upgrade;
+#     ""      close;
+# }
+
+# ---------- 专用短域名：仅短码（链接形如 https://s.example.com/<code>） ----------
+# 使用此配置时，服务端配置 SERVER__SHORT_URL=https://s.example.com
+server {
+    listen 443 ssl;
+    http2 on;
+    server_name s.example.com;
+
+    ssl_certificate     /etc/letsencrypt/live/s.example.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/s.example.com/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+
+    # 旧版短链（/{code} 与 /to/{code}）301 过渡到 /go/{code}
+    rewrite ^/([A-Za-z0-9]+)$          /go/$1 permanent;
+    rewrite ^/to/([A-Za-z0-9]+)$       /go/$1 permanent;
+
+    location /go/ {
+        proxy_pass http://shortener;
+        proxy_http_version 1.1;
+        proxy_set_header Host              $http_host;
+        proxy_set_header X-Real-IP         $remote_addr;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # 短址域名只服务跳转，其余路径一律 404
+    location / {
+        return 404;
+    }
 }
 ```
 
-### 使用 Traefik
+> `map $http_upgrade $connection_upgrade` 必须位于 `http {}` 层（`upstream` 同级），
+> 不能放进 `server {}`；若不需要 WebSocket，可删除对应两行 `proxy_set_header`。
 
-```yaml
-services:
-  traefik:
-    image: traefik:v3
-    ...
-  shortener:
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.aio.rule=Host(`short.example.com`)"
-      - "traefik.http.routers.aio.entrypoints=websecure"
-      - "traefik.http.routers.aio.tls=true"
-      - "traefik.http.services.aio.loadbalancer.server.port=80"
+### 透传头说明（必设）
+
+后端依赖以下请求头推导**真实客户端 IP**（访问统计/GeoIP）与 **OIDC 回调地址**，
+缺失或错误会导致统计数据失真、OIDC 登录失败：
+
+| 请求头 | 设置值 | 后端用途 |
+| --- | --- | --- |
+| `Host` | `$http_host` | OIDC `redirect_uri` 推导（`{scheme}://{host}/api/oidc/callback`） |
+| `X-Real-IP` | `$remote_addr` | 真实客户端 IP |
+| `X-Forwarded-For` | `$proxy_add_x_forwarded_for` | 真实客户端 IP（链式） |
+| `X-Forwarded-Proto` | `$scheme` | OIDC `redirect_uri` 的 scheme 部分 |
+
+多层代理（CDN → nginx → 容器）时，`X-Real-IP` 使用最外层传来的值即可；
+若外层还有 CDN，请以 `real_ip` 模块或 CDN 文档为准取最原始客户端 IP。
+
+### 可选：外层缓存与压缩
+
+后端已对 `/assets/`（Vite 内容哈希产物）返回长期 `Cache-Control` 头、页面回退
+`index.html`，通常无需额外配置。如需进一步降低回源量，可在主域名 server 块追加：
+
+```nginx
+gzip on;
+gzip_comp_level 5;
+gzip_min_length 1024;
+gzip_types text/css application/javascript application/json image/svg+xml;
+
+# 静态哈希资源直接命中外层缓存（可选）
+location /assets/ {
+    proxy_pass http://shortener;
+    proxy_cache_valid 200 30d;
+    expires 1y;
+    add_header Cache-Control "public, immutable";
+}
 ```
 
-## 性能优化
+### 其他网关
 
-### 1. 压缩与缓存
+Caddy：
 
-nginx 默认已启用 Gzip 压缩，并对 `/assets/`（Vite 带内容哈希产物）设置长期 `immutable` 缓存、其余静态资源 30 天缓存（见 `docker/nginx-aio.conf`）。
-
-### 2. 资源限制
-
-```yaml
-services:
-  shortener:
-    deploy:
-      resources:
-        limits:
-          cpus: '1'
-          memory: 512M
-        reservations:
-          cpus: '0.5'
-          memory: 256M
+```caddyfile
+short.example.com {
+    reverse_proxy 127.0.0.1:8080
+}
+# 专用短域名同理：
+# s.example.com { reverse_proxy 127.0.0.1:8080 }
 ```
 
-## 日志管理
+Traefik：
+
+```yaml
+labels:
+  - "traefik.http.routers.shortener.rule=Host(`short.example.com`)"
+  - "traefik.http.routers.shortener.entrypoints=websecure"
+  - "traefik.http.routers.shortener.tls=true"
+  - "traefik.http.services.shortener.loadbalancer.server.port=8080"
+```
+
+## 性能说明
+
+静态资源缓存由后端处理：`/assets/`（Vite 带内容哈希产物）返回长期缓存头，
+页面与深链回退 `index.html`。如需更激进的压缩/缓存策略，可在外层网关配置。
+
+## 日志
+
+- 后端日志：由 `RUST_LOG` 控制，输出到容器 stdout（JSON 格式）
 
 ```bash
-# 查看容器日志
-docker logs shortener
-
 # 实时跟踪
 docker logs -f shortener
-
-# 使用 Docker Compose
-docker compose -f docker/docker-compose.yml logs -f
 ```
-
-- **后端日志**：由 `RUST_LOG` 控制，输出到容器 stdout
-- **nginx 日志**：access/error 日志默认输出到容器 stdout/stderr
 
 ## 故障排查
 
-### 1. 容器无法启动
+### 页面无法访问
+
+- 确认容器在运行：`docker compose -f docker/docker-compose.yml ps`
+- 检查后端日志：`docker logs shortener`
+
+### 健康检查
 
 ```bash
-# 检查后端能否单独启动
-docker run --rm -it --entrypoint /usr/local/bin/shortener-server shortener:latest --help
-
-# 检查 nginx 配置
-docker exec shortener nginx -t
+# 容器内直接探测（宿主机映射端口同理）
+curl http://127.0.0.1:8080/api/ping   # {"message":"pong"}
 ```
 
-### 2. 前端白屏 / API 请求失败
+> 镜像为 distroless（无 shell/wget），未内置容器级 `HEALTHCHECK` 探针；
+> compose 的 healthcheck 已禁用。健康监控建议使用外部探针请求 `/api/ping`。
+
+### 短码无法访问
+
+- 确认访问路径使用 `/go/` 前缀（如 `/go/abc123`），短码为纯字母数字且长度在
+  配置的 `slug.length` 生成规则内；旧形态 `/{short_code}` 需外层 nginx 301
+  重定向（见「旧短链兼容」）
+
+### 数据目录权限
+
+镜像以非 root（UID 65532）运行，挂载的 `data` 卷需保证可写：
 
 ```bash
-# 检查 nginx 反代是否正常
-docker exec shortener wget -q -O- http://127.0.0.1/api/ping
-
-# 检查后端日志
-docker logs shortener 2>&1 | grep -i error
+mkdir -p data && sudo chown -R 65532:65532 data
 ```
 
-### 3. 短码无法访问
+## CI/CD
 
-- 确认访问路径使用 `/go/` 前缀（如 `/go/abc123`），短码为纯字母数字且长度在配置的 `slug.length` 生成规则内；旧形态 `/{short_code}` 需外层 nginx 301 重定向（见「旧短链兼容」）
-- 检查后端是否正常（`docker exec shortener wget -q -O- http://127.0.0.1/api/ping`）
+镜像通过 GitHub Actions 自动构建与发布：
 
-### 4. 数据目录权限
-
-AIO 镜像后端以容器默认用户运行，挂载的 `data` 卷需保证可写：
-
-```bash
-chown -R 65532:65532 ./data   # 若后端以非 root 运行
-# 或检查挂载卷权限
-docker exec shortener ls -la /app/data
-```
-
-## CI/CD 发布
-
-AIO 镜像通过 GitHub Actions 自动构建与发布，相关 workflow：
-
-### 发布镜像（`docker-release-aio.yml`）
-
-- **触发**：推送 `shortener-server-v*` tag（与后端发布共用同一 tag，打 `shortener-server-vX.Y.Z` 时 server 与 AIO 镜像同步构建）
-- **产物**：多架构（amd64 + arm64）OCI 归档
-- **推送目标**：
-  - Docker Hub：`jetsung/shortener`（`:latest` / `:${VERSION}`）
-  - GHCR：`ghcr.io/jetsung/shortener`
-  - 阿里云 ACR / 腾讯云 TCR（配置凭证后自动同步，否则跳过）
-
-### 开发镜像（`docker-dev-aio.yml`）
-
-- **触发**：推送 `dev*` 分支，且改动涉及 AIO 相关文件（`docker/Dockerfile`、`nginx-aio.conf`、`entrypoint-aio.sh`、后端源码、前端源码、`config.toml` 等）
-- **产物**：多架构（amd64 + arm64）
-- **推送目标**：Docker Hub `jetsung/shortener`，合并 manifest 后输出 `:dev` 与 `:latest`
-
-> 说明：workflow 内 git tag 前缀剥离使用 `shortener-server-v`，与触发 tag 一致；镜像名统一为 `shortener`，不区分 `-server`/`-frontend` 后缀。
+- **开发镜像**（`docker-dev-aio.yml`）：推送 `dev*` 分支时构建
+  `ghcr.io/jetsung/shortener:dev`（触发路径含 `docker/Dockerfile`、后端/前端源码）
+- **发布镜像**（`docker-release-aio.yml`）：推送 `shortener-server-v*` tag 时
+  构建多平台（amd64/arm64）发布镜像并同步到 Docker Hub / GHCR / 阿里云 / 华为云 / 腾讯云
 
 ## 安全建议
 
-1. **修改默认凭据**：部署前务必修改 `config.toml` 中的 `api_key`、admin 密码等默认值
-2. **使用 HTTPS**：在外部网关（Caddy/Traefik/云负载均衡）终结 TLS
-3. **限制访问**：配置防火墙规则，必要时启用 rate limiting
-4. **定期更新**：及时更新基础镜像（`nginx:alpine`、`rust:alpine`、`node:24-alpine`）与依赖
+1. **修改默认凭证**：部署前设置 `SERVER__API_KEY`、`JWT_SECRET`、
+   `ADMIN__PASSWORD_HASH`（勿使用示例值）
+2. **最小暴露**：仅映射 `8080`，数据库/Redis 端口不对宿主机暴露
+3. **及时更新**：升级基础镜像（`rust:alpine`、`node:24-alpine`、distroless）与依赖
 
 ## 相关文档
 
-- [Docker 部署（后端）](DOCKER.md)
+- [Docker 部署（快速开始）](DOCKER.md)
 - [Docker 高级部署](DOCKER_ADVANCED.md)

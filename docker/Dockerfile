@@ -1,10 +1,13 @@
-# All-In-One Dockerfile: 同时打包 shortener-server（后端）与 shortener-frontend（前端）为单个镜像
+# Shortener 统一镜像 Dockerfile（对齐 acmecast 形态）
+# 单一进程：shortener-server 直接托管前端静态产物并对外提供 API，
+# 无 nginx、无进程管理脚本——单二进制即完整服务。
 #
-# 镜像内进程架构：
-#   - nginx（监听 80）：托管前端静态资源 + SPA 回退，并反向代理 /api/* 与短码重定向到后端
-#   - shortener-server（监听 127.0.0.1:8080）：API 服务（仅容器内网，由 nginx 代理对外）
-# 两个进程由 docker/entrypoint-aio.sh 同时拉起。
-
+# 运行时架构：
+#   - shortener-server（监听 0.0.0.0:8080）：
+#     · /            → 前端静态文件（SERVER__STATIC_DIR=/static，未命中回退 index.html）
+#     · /api/*       → 业务 API（含 /api/ping 健康检查）
+#     · /go/{code}   → 短码跳转
+#
 # ============================================================================
 # Stage 1: 构建后端（静态链接 musl 二进制）
 # ============================================================================
@@ -34,9 +37,12 @@ COPY shortener-common/src ./shortener-common/src
 # 复制 benches（Cargo.toml 校验需要，但不会编译）
 COPY shortener-server/benches ./shortener-server/benches
 
-# 构建 release（musl 目标默认完全静态，强制 OpenSSL 静态链接）
+# 构建 release（musl 目标完全静态，distroless static 可直接运行）
 ENV OPENSSL_STATIC=1
 RUN cargo build --release -p shortener-server --bins
+
+# 预创建数据目录并归属 nonroot(65532)：distroless 无 shell，不能在运行时阶段 mkdir
+RUN mkdir -p /app/data && chown 65532:65532 /app/data
 
 # ============================================================================
 # Stage 2: 构建前端（Vite 产物）
@@ -45,60 +51,47 @@ FROM node:24-alpine AS builder-frontend
 
 WORKDIR /app
 
-# 复制 package 文件
-COPY shortener-frontend/package*.json shortener-frontend/pnpm-lock.yaml ./
+# 复制 package 文件（利用层缓存）
+COPY shortener-frontend/package.json shortener-frontend/pnpm-lock.yaml ./
 
-# 安装 pnpm
-RUN corepack enable && corepack prepare pnpm@latest --activate
+# 安装 pnpm（版本由 package.json 的 packageManager 字段锁定，保证构建可复现）
+RUN corepack enable
 
 # 安装依赖
 RUN pnpm install --frozen-lockfile
 
-# 复制源代码
-COPY shortener-frontend/ .
-
-# 构建应用
+# 复制源代码并构建
+COPY shortener-frontend/ ./
 RUN pnpm build
 
 # ============================================================================
-# Stage 3: 运行时镜像（nginx:alpine，内置 shell 用于进程管理与健康检查）
+# Stage 3: 运行时镜像（distroless static，非 root，对齐 acmecast）
 # ============================================================================
-FROM nginx:alpine
-
-# 工作目录：后端以此为基础解析相对路径（如默认的 config.toml、data/）
-WORKDIR /app
+FROM gcr.io/distroless/static-debian13:nonroot
 
 # 后端静态二进制
-COPY --from=builder-server /app/target/release/shortener-server /usr/local/bin/shortener-server
+COPY --from=builder-server /app/target/release/shortener-server /usr/bin/shortener-server
 
-# 后端配置文件（挂载卷可覆盖）
+# 后端配置文件（可选：完全可用环境变量配置，挂载卷可覆盖）
 COPY config.toml /app/config.toml
 
-# 前端构建产物
-COPY --from=builder-frontend /app/dist /usr/share/nginx/html
+# 前端构建产物（由后端静态托管，未命中回退 index.html）
+COPY --from=builder-frontend /app/dist /static
 
-# nginx AIO 配置（静态托管 + SPA 回退 + /api 与短码反代）
-COPY docker/nginx-aio.conf /etc/nginx/conf.d/default.conf
-
-# 进程管理入口脚本（后台启动后端 + 前台运行 nginx）
-COPY docker/entrypoint-aio.sh /usr/local/bin/entrypoint-aio.sh
-RUN chmod +x /usr/local/bin/entrypoint-aio.sh
-
-# 预创建数据目录（sqlite / geoip）
-RUN mkdir -p /app/data && chown nginx:nginx /app/data
+# 数据目录（SQLite / GeoIP）挂卷持久化（目录已在 builder 阶段预创建并归属 nonroot）
+COPY --chown=65532:65532 --from=builder-server /app/data /app/data
 
 # 环境变量
-# 后端仅监听容器内网，由 nginx 对外代理（127.0.0.1:8080）
+# 单进程直接对外，无需反代：监听 0.0.0.0:8080
 ENV RUST_LOG=info
 ENV CONFIG_PATH=/app/config.toml
-ENV SERVER__ADDRESS=127.0.0.1:8080
+ENV SERVER__ADDRESS=0.0.0.0:8080
+ENV SERVER__STATIC_DIR=/static
 
-# 暴露端口（nginx 对外端口）
-EXPOSE 80
+VOLUME ["/app/data"]
 
-# 健康检查（探测 nginx 反代到后端的 /api/ping）
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget -q -O /dev/null http://127.0.0.1/api/ping || exit 1
+# 唯一对外端口
+EXPOSE 8080
 
 # 启动入口
-ENTRYPOINT ["/usr/local/bin/entrypoint-aio.sh"]
+ENTRYPOINT ["/usr/bin/shortener-server"]

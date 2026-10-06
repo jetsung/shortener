@@ -76,26 +76,40 @@
 
 ### 前提条件
 
-- Rust 1.90 或更高版本
-- Cargo（随 Rust 一起安装）
+- Rust 1.98 或更高版本（由 mise 自动安装，无需手动管理）
+- mise（工具链管理器，自动安装 Rust / Node / pnpm / prek）
 - Git
 
 ### 设置开发环境
 
+项目使用 [mise](https://mise.jdx.dev) 管理开发工具链（Rust、Node、pnpm、prek），
+进入仓库目录即自动加载根目录 `mise.toml`：
+
 ```bash
+# 安装 mise（一次性）
+curl https://mise.run | sh
+
 # 克隆仓库
 git clone https://github.com/jetsung/shortener.git
 cd shortener
 
+# 自动安装 mise.toml 声明的工具链
+mise install
+
 # 构建项目
-cargo build
+mise exec -- cargo build
 
 # 运行测试
-cargo test
+mise exec -- cargo test
 
-# 运行服务器
-cargo run -p shortener-server
+# 运行服务器（环境变量由 mise 自动加载 .env）
+mise exec -- cargo run -p shortener-server
 ```
+
+> 已在 shell 中激活 mise（`mise activate`）或配置 direnv 集成时，可省略 `mise exec --` 前缀。
+
+服务端环境变量（`SERVER__ADDRESS` 等）由 mise 自动加载仓库根目录 `.env`，
+详见 [环境变量参考](general/ENVIRONMENT_VARIABLES.md)。
 
 ### 开发工具
 

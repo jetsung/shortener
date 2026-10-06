@@ -2,7 +2,7 @@
 ## https://docs.docker.com/build/bake/
 ## https://docs.docker.com/reference/cli/docker/buildx/bake/
 ##
-## 唯一交付镜像：docker/Dockerfile（nginx + shortener-server 统一镜像）。
+## 唯一交付镜像：docker/Dockerfile（shortener-server 单进程直接托管前端静态产物）。
 
 ## Special target: https://github.com/docker/metadata-action#bake-definition
 target "docker-metadata-action" {}
@@ -59,9 +59,9 @@ function "dev_arch_tags" {
 }
 
 ## ============================================================================
-## Shortener unified image (nginx:alpine runtime; nginx serves the frontend
-## and proxies /api/* + short codes to the in-container backend at
-## 127.0.0.1:8080 — see docker/nginx-aio.conf)
+## Shortener unified image (distroless static runtime; the shortener-server
+## binary serves the frontend static assets from /static and exposes
+## /api/* and /go/{code} on a single port 8080 — no nginx)
 ## ============================================================================
 
 variable "IMAGE_NAME" {
@@ -71,7 +71,7 @@ variable "IMAGE_NAME" {
 ## Common configuration for all targets
 target "_common" {
     inherits = ["docker-metadata-action"]
-    labels = oci_labels("Shortener", "Unified URL shortener image with frontend (nginx) and backend (shortener-server) written in Rust")
+    labels = oci_labels("Shortener", "Unified URL shortener image: single shortener-server process serving frontend static assets and API")
     context = "."
     dockerfile = "./docker/Dockerfile"
     platforms = ["linux/amd64"]

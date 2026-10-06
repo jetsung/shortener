@@ -119,7 +119,7 @@ cargo build --release -p shortener-server
 
 ### 后端
 
-- **语言**: Rust 1.90+
+- **语言**: Rust 1.98（工具链由 mise 管理）
 - **Web 框架**: Axum
 - **ORM**: SeaORM
 - **数据库**: SQLite / PostgreSQL / MySQL

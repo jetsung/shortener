@@ -11,8 +11,8 @@ Shortener Frontend 是一个基于 React 和 Semi Design 的现代化短链接�
 
 ### 环境要求
 
-- Node.js >= 18.0.0
-- pnpm >= 10.0.0 (推荐) 或 npm
+- Node.js 24 与 pnpm 10.20.0（推荐通过仓库根目录的 [mise](https://mise.jdx.dev) 自动安装：安装 mise 后执行 `mise install`）
+- 或手动安装：Node.js >= 18.0.0、pnpm >= 10.0.0
 
 ### 安装依赖
 

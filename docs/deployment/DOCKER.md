@@ -2,8 +2,9 @@
 
 本指南说明如何使用 Docker 和 Docker Compose 构建与部署 Shortener。
 
-> 项目已收敛为**单一 Dockerfile**（`docker/Dockerfile`）：一个镜像同时包含
-> 前端（nginx）与后端（shortener-server），不再提供分离的前端/后端镜像。
+> 项目已收敛为**单一 Dockerfile**（`docker/Dockerfile`）：shortener-server
+> 单进程直接托管前端静态产物并对外提供 API（对齐 acmecast 形态），
+> 无 nginx、无进程管理脚本，不再提供分离的前端/后端镜像。
 
 ## 快速开始
 
@@ -29,7 +30,7 @@ docker compose -f docker/docker-compose.yml logs -f
 docker compose -f docker/docker-compose.yml down
 ```
 
-服务启动后访问 `http://localhost/`（nginx 监听 80）。
+服务启动后访问 `http://localhost:8080/`。
 
 ### 使用 PostgreSQL / MySQL（可选）
 
@@ -45,12 +46,42 @@ docker compose -f docker/docker-compose.yml --profile postgres up -d
 docker compose -f docker/docker-compose.yml --profile mysql up -d
 ```
 
+## 端口说明
+
+| 容器端口 | 用途 |
+| --- | --- |
+| `8080` | 唯一对外端口：前端页面 + `/api/*`(含健康检查) + `/go/` 短码跳转 |
+
+compose 默认映射为宿主机 `8080:8080`。
+
+**专用短域名反代**：若短址使用专用域名（如 `s.example.com`，链接形如
+`https://s.example.com/<code>`），外层 nginx/负载均衡把该域名**原样转发**到
+`8080` 端口即可（`/go/` 前缀由后端处理），无需路径改写：
+
+```nginx
+# 外层 nginx（TLS 终结）
+server {
+    listen 443 ssl;
+    server_name s.example.com;
+    # ... TLS 证书配置 ...
+    location / {
+        proxy_pass http://127.0.0.1:8080;   # 原样转发到后端
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
 ## 镜像架构
 
-统一镜像内包含两个进程，由 `docker/entrypoint-aio.sh` 拉起：
+单一进程（对齐 acmecast 形态，distroless static 运行时、非 root）：
 
-- **nginx**（监听 80）：托管前端静态资源（前端为 hash 路由 `/#/...`），并反向代理 `/api/*` 与 `/go/` 短码重定向到容器内后端
-- **shortener-server**（监听 `127.0.0.1:8080`）：API 服务，仅容器内网可访问；后端以 `setsid` 独立会话运行，nginx 前台运行
+- **shortener-server**（监听 `0.0.0.0:8080`）：
+  - `/` → 前端静态文件（`SERVER__STATIC_DIR=/static`，未命中回退 `index.html`）
+  - `/api/*` → 业务 API（含 `/api/ping` 健康检查）
+  - `/go/{code}` → 短码跳转
 
 ## 使用 Docker Bake
 
@@ -103,7 +134,7 @@ docker buildx bake -f docker/docker-bake.hcl --set "*.platform=linux/amd64,linux
 - `SERVER__SHORT_URL`：短址专用域名（可选，未设置时从监听地址推断，通配地址回退 localhost）
 - `SERVER__API_KEY`：API 密钥
 
-> `SERVER__ADDRESS` 已由镜像固定为 `127.0.0.1:8080`（后端仅容器内网监听，由 nginx 对外代理），无需覆盖。
+> `SERVER__ADDRESS` 已由镜像固定为 `0.0.0.0:8080`（单进程直接对外），无需覆盖。
 
 #### 数据库配置
 
@@ -151,7 +182,7 @@ just docker-logs
 
 ## 健康检查
 
-镜像内置 `HEALTHCHECK`：通过 nginx 探测后端 `/api/ping`（返回 `{"message":"pong"}`）。
+镜像无内置 `HEALTHCHECK`（distroless 无 shell/wget）：compose 的 healthcheck 已禁用，健康探测建议使用外部监控请求 `/api/ping`（返回 `{"message":"pong"}`），或由编排层挂载静态编译的探针。
 
 ## 网络
 
@@ -165,7 +196,7 @@ networks:
 
 服务可以使用服务名称相互通信：
 
-- `shortener`：统一镜像（nginx + 后端）
+- `shortener`：统一镜像（单进程：静态托管 + API）
 - `postgres`：PostgreSQL 数据库（postgres profile）
 - `mysql`：MySQL 数据库（mysql profile）
 - `redis`：Redis 缓存
@@ -203,7 +234,7 @@ docker compose --env-file .env up -d
 
 ```yaml
 ports:
-  - "80:80" # 仅暴露 nginx 端口
+  - "8080:8080" # 仅暴露后端端口
 ```
 
 生产环境不应暴露数据库和缓存端口。

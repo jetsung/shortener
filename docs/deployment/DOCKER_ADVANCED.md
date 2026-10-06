@@ -93,7 +93,7 @@ docker buildx bake -f docker/docker-bake.hcl --set "*.platform=linux/amd64,linux
 docker build -f docker/Dockerfile -t shortener:latest .
 ```
 
-- 运行时基础镜像：`nginx:alpine`（含 nginx + shortener-server）
+- 运行时基础镜像：`gcr.io/distroless/static-debian13:nonroot`（单进程，无 shell/包管理器）
 - 后端为 musl 静态链接二进制，无语言运行时依赖
 
 ## 性能优化
@@ -118,13 +118,13 @@ services:
 ### 缓存与压缩
 
 - 后端启用 Redis/Valkey 缓存（`CACHE__ENABLED=true`、`CACHE__URL`）
-- 前端启用 Gzip 压缩与静态资源缓存（见 `docker/nginx-aio.conf`）
+- 后端已启用静态文件服务与 `Cache-Control` 缓存头；如需更激进的压缩/缓存策略，可在外层网关配置
 
 ### 健康检查
 
 后端服务提供健康检查端点 `/api/ping`（返回 `{"message":"pong"}`），而非 `/health`。
 
-> 注意：镜像内置 `HEALTHCHECK`（nginx 探测后端 `/api/ping`）。如需更细粒度的容器级探针，可在编排层自行挂载（如静态编译的 curl）或使用外部监控探测 `/api/ping`。
+> 注意：镜像为 distroless（无 shell/wget），未内置容器级 `HEALTHCHECK` 探针；健康监控建议使用外部探针请求 `/api/ping`，或由编排层挂载静态编译的 curl。
 
 ## 安全加固
 

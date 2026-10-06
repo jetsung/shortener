@@ -7,7 +7,7 @@
 ### 后端部署
 - [部署指南](DEPLOYMENT.md) - 生产环境部署最佳实践
 - [Docker 部署](DOCKER.md) - 使用 Docker 和 Docker Compose 部署后端服务
-- [All-In-One Docker 部署](DOCKER_AIO.md) - 前端 + 后端统一镜像部署（标准交付形态）
+- [统一镜像部署](DOCKER_AIO.md) - 单进程统一镜像部署（标准交付形态）
 - [Docker 高级配置](DOCKER_ADVANCED.md) - Docker 高级配置和优化
 - [DEB 包安装](DEB_PACKAGING_SIMPLIFIED.md) - Debian/Ubuntu 系统安装
 - [DEB 包构建](BUILD_DEB.md) - 如何构建 Debian 包

@@ -49,7 +49,7 @@ jobs:
           images: ${{ env.package_name }}
           labels: |
             org.opencontainers.image.title=Shortener
-            org.opencontainers.image.description=Unified URL shortener image with frontend (nginx) and backend (shortener-server)
+            org.opencontainers.image.description=Unified URL shortener image: single shortener-server process serving frontend static assets and API
             org.opencontainers.image.vendor=Jetsung Chan
           tags:
             latest

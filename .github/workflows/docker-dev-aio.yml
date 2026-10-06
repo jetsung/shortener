@@ -6,8 +6,6 @@ on:
       - dev*
     paths:
       - "docker/Dockerfile"
-      - "docker/nginx-aio.conf"
-      - "docker/entrypoint-aio.sh"
       - ".github/workflows/docker-dev-aio.yml"
       - "docker/docker-bake.hcl"
       - "shortener-server/Cargo.toml"
