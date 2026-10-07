@@ -23,12 +23,12 @@ tags:
   - name: health
     description: 健康检查
 paths:
-  /api/ping:
+  /go/:
     get:
       tags:
         - health
       summary: "健康检查"
-      description: "检查服务是否正常运行"
+      description: "纯路径探针（与短码 /go/{short_code} 共用 /go 前缀），检查服务是否正常运行；/go 与 /go/ 均响应"
       operationId: "ping"
       responses:
         "200":

@@ -97,10 +97,14 @@ pub fn create_router(state: AppState) -> Router {
         .route("/go/{short_code}", get(redirect_to_url))
         .with_state(state.clone());
 
-    // Create health check routes（全部收敛到 /api 命名空间）
+    // 健康检查与短码跳转共用 /go/ 前缀：
+    //   GET /go/             → 健康检查（纯路径探针，外部反代/负载均衡直接打该路径）
+    //   GET /go/{short_code} → 短码跳转
+    // /go 与 /go/ 均注册：健康探针对末尾斜杠的处理不统一，两者都响应
     let health_routes = Router::new()
         .route("/api", get(root))
-        .route("/api/ping", get(ping));
+        .route("/go/", get(ping))
+        .route("/go", get(ping));
 
     // Combine all routes
     Router::new()
@@ -147,7 +151,7 @@ async fn fallback_handler(State(state): State<AppState>, request: Request<axum::
 
 /// Health check handler
 ///
-/// GET /api/ping
+/// GET /go/（纯路径探针，与短码 /go/{short_code} 共用前缀）
 async fn ping() -> axum::Json<serde_json::Value> {
     axum::Json(serde_json::json!({
         "message": "pong"
