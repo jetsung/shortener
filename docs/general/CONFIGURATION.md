@@ -313,7 +313,8 @@ enabled = false
 address = ":8080"
 # 显式设置专用短域名：短址链接直接为 https://short.example.com/<code>。
 # 注意：后端跳转路由为 /go/{short_code}，专用短域名需在其 nginx 中把
-# 根路径短码转发到后端 /go/（如 rewrite ^/([A-Za-z0-9]+)$ /go/$1 last;）
+# 根路径短码内部映射到后端 /go/（proxy_pass http://shortener/go/;
+# 服务端一次转发直接 308，无需客户端 301 回环）
 short_url = "https://short.example.com"
 api_key = "${SHORTENER_API_KEY}"
 

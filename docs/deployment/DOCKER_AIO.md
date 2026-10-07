@@ -44,17 +44,6 @@ docker compose -f docker/docker-compose.yml down
 路径 `/go/{short_code}` 与前端路由不存在冲突**（短码统一走 `/go/` 前缀；
 实际有效短码长度由后端 `slug.length` 配置校验）。
 
-### 旧短链兼容（可选）
-
-v0.3.0 之前短链形态历经 `/{short_code}` 与 `/to/{short_code}` 两代，现统一为
-`/go/{short_code}`。已对外分发的旧短链可在**外层** nginx（TLS 终结层）加一条
-301 重定向过渡：
-
-```nginx
-# 放在外层 server 块中，置于其它 location 之前
-rewrite ^/([A-Za-z0-9]+)$ /go/$1 permanent;
-```
-
 ## Dockerfile 说明
 
 统一镜像为三段式多阶段构建：
@@ -184,22 +173,16 @@ server {
     ssl_certificate_key /etc/letsencrypt/live/s.example.com/privkey.pem;
     ssl_protocols TLSv1.2 TLSv1.3;
 
-    # 旧版短链（/{code} 与 /to/{code}）301 过渡到 /go/{code}
-    rewrite ^/([A-Za-z0-9]+)$          /go/$1 permanent;
-    rewrite ^/to/([A-Za-z0-9]+)$       /go/$1 permanent;
-
-    location /go/ {
-        proxy_pass http://shortener;
+    # proxy_pass 带 URI（/go/）：把任意路径前缀映射为后端 /go/，
+    # 例如 /abc123 → 后端 /go/abc123 —— 服务端内部一次转发直接 308，
+    # 无需客户端 301 回环（不使用 rewrite + permanent 的多跳写法）
+    location / {
+        proxy_pass http://shortener/go/;
         proxy_http_version 1.1;
         proxy_set_header Host              $http_host;
         proxy_set_header X-Real-IP         $remote_addr;
         proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
-    }
-
-    # 短址域名只服务跳转，其余路径一律 404
-    location / {
-        return 404;
     }
 }
 ```
@@ -298,8 +281,7 @@ curl http://127.0.0.1:8080/go/   # {"message":"pong"}
 ### 短码无法访问
 
 - 确认访问路径使用 `/go/` 前缀（如 `/go/abc123`），短码为纯字母数字且长度在
-  配置的 `slug.length` 生成规则内；旧形态 `/{short_code}` 需外层 nginx 301
-  重定向（见「旧短链兼容」）
+  配置的 `slug.length` 生成规则内
 
 ### 数据目录权限
 
