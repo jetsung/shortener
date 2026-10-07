@@ -26,9 +26,9 @@ docker compose -f docker/docker-compose.yml down
 
 ```
 浏览器 ──→ :8080 shortener-server（单进程，distroless static 运行时、非 root）
-              ├─ /              → 前端静态文件（/static，未命中回退 index.html）
+              ├─ /              → 前端静态文件（/app/static，未命中回退 index.html）
               ├─ /assets/*      → Vite 带内容哈希产物
-              ├─ /api/*         → 业务 API（含 /api/ping 健康检查）
+              ├─ /api/*         → 业务 API（健康检查收敛在 /go/）
               └─ /go/{short_code} → 短码跳转
 ```
 
@@ -70,8 +70,13 @@ rewrite ^/([A-Za-z0-9]+)$ /go/$1 permanent;
 | 变量 | 值 | 说明 |
 | --- | --- | --- |
 | `SERVER__ADDRESS` | `0.0.0.0:8080` | 单进程直接对外 |
-| `SERVER__STATIC_DIR` | `/static` | 前端静态产物目录（未命中回退 `index.html`） |
+| `SERVER__STATIC_DIR` | `/app/static` | 前端静态产物目录（未命中回退 `index.html`） |
 | `CONFIG_PATH` | `/app/config.toml` | 配置文件路径（可挂载覆盖） |
+
+> **相对路径基准**：镜像 `WORKDIR` 为 `/app`，因此配置中的相对路径直接以
+> `/app` 解析——`DATABASE__URL=sqlite://./data/shortener.db?mode=rwc` 与
+> `GEOIP__IP2REGION__PATH=./data/ip2region.xdb` 无需写成绝对路径即可工作，
+> 与本地二进制部署行为一致（compose 示例已采用此写法）。
 
 ## 环境变量配置
 
@@ -284,11 +289,11 @@ docker logs -f shortener
 
 ```bash
 # 容器内直接探测（宿主机映射端口同理）
-curl http://127.0.0.1:8080/api/ping   # {"message":"pong"}
+curl http://127.0.0.1:8080/go/   # {"message":"pong"}
 ```
 
 > 镜像为 distroless（无 shell/wget），未内置容器级 `HEALTHCHECK` 探针；
-> compose 的 healthcheck 已禁用。健康监控建议使用外部探针请求 `/api/ping`。
+> compose 的 healthcheck 已禁用。健康监控建议使用外部探针请求 `/go/`。
 
 ### 短码无法访问
 

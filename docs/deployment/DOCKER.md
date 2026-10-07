@@ -79,8 +79,8 @@ server {
 单一进程（对齐 acmecast 形态，distroless static 运行时、非 root）：
 
 - **shortener-server**（监听 `0.0.0.0:8080`）：
-  - `/` → 前端静态文件（`SERVER__STATIC_DIR=/static`，未命中回退 `index.html`）
-  - `/api/*` → 业务 API（含 `/api/ping` 健康检查）
+  - `/` → 前端静态文件（`SERVER__STATIC_DIR=/app/static`，未命中回退 `index.html`）
+  - `/api/*` → 业务 API（含 `/go/` 健康检查）
   - `/go/{code}` → 短码跳转
 
 ## 使用 Docker Bake
@@ -182,7 +182,19 @@ just docker-logs
 
 ## 健康检查
 
-镜像无内置 `HEALTHCHECK`（distroless 无 shell/wget）：compose 的 healthcheck 已禁用，健康探测建议使用外部监控请求 `/api/ping`（返回 `{"message":"pong"}`），或由编排层挂载静态编译的探针。
+镜像无内置 `HEALTHCHECK`（distroless 无 shell/wget）：compose 的 healthcheck 已禁用，健康探测建议使用外部监控请求 `/go/`（返回 `{"message":"pong"}`），或由编排层挂载静态编译的探针。
+
+## 目录与相对路径
+
+镜像 `WORKDIR` 为 `/app`，配置中的相对路径直接以 `/app` 解析，与本地二进制部署行为一致：
+
+```yaml
+# ./data/... 即 /app/data/...（宿主机挂载 ../data:/app/data）
+- DATABASE__URL=sqlite://./data/shortener.db?mode=rwc
+- GEOIP__IP2REGION__PATH=./data/ip2region.xdb
+```
+
+镜像内布局：`/app/config.toml`（配置）、`/app/data/`（SQLite / GeoIP 数据）、`/app/static/`（前端静态产物）。
 
 ## 网络
 

@@ -122,9 +122,9 @@ services:
 
 ### 健康检查
 
-后端服务提供健康检查端点 `/api/ping`（返回 `{"message":"pong"}`），而非 `/health`。
+后端服务提供健康检查端点 `/go/`（返回 `{"message":"pong"}`），而非 `/health`。
 
-> 注意：镜像为 distroless（无 shell/wget），未内置容器级 `HEALTHCHECK` 探针；健康监控建议使用外部探针请求 `/api/ping`，或由编排层挂载静态编译的 curl。
+> 注意：镜像为 distroless（无 shell/wget），未内置容器级 `HEALTHCHECK` 探针；健康监控建议使用外部探针请求 `/go/`，或由编排层挂载静态编译的 curl。
 
 ## 安全加固
 

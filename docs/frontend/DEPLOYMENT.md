@@ -2,7 +2,7 @@
 
 > **重要**：项目已采用**统一交付形态**（对齐 acmecast）——前端不再独立部署，
 > 构建产物由统一镜像（`docker/Dockerfile`）在构建阶段内嵌，运行时由
-> shortener-server 单进程直接托管（`SERVER__STATIC_DIR=/static`，未命中回退
+> shortener-server 单进程直接托管（`SERVER__STATIC_DIR=/app/static`，未命中回退
 > `index.html`）。标准部署方式请参阅
 > [统一镜像部署指南](../deployment/DOCKER_AIO.md)。
 

@@ -407,7 +407,7 @@ Environment=JWT_SECRET_FILE=/run/credentials/shortener-server.service/jwt_secret
 ```yaml
 services:
   shortener:
-    image: jetsung/shortener-server:latest
+    image: jetsung/shortener:latest
     environment:
       - RUST_LOG=shortener_server=info,sqlx=off
       - DATABASE__URL=postgres://shortener:shortener_password@postgres:5432/shortener

@@ -90,8 +90,10 @@ Authorization: Bearer <your-jwt-token>
 
 无需认证。
 
+健康检查使用 `/go/` 纯路径（与短码 `/go/{short_code}` 共用前缀）：
+
 ```http
-GET /api/ping
+GET /go/
 ```
 
 响应：
@@ -111,7 +113,7 @@ GET /api
 ```json
 {
   "service": "URL Shortener API",
-  "version": "0.2.0-preview.1",
+  "version": "0.3.0-preview.1",
   "status": "running"
 }
 ```
@@ -119,7 +121,7 @@ GET /api
 示例：
 
 ```bash
-curl http://localhost:8080/api/ping
+curl http://localhost:8080/go/
 ```
 
 ### 账户管理

@@ -140,15 +140,14 @@ docker compose logs -f shortener-server
 
 ```bash
 # 拉取镜像
-docker pull jetsung/shortener-server:latest
+docker pull jetsung/shortener:latest
 
-# 运行容器
+# 运行容器（单进程：前端页面 + API + 短码跳转）
 docker run -d \
-  --name shortener-server \
+  --name shortener \
   -p 8080:8080 \
   -v $(pwd)/data:/app/data \
-  -v $(pwd)/config:/app/config \
-  jetsung/shortener-server:latest
+  jetsung/shortener:latest
 ```
 
 详见 [Docker 部署指南](../deployment/DOCKER.md)。
