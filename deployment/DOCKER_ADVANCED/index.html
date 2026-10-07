@@ -2204,9 +2204,9 @@
 <li>后端已启用静态文件服务与 <code>Cache-Control</code> 缓存头；如需更激进的压缩/缓存策略，可在外层网关配置</li>
 </ul>
 <h3 id="健康检查">健康检查<a class="headerlink" href="#健康检查" title="Permanent link">&para;</a></h3>
-<p>后端服务提供健康检查端点 <code>/api/ping</code>（返回 <code>{"message":"pong"}</code>），而非 <code>/health</code>。</p>
+<p>后端服务提供健康检查端点 <code>/go/</code>（返回 <code>{"message":"pong"}</code>），而非 <code>/health</code>。</p>
 <blockquote>
-<p>注意：镜像为 distroless（无 shell/wget），未内置容器级 <code>HEALTHCHECK</code> 探针；健康监控建议使用外部探针请求 <code>/api/ping</code>，或由编排层挂载静态编译的 curl。</p>
+<p>注意：镜像为 distroless（无 shell/wget），未内置容器级 <code>HEALTHCHECK</code> 探针；健康监控建议使用外部探针请求 <code>/go/</code>，或由编排层挂载静态编译的 curl。</p>
 </blockquote>
 <h2 id="安全加固">安全加固<a class="headerlink" href="#安全加固" title="Permanent link">&para;</a></h2>
 <h3 id="非-root-用户">非 root 用户<a class="headerlink" href="#非-root-用户" title="Permanent link">&para;</a></h3>

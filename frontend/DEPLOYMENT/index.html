@@ -1896,7 +1896,7 @@
 <blockquote>
 <p><strong>重要</strong>：项目已采用<strong>统一交付形态</strong>（对齐 acmecast）——前端不再独立部署，
 构建产物由统一镜像（<code>docker/Dockerfile</code>）在构建阶段内嵌，运行时由
-shortener-server 单进程直接托管（<code>SERVER__STATIC_DIR=/static</code>，未命中回退
+shortener-server 单进程直接托管（<code>SERVER__STATIC_DIR=/app/static</code>，未命中回退
 <code>index.html</code>）。标准部署方式请参阅
 <a href="../../deployment/DOCKER_AIO/">统一镜像部署指南</a>。</p>
 </blockquote>
