@@ -67,7 +67,18 @@ RUN pnpm build
 # ============================================================================
 # Stage 3: 运行时镜像（distroless static，非 root，对齐 acmecast）
 # ============================================================================
+# 最终成品运行目录统一为 /app（WORKDIR），因此配置中的相对路径直接以 /app 为基准：
+#   - DATABASE__URL=sqlite://./data/shortener.db?mode=rwc  → /app/data/shortener.db
+#   - GEOIP__IP2REGION__PATH=./data/ip2region.xdb          → /app/data/ip2region.xdb
+# 目录布局：
+#   /app/config.toml  配置文件
+#   /app/data/        数据目录（SQLite / GeoIP）
+#   /app/static/      前端静态产物
 FROM gcr.io/distroless/static-debian13:nonroot
+
+# WORKDIR /app：使 DATABASE__URL / GEOIP__IP2REGION__PATH 等相对路径配置
+# （./data/...）无需改写即可工作，与本地二进制部署的行为一致
+WORKDIR /app
 
 # 后端静态二进制
 COPY --from=builder-server /app/target/release/shortener-server /usr/bin/shortener-server
@@ -76,17 +87,17 @@ COPY --from=builder-server /app/target/release/shortener-server /usr/bin/shorten
 COPY config.toml /app/config.toml
 
 # 前端构建产物（由后端静态托管，未命中回退 index.html）
-COPY --from=builder-frontend /app/dist /static
+COPY --from=builder-frontend /app/dist /app/static
 
 # 数据目录（SQLite / GeoIP）挂卷持久化（目录已在 builder 阶段预创建并归属 nonroot）
 COPY --chown=65532:65532 --from=builder-server /app/data /app/data
 
 # 环境变量
-# 单进程直接对外，无需反代：监听 0.0.0.0:8080
+# 单进程直接对外，无需反代：监听 0.0.0.0:8080；静态产物路径与 WORKDIR 对齐为 /app/static
 ENV RUST_LOG=info
 ENV CONFIG_PATH=/app/config.toml
 ENV SERVER__ADDRESS=0.0.0.0:8080
-ENV SERVER__STATIC_DIR=/static
+ENV SERVER__STATIC_DIR=/app/static
 
 VOLUME ["/app/data"]
 

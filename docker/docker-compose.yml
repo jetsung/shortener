@@ -13,11 +13,12 @@ services:
       - "8080:8080"
     environment:
       - RUST_LOG=shortener_server=info,sqlx=off
-      - DATABASE__URL=sqlite:///app/data/shortener.db?mode=rwc
+      # WORKDIR 为 /app：相对路径 ./data/... 即 /app/data/...（挂载卷 ../data:/app/data）
+      - DATABASE__URL=sqlite://./data/shortener.db?mode=rwc
       - CACHE__ENABLED=true
       - CACHE__URL=redis://redis:6379/0
       - GEOIP__ENABLED=true
-      - GEOIP__IP2REGION__PATH=/app/data/ip2region.xdb
+      - GEOIP__IP2REGION__PATH=./data/ip2region.xdb
       # PostgreSQL（启用 postgres profile 时改用，替换上面的 DATABASE__URL）：
       # - DATABASE__URL=postgres://shortener:shortener_password@postgres:5432/shortener
     volumes:
@@ -30,7 +31,7 @@ services:
       - shortener-network
     healthcheck:
       # distroless 无 shell：借用 redis 镜像同款 busybox 探针不可行，
-      # 改由后端 /api/ping + 外部探针；此处用内建 TCP 探测（无 wget）
+      # 改由后端 /go/ 探针 + 外部监控；此处用内建 TCP 探测（无 wget）
       # 兼容方案：挂载 busybox 或使用编排层探针，详见 docs/deployment/DOCKER.md
       test: ["NONE"]
       interval: 30s
