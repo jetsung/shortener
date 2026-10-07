@@ -107,7 +107,7 @@ dev:
 
     # 等待后端探活通过再启动前端；后端退出则终止并输出日志
     for _ in $(seq 1 30); do
-        if curl -fsS http://127.0.0.1:8080/api/ping >/dev/null 2>&1; then
+        if curl -fsS http://127.0.0.1:8080/go/ >/dev/null 2>&1; then
             break
         fi
         if ! kill -0 "$SERVER_PID" 2>/dev/null; then

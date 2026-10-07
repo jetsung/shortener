@@ -42,7 +42,7 @@ just dev
 
 # 访问
 #   页面（Vite 热更新）：http://localhost:8000/
-#   后端 API 直连：      http://localhost:8080/api/ping
+#   后端 API 直连：      http://localhost:8080/go/
 
 # 停止调试环境（二选一）：
 #   1. 运行 just dev 的终端按 Ctrl-C（trap 自动回收后端进程组）
