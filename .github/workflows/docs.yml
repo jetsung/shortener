@@ -8,7 +8,7 @@ on:
     paths:
       - 'docs/**'
       - 'zensical.toml'
-      - 'install.sh'
+      - 'scripts/install.sh'
       - '.github/workflows/docs.yml'
 
   workflow_dispatch:
@@ -18,20 +18,22 @@ concurrency:
   group: docs-${{ github.ref }}
   cancel-in-progress: true
 
+# 默认最小权限，需要的 job 单独提权（见各 job 的 permissions）
 permissions:
-  contents: write
-  pages: write
-  id-token: write
+  contents: read
 
 env:
   # 从 github.com/<owner>/<repo> 提取短名，如 jetsung/mtrans → mtrans
   REPO: ${{ github.event.repository.name }}
+  # 固定 zensical 版本保证构建可复现；升级时与本地 `zensical --version` 保持一致
+  ZENSICAL_VERSION: '0.0.73'
 
 jobs:
   ### 构建站点（各发布渠道共同依赖）
   build-docs:
     name: Build docs
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -42,18 +44,13 @@ jobs:
           python-version: '3.x'
 
       - name: Install zensical
-        run: pip install zensical
+        run: pip install "zensical==${ZENSICAL_VERSION}"
 
+      # 脚本缺失时直接失败，避免静默部署出没有安装脚本的站点
       - name: Build site
-        run: zensical build --clean
-
-      - name: Copy install.sh into site
         run: |
-          if [ -f install.sh ]; then
-            cp install.sh site/
-          else
-            echo "install.sh not found, skip copy"
-          fi
+          zensical build --clean
+          cp scripts/install.sh site/
 
       - name: Upload docs site artifact
         uses: actions/upload-artifact@v7
@@ -67,6 +64,9 @@ jobs:
     name: Deploy · gh-pages branch
     needs: [build-docs]
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write # gh-pages 分支推送
     steps:
       - name: Download docs site
         uses: actions/download-artifact@v8
@@ -80,6 +80,8 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./site
           cname: ${{ vars.PAGES_DOMAIN }}
+          # 只保留最新一次提交，防止 gh-pages 分支历史无限膨胀
+          force_orphan: true
 
   ### SSH Server WEB
   publish-ssh:
@@ -87,6 +89,7 @@ jobs:
     needs: [build-docs]
     if: ${{ vars.ENABLE_SSH_DEPLOY == 'true' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Download docs site
         uses: actions/download-artifact@v8
@@ -117,6 +120,7 @@ jobs:
     name: Deploy · EdgeOne
     needs: [build-docs]
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     env:
       EDGEONE_API_TOKEN: ${{ secrets.EDGEONE_API_TOKEN }}
     steps:

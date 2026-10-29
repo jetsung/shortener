@@ -35,7 +35,7 @@
 ### 一键安装（推荐）
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/jetsung/shortener/main/scripts/install.sh | bash
+curl -sSL https://shortener.gcli.cn/install.sh | bash
 ```
 
 ### 使用 Docker

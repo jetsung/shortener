@@ -1,7 +1,10 @@
 #!/bin/bash
 
 # Shortener 一键安装脚本
-# 使用方法: curl -sSL https://raw.githubusercontent.com/jetsung/shortener/main/scripts/install.sh | bash
+# 使用方法:
+#   交互式: curl -sSL https://shortener.gcli.cn/install.sh | bash
+#   非交互: curl -sSL https://shortener.gcli.cn/install.sh | bash -s -- cli
+#           组件参数: server | cli | all
 
 set -e
 
@@ -92,16 +95,29 @@ main() {
     print_info "检查系统要求..."
     check_rust
 
-    # 询问用户要安装什么
-    echo
-    print_info "请选择要安装的组件:"
-    echo "1) 仅服务器 (shortener-server)"
-    echo "2) 仅 CLI 工具 (shortener-cli)"
-    echo "3) 全部安装 (推荐)"
-    echo "4) 退出"
-    echo
+    # 确定要安装的组件: 优先使用命令行参数, 否则交互式选择
+    local choice
+    if [ -n "$1" ]; then
+        case $1 in
+            server) choice=1 ;;
+            cli)    choice=2 ;;
+            all)    choice=3 ;;
+            *)
+                print_error "未知组件: $1 (可选: server | cli | all)"
+                exit 1
+                ;;
+        esac
+    else
+        echo
+        print_info "请选择要安装的组件:"
+        echo "1) 仅服务器 (shortener-server)"
+        echo "2) 仅 CLI 工具 (shortener-cli)"
+        echo "3) 全部安装 (推荐)"
+        echo "4) 退出"
+        echo
 
-    read -p "请输入选择 [1-4]: " choice
+        read -r -p "请输入选择 [1-4]: " choice
+    fi
 
     case $choice in
         1)

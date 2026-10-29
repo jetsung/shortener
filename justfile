@@ -447,6 +447,7 @@ docs-build:
     @command -v zensical >/dev/null 2>&1 || { command -v uv >/dev/null 2>&1 && uv tool install -q zensical || pip install -q zensical; }
     @echo "正在构建文档..."
     @zensical build --clean
+    @if [ -f scripts/install.sh ]; then cp scripts/install.sh site/; fi
     @echo "文档已构建到 site/"
 
 # 部署文档到 GitHub Pages

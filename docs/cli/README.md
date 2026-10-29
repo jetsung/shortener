@@ -12,6 +12,9 @@ Shortener CLI 是一个功能完整的命令行工具，用于管理短链接服
 ### 安装
 
 ```bash
+# 一键安装（非交互，仅 CLI，需要已安装 Rust/Cargo）
+curl -sSL https://shortener.gcli.cn/install.sh | bash -s -- cli
+
 # 从 Git 仓库安装
 cargo install --git https://github.com/jetsung/shortener.git shortener-cli
 
